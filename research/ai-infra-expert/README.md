@@ -4,8 +4,8 @@ This directory contains the first usable research package for adapting Qwen3.5-9
 
 ## Assets
 
-- `corpus/train.jsonl`: 630 authored seed SFT records.
-- `corpus/validation.jsonl`: 70 authored seed validation records.
+- `corpus/train.jsonl`: 1,542 authored seed SFT records.
+- `corpus/validation.jsonl`: 158 authored seed validation records.
 - `corpus/manifest.json`: counts, provenance and split policy.
 - `benchmark.jsonl`: 500-record domain capability benchmark from the previous phase; it is held out from training.
 - `eval_model_domain.json`: first evaluation standard, intrinsic model/domain capability.
