@@ -1,0 +1,105 @@
+{
+  "model": "qwen35-9b-base",
+  "endpoint": "http://127.0.0.1:8001/v1",
+  "benchmark": "research/ai-infra-expert/benchmark.jsonl",
+  "cases": 500,
+  "successful_requests": 500,
+  "failed_requests": 0,
+  "categories": {
+    "Architecture Comparison": 50,
+    "Calculation": 50,
+    "Code": 50,
+    "Concept Understanding": 50,
+    "Knowledge": 50,
+    "Long-form Technical Analysis": 50,
+    "Performance Analysis": 50,
+    "Reasoning": 50,
+    "System Design": 50,
+    "Troubleshooting": 50
+  },
+  "latency_ms_by_category": {
+    "Architecture Comparison": {
+      "count": 50,
+      "mean_ms": 3569.059,
+      "p50_ms": 3569.048,
+      "p95_ms": 3570.913,
+      "max_ms": 3571.645
+    },
+    "Calculation": {
+      "count": 50,
+      "mean_ms": 3568.838,
+      "p50_ms": 3569.116,
+      "p95_ms": 3570.778,
+      "max_ms": 3571.323
+    },
+    "Code": {
+      "count": 50,
+      "mean_ms": 3569.312,
+      "p50_ms": 3569.328,
+      "p95_ms": 3571.455,
+      "max_ms": 3572.367
+    },
+    "Concept Understanding": {
+      "count": 50,
+      "mean_ms": 3567.128,
+      "p50_ms": 3566.955,
+      "p95_ms": 3569.235,
+      "max_ms": 3571.485
+    },
+    "Knowledge": {
+      "count": 50,
+      "mean_ms": 3573.446,
+      "p50_ms": 3566.672,
+      "p95_ms": 3569.722,
+      "max_ms": 3897.465
+    },
+    "Long-form Technical Analysis": {
+      "count": 50,
+      "mean_ms": 3569.27,
+      "p50_ms": 3568.985,
+      "p95_ms": 3570.824,
+      "max_ms": 3571.88
+    },
+    "Performance Analysis": {
+      "count": 50,
+      "mean_ms": 3569.58,
+      "p50_ms": 3569.578,
+      "p95_ms": 3570.914,
+      "max_ms": 3571.52
+    },
+    "Reasoning": {
+      "count": 50,
+      "mean_ms": 3567.968,
+      "p50_ms": 3567.85,
+      "p95_ms": 3569.617,
+      "max_ms": 3569.951
+    },
+    "System Design": {
+      "count": 50,
+      "mean_ms": 3569.971,
+      "p50_ms": 3569.755,
+      "p95_ms": 3572.646,
+      "max_ms": 3572.801
+    },
+    "Troubleshooting": {
+      "count": 50,
+      "mean_ms": 3568.495,
+      "p50_ms": 3568.554,
+      "p95_ms": 3570.039,
+      "max_ms": 3571.952
+    }
+  },
+  "errors": [],
+  "decoding": {
+    "temperature": 0.0,
+    "max_tokens": 512
+  },
+  "system_prompt": "You are an AI/LLM Infrastructure engineering assistant. Answer the user's technical question directly and rigorously. State assumptions, units, formulas, trade-offs, uncertainty, and validation steps when relevant. Do not invent measurements or undocumented system facts.",
+  "wall_time_s": 1784.712,
+  "scoring_status": "raw_generation_only; rubric/code/numeric review pending",
+  "limitations": [
+    "The benchmark is a v0.1 authored scaffold and still needs domain-expert review.",
+    "Open-ended rubric and code answers are not automatically scored by this runner.",
+    "Runtime latency is reported separately and is not domain capability evidence."
+  ]
+}

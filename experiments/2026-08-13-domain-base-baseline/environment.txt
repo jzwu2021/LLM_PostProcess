@@ -1,0 +1,18 @@
+# Environment snapshot: 2026-08-13 domain Base baseline
+
+Host: icx-inspur-gpu
+OS/kernel: Linux 5.15.0-125-generic x86_64 (Ubuntu kernel)
+Python: 3.12.9
+Python environment: /media/home/johnson/llm/qwen35-env
+Model: /media/home/johnson/llm/models/Qwen3.5-9B
+Model variant: unmodified Base checkpoint
+GPU topology: 8 x NVIDIA A30 24 GB (used for TP=8 serving)
+Serving: vLLM OpenAI-compatible API, localhost:8001, tensor-parallel-size=8, dtype=bfloat16, max-model-len=4096, gpu-memory-utilization=0.82
+Repository HEAD before this experiment: 132986d688e4f30e8bb7a681b4063ed937c78a1b
+Branch: main
+Benchmark SHA-256: 30eb88766f916dd487dc2921b9479e238c1074a96d20611f099068af917cc869
+Runner SHA-256: 719a5a8aac059e3ac39bab6348c59435da1f47cf0ecbe29a5a52555746e06321
+
+Protocol note: Qwen3.5 thinking was disabled with chat_template_kwargs={"enable_thinking": false}; temperature=0; max_tokens=768. Reference answers were never sent to the model. Runtime metrics are system metrics, not domain capability scores.
+
+Credential policy: no credentials, tokens, passwords, keys, or connection information are recorded.
