@@ -29,12 +29,12 @@ Before a serious CPT/SFT run:
 
 ## Corpus design
 
-The seed corpus contains 1,700 records:
+The seed corpus contains 5,000 records:
 
-- 100 Knowledge/Concept explanations;
-- 100 Calculation records with exact formulas and unit-aware answers;
-- 1,000 System Design, Performance Analysis and Troubleshooting records;
-- 500 Code/Tool-use records with unit-test contracts.
+- 500 Knowledge/Concept explanations;
+- 500 Calculation records with exact formulas and unit-aware answers;
+- 3,000 System Design, Performance Analysis and Troubleshooting records;
+- 1,000 Code/Tool-use records with unit-test contracts.
 
 The split is deterministic by SHA-256 of record ID:
 

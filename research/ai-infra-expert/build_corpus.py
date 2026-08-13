@@ -20,7 +20,7 @@ def item(i, category, task, q, a, difficulty, concepts, verifier='rubric'):
         {'role':'system','content':'You are an AI/LLM Infrastructure engineer. State assumptions, use units, distinguish measured facts from estimates, and do not invent platform-specific facts.'},
         {'role':'user','content':q}, {'role':'assistant','content':a}],
       'concepts': concepts, 'verifier': verifier,
-      'provenance': 'authored_synthetic_seed_v0.1',
+      'provenance': 'authored_synthetic_seed_v0.2',
       'review_status': 'needs_domain_expert_review',
       'contamination_policy': 'not copied from benchmark; keep evaluation records isolated from training'
     }
@@ -53,14 +53,16 @@ forms=[
 ]
 for name,answer,concept in knowledge:
   for f,form in enumerate(forms):
-    rows.append(item(i,'Knowledge/Concept','explanation',form.format(name=name),answer,'easy' if f<3 else 'medium',[concept],'rubric')); i+=1
+    for v in range(5):
+      q=form.format(name=name)+f' Case variant {v+1}: include one concrete mechanism and one boundary condition.'
+      rows.append(item(i,'Knowledge/Concept','explanation',q,answer,'easy' if f<3 else 'medium',[concept],'rubric')); i+=1
 
 # Calculation tasks: varied values held out from the benchmark generator.
-for n in range(100):
+for n in range(500):
   layers=24+(n%5)*8; seq=1024+(n%7)*512; heads=2+(n%4)*2; dim=64+(n%3)*32; b=2 if n%3 else 1
   bytes_total=2*layers*seq*heads*dim*b
   gib=bytes_total/(1024**3)
-  q=f'A model has {layers} layers, {heads} KV heads, head dimension {dim}, sequence length {seq}, and {"BF16/FP16" if b==2 else "INT8"} KV values. Estimate bytes for one request\'s K/V cache. Show the formula and report GiB.'
+  q=f'Calculation case {n+1}: a model has {layers} layers, {heads} KV heads, head dimension {dim}, sequence length {seq}, and {"BF16/FP16" if b==2 else "INT8"} KV values. Estimate bytes for one request\'s K/V cache. Show the formula and report GiB.'
   a=f'Use 2 × layers × sequence_length × KV_heads × head_dim × bytes_per_value. Here this is 2 × {layers} × {seq} × {heads} × {dim} × {b} = {bytes_total} bytes = {gib:.6f} GiB. This excludes allocator metadata and other runtime memory.'
   rows.append(item(i,'Calculation','numeric',q,a,'medium',['kv_cache','memory'],'exact_numeric')); i+=1
 
@@ -78,7 +80,7 @@ scenarios=[
  ('benchmarking','Two serving systems claim different tokens/s. Design a reproducible comparison.','freeze model revision, tokenizer, precision, hardware, topology, prompt/generation distributions, concurrency, warmup, stopping rules, and telemetry; publish raw request traces.'),
 ]
 for category, prompt, keypoints in scenarios:
-  for v in range(100):
+  for v in range(300):
     q=prompt+f' Scenario variant {v+1}: include an explicit falsifiable hypothesis and a controlled experiment.'
     a=f'Answer should state assumptions, a falsifiable hypothesis, measurements, expected confounders, and rollback criteria. Minimum technical points: {keypoints}'
     cat='System Design' if v%3==0 else ('Troubleshooting' if v%3==1 else 'Performance Analysis')
@@ -98,12 +100,12 @@ code_specs=[
  ('capacity planner','Implement a conservative capacity estimate that returns both the estimate and assumptions used.'),
 ]
 for name,spec in code_specs:
-  for v in range(50):
+  for v in range(100):
     q=f'Write a small, dependency-light Python implementation for {name}. Variant {v+1}. Contract: {spec} Include tests for boundary cases and a brief complexity analysis.'
     a=f'Provide typed or clearly documented code, input validation, deterministic tests, and explicit assumptions. Contract to satisfy: {spec}'
     rows.append(item(i,'Code/Tool Use','code',q,a,'medium' if v<25 else 'hard',['python','testing',name],'unit_test')); i+=1
 
-assert len(rows)==1700, len(rows)
+assert len(rows)==5000, len(rows)
 # Deterministic split by hash; benchmark/evaluation files are not included here.
 rows.sort(key=lambda x:x['id'])
 for split in ('train','validation'):
@@ -113,6 +115,6 @@ for split in ('train','validation'):
       if (split=='train' and h<90) or (split=='validation' and 90<=h<100):
         f.write(json.dumps(r,ensure_ascii=False,sort_keys=True)+'\n')
 with (OUT/'manifest.json').open('w') as f:
-  json.dump({'version':'aiinfra-sft-seed-v0.1','total':len(rows),'train':sum(int(int(hashlib.sha256(r['id'].encode()).hexdigest(),16)%100<90) for r in rows),'validation':sum(int(90<=int(hashlib.sha256(r['id'].encode()).hexdigest(),16)%100<100) for r in rows),'held_out_evaluation':'../benchmark.jsonl','review_status':'needs_domain_expert_review','provenance':'authored_synthetic_seed_v0.1'},f,indent=2)
+  json.dump({'version':'aiinfra-sft-seed-v0.2','total':len(rows),'train':sum(int(int(hashlib.sha256(r['id'].encode()).hexdigest(),16)%100<90) for r in rows),'validation':sum(int(90<=int(hashlib.sha256(r['id'].encode()).hexdigest(),16)%100<100) for r in rows),'held_out_evaluation':'../benchmark.jsonl','review_status':'needs_domain_expert_review','provenance':'authored_synthetic_seed_v0.2'},f,indent=2)
 print('total',len(rows))
 print('train/validation written')

@@ -21,7 +21,7 @@ for split in ['train','validation']:
 for p in ['eval_model_domain.json','eval_runtime_system.json']:
     d=json.loads((ROOT/p).read_text())
     assert d['name'] and d['version']
-assert len(ids)==1700, len(ids)
-assert sum(counts.values())==1700
+assert len(ids)==5000, len(ids)
+assert sum(counts.values())==5000
 assert (ROOT/'benchmark.jsonl').exists()
 print(json.dumps({'corpus_records':len(ids),'unique_questions':len(questions),'category_counts':dict(sorted(counts.items())),'eval_specs':['eval_model_domain.json','eval_runtime_system.json'],'status':'PASS'},ensure_ascii=False,indent=2))
