@@ -1,0 +1,38 @@
+{
+  "name": "runtime-system-capability-evaluation",
+  "version": "v0.1",
+  "purpose": "Measure whether a model deployment can serve the same model workload reliably and efficiently; this is separate from model domain expertise.",
+  "does_not_measure": ["domain knowledge", "technical reasoning quality", "SFT/CPT effectiveness"],
+  "protocol": {
+    "model_artifact": "Record immutable model path, revision, tokenizer, dtype, quantization, serving engine and engine version.",
+    "hardware": "Record GPU model/count/VRAM, driver, CUDA runtime, topology, CPU, RAM, storage, and network.",
+    "workloads": "Use fixed prompt and generation distributions for short, medium, long-context, mixed, concurrent, tool-call, and failure-recovery scenarios.",
+    "warmup": "Exclude a declared warmup phase; report cold-start separately.",
+    "repetitions": "Use at least 30 requests per scenario for latency distributions and repeat each scenario at least 3 times.",
+    "isolation": "Stop training jobs and unrelated GPU processes; record the exact process and environment state."
+  },
+  "scenarios": [
+    {"id":"short_decode","description":"Short prompt and short generation", "load":"fixed concurrency", "metrics":["TTFT","TPOT","E2E latency","tokens/s","GPU memory"]},
+    {"id":"long_context","description":"Long prompt with bounded generation", "load":"fixed context buckets", "metrics":["TTFT","KV memory","OOM rate","P99 latency","admission rejection"]},
+    {"id":"mixed_batch","description":"Mixed short/long prompts and generations", "load":"closed-loop and open-loop", "metrics":["throughput","P50/P95/P99 E2E","queue time","preemption","fairness"]},
+    {"id":"concurrency_sweep","description":"Concurrency sweep until SLO violation", "load":"1,2,4,... until failure", "metrics":["capacity","latency curve","error rate","GPU utilization","memory headroom"]},
+    {"id":"tool_call","description":"Structured tool-call generation and continuation", "load":"fixed tool schemas and mock observations", "metrics":["tool-call validity","E2E latency","tool calls/request","recovery rate"]},
+    {"id":"failure_recovery","description":"Worker restart, timeout, malformed request and overload", "load":"fault injection", "metrics":["recovery time","request loss","duplicate rate","error classification"]}
+  ],
+  "primary_metrics": [
+    "TTFT_ms",
+    "TPOT_ms",
+    "E2E_latency_ms_p50_p95_p99",
+    "output_tokens_per_second",
+    "request_throughput",
+    "GPU_memory_peak_bytes",
+    "GPU_memory_headroom_bytes",
+    "GPU_hours_per_million_output_tokens",
+    "SLO_success_rate",
+    "OOM_rate",
+    "recovery_time_seconds"
+  ],
+  "required_artifacts": ["raw request log", "raw response log", "telemetry log", "environment manifest", "scenario config", "failure log"],
+  "reporting_rule": "Never use runtime metrics as evidence that the model learned more domain knowledge. Report runtime results in a separate table.",
+  "recommended_slos": {"tool_call_validity":">=0.95", "request_success":">=0.99", "OOM_rate":"0", "p99_latency":"declare per workload; never compare without the same SLO"}
+}

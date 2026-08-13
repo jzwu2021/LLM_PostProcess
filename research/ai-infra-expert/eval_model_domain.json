@@ -1,0 +1,45 @@
+{
+  "name": "model-domain-capability-evaluation",
+  "version": "v0.1",
+  "purpose": "Measure whether Qwen3.5-9B learned AI/LLM Infrastructure knowledge and problem-solving ability.",
+  "does_not_measure": ["GPU throughput", "service concurrency", "deployment cost"],
+  "benchmark": "../benchmark.jsonl",
+  "protocol": {
+    "model_comparison": "Base, CPT, SFT, CPT+SFT, preference and RL variants use the identical benchmark revision.",
+    "generation": "Record raw prompt, raw response, model revision, tokenizer revision, decoding parameters, stop reason, prompt tokens, completion tokens, and total tokens.",
+    "fairness": "Use the same system prompt and maximum output budget; do not reveal reference answers; keep a private holdout isolated from training.",
+    "repeats": "Use at least 3 seeds or 3 deterministic decoding configurations for open-ended tasks; report mean and dispersion.",
+    "contamination": "Never train on benchmark.jsonl or derivatives; maintain hashes and a data-lineage manifest."
+  },
+  "slices": [
+    {"name":"Knowledge", "metric":"key_point_accuracy", "weight":1.0},
+    {"name":"Concept Understanding", "metric":"key_point_accuracy", "weight":1.0},
+    {"name":"Calculation", "metric":"numeric_exact_or_tolerance", "weight":1.2},
+    {"name":"System Design", "metric":"rubric_1_to_4", "weight":1.2},
+    {"name":"Performance Analysis", "metric":"rubric_1_to_4", "weight":1.2},
+    {"name":"Troubleshooting", "metric":"rubric_1_to_4", "weight":1.2},
+    {"name":"Code", "metric":"sandbox_unit_test_pass_rate", "weight":1.2},
+    {"name":"Architecture Comparison", "metric":"rubric_1_to_4", "weight":1.0},
+    {"name":"Reasoning", "metric":"rubric_1_to_4", "weight":1.0},
+    {"name":"Long-form Technical Analysis", "metric":"rubric_1_to_4", "weight":1.0}
+  ],
+  "rubric": {
+    "1": "Incorrect or unsafe; misses the central mechanism.",
+    "2": "Partially correct; identifies terms but has material omissions or causal errors.",
+    "3": "Technically correct and useful; covers main mechanisms, assumptions, and trade-offs.",
+    "4": "Expert-level; correct, precise, structured, falsifiable, and operationally actionable without hallucinated facts."
+  },
+  "primary_metrics": [
+    "weighted_domain_score",
+    "per_category_score",
+    "numeric_pass_rate",
+    "code_test_pass_rate",
+    "rubric_mean",
+    "hallucination_rate",
+    "unseen_parameter_generalization",
+    "answer_tokens",
+    "reasoning_tokens_if_parser_available"
+  ],
+  "secondary_metrics": ["error_type_distribution", "confidence_interval", "inter-rater_agreement"],
+  "capability_claim_rule": "Do not claim domain expertise from aggregate accuracy alone; require gains across at least four slices, including one calculation/code slice and one design/troubleshooting slice, with no material general-capability regression."
+}

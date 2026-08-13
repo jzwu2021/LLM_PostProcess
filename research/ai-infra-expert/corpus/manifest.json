@@ -1,0 +1,9 @@
+{
+  "version": "aiinfra-sft-seed-v0.1",
+  "total": 1700,
+  "train": 1542,
+  "validation": 158,
+  "held_out_evaluation": "../benchmark.jsonl",
+  "review_status": "needs_domain_expert_review",
+  "provenance": "authored_synthetic_seed_v0.1"
+}
