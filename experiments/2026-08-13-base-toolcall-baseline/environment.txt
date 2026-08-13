@@ -1,0 +1,31 @@
+# Phase 1 preflight snapshot
+
+Captured on 2026-08-13 before the Base evaluation.
+
+```text
+host_kernel=Linux 5.15.0-125-generic
+python=/media/home/johnson/llm/qwen35-env/bin/python
+python_version=3.12.9
+pytorch=2.13.0+cu129
+transformers=5.15.0
+vllm=0.26.1rc1.dev659+g23f25aac1
+accelerate=1.14.0
+datasets=5.0.1
+trl=1.9.2
+peft=0.20.0
+safetensors=0.8.0
+gpu_count=8
+gpu_model=NVIDIA A30
+gpu_memory_mib=24576
+driver=580.173.02
+visible_devices=0,1,2,3,4,5,6,7
+model_total_bytes=19397301918
+model_config_sha256=d0883072e01861ed0b2d47be3c16c36a8e81c224c7ffaa310c6558fb3f932b05
+eval_suite_sha256=3d9fde756def503fe4901246602e84550939ef4f2eeb0b3b2d7acfbf1f73c020
+repo_commit_before=b4c4d7717d2ecc87a6aac2df63c2655943621117
+repo_remote_before=origin/main
+```
+
+The vLLM service was launched with tensor parallel size 8, BF16, max model length 4096, GPU memory utilization 0.82, native Qwen3 XML tool-call parser, and localhost port 8001. The successful launch required explicit CUDA 13 and Conda libstdc++ paths; see `EXPERIMENT.md`.
+
+Post-run GPU snapshot (not peak): approximately 20,009–20,029 MiB used per GPU out of 24,576 MiB, with 0% utilization at the time of sampling. The service was stopped after evaluation.
