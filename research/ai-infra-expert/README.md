@@ -4,8 +4,8 @@ This directory contains the first usable research package for adapting Qwen3.5-9
 
 ## Assets
 
-- `corpus/train.jsonl`: 1,542 authored seed SFT records.
-- `corpus/validation.jsonl`: 158 authored seed validation records.
+- `corpus/train.jsonl`: 5,399 authored seed SFT records.
+- `corpus/validation.jsonl`: 601 authored seed validation records.
 - `corpus/manifest.json`: counts, provenance and split policy.
 - `benchmark.jsonl`: 500-record domain capability benchmark from the previous phase; it is held out from training.
 - `eval_model_domain.json`: first evaluation standard, intrinsic model/domain capability.
@@ -13,10 +13,11 @@ This directory contains the first usable research package for adapting Qwen3.5-9
 - `build_corpus.py`: deterministic corpus generator.
 - `validate_assets.py`: schema, split and contamination-boundary checks.
 - `MANIFEST.sha256`: artifact hashes.
+- `TRAINING-GOAL.md`: Qwen3.5-9B training objective, methods, task scope, capability levels and evidence gates.
 
 ## Important status
 
-The corpus is an authored synthetic seed corpus (`authored_synthetic_seed_v0.1`). It is not a bulk scrape of external documents and has not yet passed expert review. Every record is marked `needs_domain_expert_review`. It is suitable for pipeline validation and controlled pilot experiments, not yet for the final claim that the model is an expert.
+The corpus is an authored synthetic seed corpus (`authored_synthetic_seed_v0.3`). It is not a bulk scrape of external documents and has not yet passed expert review. Every record is marked `needs_domain_expert_review`. It is suitable for pipeline validation and controlled pilot experiments, not yet for the final claim that the model is an expert. See `TRAINING-GOAL.md` for the complete objective and training-method plan.
 
 Before a serious CPT/SFT run:
 
