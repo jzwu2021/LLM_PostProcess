@@ -21,7 +21,12 @@ for split in ['train','validation']:
 for p in ['eval_model_domain.json','eval_runtime_system.json']:
     d=json.loads((ROOT/p).read_text())
     assert d['name'] and d['version']
-assert len(ids)==5000, len(ids)
-assert sum(counts.values())==5000
+assert len(ids)==6000, len(ids)
+assert sum(counts.values())==6000
+cluster_rows=[r for split in ['train','validation'] for r in [json.loads(x) for x in (ROOT/'corpus'/f'{split}.jsonl').read_text().splitlines() if x] if r.get('domain_subtopic')=='cluster_infrastructure']
+assert len(cluster_rows)==1000
+assert {r['technology'] for r in cluster_rows}=={'RDMA','RoCE','GDR','GDS','Mooncake','NVIDIA Dynamo','multi-node NCCL','cluster scheduling and recovery'}
+for r in cluster_rows:
+    assert {'cluster_scope','parallelism_scope','network_scope','failure_mode','technology'} <= r.keys()
 assert (ROOT/'benchmark.jsonl').exists()
 print(json.dumps({'corpus_records':len(ids),'unique_questions':len(questions),'category_counts':dict(sorted(counts.items())),'eval_specs':['eval_model_domain.json','eval_runtime_system.json'],'status':'PASS'},ensure_ascii=False,indent=2))

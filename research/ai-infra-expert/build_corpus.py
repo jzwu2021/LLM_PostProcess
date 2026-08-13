@@ -13,8 +13,8 @@ OUT.mkdir(exist_ok=True)
 
 
 def sha(s): return hashlib.sha256(s.encode()).hexdigest()[:16]
-def item(i, category, task, q, a, difficulty, concepts, verifier='rubric'):
-    return {
+def item(i, category, task, q, a, difficulty, concepts, verifier='rubric', metadata=None):
+    record = {
       'id': f'corpus-{i:05d}', 'category': category, 'task_type': task,
       'difficulty': difficulty, 'messages': [
         {'role':'system','content':'You are an AI/LLM Infrastructure engineer. State assumptions, use units, distinguish measured facts from estimates, and do not invent platform-specific facts.'},
@@ -24,6 +24,9 @@ def item(i, category, task, q, a, difficulty, concepts, verifier='rubric'):
       'review_status': 'needs_domain_expert_review',
       'contamination_policy': 'not copied from benchmark; keep evaluation records isolated from training'
     }
+    if metadata:
+      record.update(metadata)
+    return record
 
 rows=[]; i=1
 # Knowledge/concept seed: 10 concepts x 10 formulations.
@@ -105,7 +108,29 @@ for name,spec in code_specs:
     a=f'Provide typed or clearly documented code, input validation, deterministic tests, and explicit assumptions. Contract to satisfy: {spec}'
     rows.append(item(i,'Code/Tool Use','code',q,a,'medium' if v<25 else 'hard',['python','testing',name],'unit_test')); i+=1
 
-assert len(rows)==5000, len(rows)
+# Advanced cluster and distributed-inference corpus. These records are explicit
+# about technology and deployment scope so cluster coverage can be audited.
+cluster_specs=[
+ ('RDMA','multi_node','RDMA','hybrid','link_failure','Explain how RDMA changes the data path for multi-node GPU training or inference.','separate verbs, queues, memory registration, transport selection, bandwidth, latency, and fallback behavior; compare measured device counters with application-level communication time.'),
+ ('RoCE','multi_node','RoCE','hybrid','timeout','Diagnose a RoCE-based GPU cluster whose collective communication has unstable tail latency.','check lossless-priority configuration, PFC/ECN, MTU, route symmetry, congestion, NIC counters, queue pairs, and whether a fallback path is hiding the real fault.'),
+ ('GDR','multi_node','GDR','TP/DP','link_failure','Design a validation plan for GPUDirect RDMA between GPUs and NICs.','verify topology and peer access, registration and pinning, IOMMU/container permissions, NIC-GPU affinity, direct versus staged copies, and compare bandwidth and CPU utilization.'),
+ ('GDS','multi_node','GDS','DP','node_failure','Evaluate GPUDirect Storage for checkpoint and dataset I/O in distributed training.','separate storage throughput from GPU DMA, validate filesystem and kernel support, measure queue depth and tail latency, compare CPU-staged I/O, and test restart consistency after interruption.'),
+ ('Mooncake','multi_node','RDMA','hybrid','node_failure','Analyze Mooncake-style disaggregated KV-cache or serving architecture for a long-context workload.','define prefill/decode ownership, KV placement and eviction, RDMA transfer cost, cache consistency, admission control, failure recovery, and comparison against local or conventional distributed serving.'),
+ ('NVIDIA Dynamo','multi_node','RDMA','hybrid','timeout','Design an evaluation of NVIDIA Dynamo for disaggregated inference orchestration.','separate frontend routing, prefill workers, decode workers, KV movement, transport overhead, scheduling policy, queueing, model compatibility, observability, and failover behavior.'),
+ ('multi-node NCCL','multi_node','InfiniBand/RoCE','TP/PP/EP','timeout','A multi-node NCCL job hangs only at larger world sizes. Produce a falsifiable diagnosis and rollback plan.','test rank mapping, interface selection, topology, NIC affinity, rendezvous, firewall and ports, timeout logs, communicator formation, reduced-world baselines, and network counters.'),
+ ('cluster scheduling and recovery','multi_node','RDMA/NVLink','DP/TP','node_failure','Design a resilient cluster scheduler for distributed LLM training and inference.','cover gang scheduling, GPU/NIC/topology-aware placement, fragmentation, preemption, checkpoint cadence, node drain, elastic restart, replica routing, SLOs, and resource accounting.'),
+]
+cluster_categories=['System Design','Performance Analysis','Troubleshooting','Code/Tool Use']
+for technology,scope,network,parallelism,failure,prompt,keypoints in cluster_specs:
+  for v in range(125):
+    category=cluster_categories[v%len(cluster_categories)]
+    task='cluster_design' if category=='System Design' else ('cluster_performance' if category=='Performance Analysis' else ('cluster_troubleshooting' if category=='Troubleshooting' else 'cluster_tool_use'))
+    q=f'Advanced cluster case {technology}-{v+1}: {prompt} Variant {v+1} must state assumptions, define a falsifiable hypothesis, name metrics, and include one failure or rollback condition.'
+    a=f'An expert answer should distinguish model-domain mechanisms from runtime measurements. Required technical anchors: {keypoints} It must report topology, workload, units, baselines, confounders, and evidence needed before claiming improvement.'
+    metadata={'domain_subtopic':'cluster_infrastructure','cluster_scope':scope,'parallelism_scope':parallelism,'network_scope':network,'failure_mode':failure,'technology':technology}
+    rows.append(item(i,category,task,q,a,'hard',['cluster_infrastructure',technology.lower(),network.lower()],'rubric',metadata)); i+=1
+
+assert len(rows)==6000, len(rows)
 # Deterministic split by hash; benchmark/evaluation files are not included here.
 rows.sort(key=lambda x:x['id'])
 for split in ('train','validation'):
@@ -115,6 +140,6 @@ for split in ('train','validation'):
       if (split=='train' and h<90) or (split=='validation' and 90<=h<100):
         f.write(json.dumps(r,ensure_ascii=False,sort_keys=True)+'\n')
 with (OUT/'manifest.json').open('w') as f:
-  json.dump({'version':'aiinfra-sft-seed-v0.2','total':len(rows),'train':sum(int(int(hashlib.sha256(r['id'].encode()).hexdigest(),16)%100<90) for r in rows),'validation':sum(int(90<=int(hashlib.sha256(r['id'].encode()).hexdigest(),16)%100<100) for r in rows),'held_out_evaluation':'../benchmark.jsonl','review_status':'needs_domain_expert_review','provenance':'authored_synthetic_seed_v0.2'},f,indent=2)
+  json.dump({'version':'aiinfra-sft-seed-v0.3','total':len(rows),'train':sum(int(int(hashlib.sha256(r['id'].encode()).hexdigest(),16)%100<90) for r in rows),'validation':sum(int(90<=int(hashlib.sha256(r['id'].encode()).hexdigest(),16)%100<100) for r in rows),'held_out_evaluation':'../benchmark.jsonl','review_status':'needs_domain_expert_review','provenance':'authored_synthetic_seed_v0.3'},f,indent=2)
 print('total',len(rows))
 print('train/validation written')

@@ -29,12 +29,19 @@ Before a serious CPT/SFT run:
 
 ## Corpus design
 
-The seed corpus contains 5,000 records:
+The seed corpus contains 6,000 records:
 
 - 500 Knowledge/Concept explanations;
 - 500 Calculation records with exact formulas and unit-aware answers;
 - 3,000 System Design, Performance Analysis and Troubleshooting records;
-- 1,000 Code/Tool-use records with unit-test contracts.
+- 1,000 Code/Tool-use records with unit-test contracts;
+- 1,000 advanced cluster and distributed-inference records covering RDMA, RoCE, GDR, GDS, Mooncake, NVIDIA Dynamo, multi-node NCCL, scheduling and recovery.
+
+The advanced cluster records carry auditable metadata for `domain_subtopic`,
+`cluster_scope`, `parallelism_scope`, `network_scope`, `failure_mode`, and
+`technology`. They are intended to test cluster design, performance analysis,
+troubleshooting, and tool-use reasoning rather than to merge runtime metrics
+into model-domain capability labels.
 
 The split is deterministic by SHA-256 of record ID:
 
