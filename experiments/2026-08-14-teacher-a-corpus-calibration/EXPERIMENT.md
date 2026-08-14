@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 280 / 5399
+train processed: 290 / 5399
 validation processed: 0 / 601
-total processed: 280 / 6000
-progress: 4.67%
+total processed: 290 / 6000
+progress: 4.83%
 ```
 
 ## Batch 0001
@@ -575,6 +575,26 @@ Each output record includes:
 
 All scores are provisional teacher judgments. They are not human expert scores.
 
+## Batch 0029
+
+Input: train records 281-290 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00310` through `corpus-00315`, then `corpus-00317` through `corpus-00320`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier invocation was blocked by the execution gateway before running
+repair: not required; verifier was written to /tmp and rerun successfully
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated MoE contrasts, failure modes/trade-offs, and latency/throughput/memory interactions. Corrections made router top-k selection, capacity limits, dispatch/combine and all-to-all mechanisms, active-compute versus total-memory distinctions, expert-imbalance and topology boundaries, matched-baseline assumptions, phase-aware telemetry, quality/failure checks, and evidence requirements explicit.
+
 ## Verification
 
 The batch was checked with a fresh JSON parse and source-ID alignment check:
@@ -583,6 +603,8 @@ The batch was checked with a fresh JSON parse and source-ID alignment check:
 TEACHER_A_BATCH_VERIFY_PASS rows=10 id_alignment=pass all_decision=rewrite
 ```
 
+Accumulated verification after batch 0029: `PASS total=290 unique=290 train_alignment=PASS new_batch=10`; all ten new decisions were `rewrite`.
+
 ## Next batches
 
-Continue train-only calibration in immutable batch files (`train-batch-0007.jsonl`, etc.). Do not use validation or benchmark records as training targets. After the user switches models, write the second model's outputs under a separate `teacher-b-corpus-calibration/` directory and compare by source ID, decision, answer content, and disagreement type.
+Continue train-only calibration in immutable batch files (`train-batch-0030.jsonl`, etc.). Do not use validation or benchmark records as training targets. After the user switches models, write the second model's outputs under a separate `teacher-b-corpus-calibration/` directory and compare by source ID, decision, answer content, and disagreement type.
