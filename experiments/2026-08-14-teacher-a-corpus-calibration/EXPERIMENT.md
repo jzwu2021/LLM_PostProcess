@@ -1,8 +1,8 @@
-# Latest run: Batch 0131
+# Latest run: Batch 0132
 
-Input: train records 1301-1310 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01441` through `corpus-01449` plus `corpus-01451`, preserving corpus order and the corpus's nonconsecutive IDs).
+Input: train records 1311-1320 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01452` through `corpus-01454`, `corpus-01456` through `corpus-01458`, and `corpus-01460` through `corpus-01463`, preserving corpus order and the corpus's nonconsecutive IDs).
 
-Progress: train 1310/5399; validation 0/601; total 1310/6000; remaining 4690.
+Progress: train 1320/5399; validation 0/601; total 1320/6000; remaining 4680.
 
 Result:
 ```text
@@ -11,13 +11,13 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: PASS
-repair: not required
+initial schema check: FAILED once because the first generated JSONL used literal record-separator escapes; the artifact was not accepted
+repair: rewritten with actual JSONL separators
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made failure-domain classification, measured byte/GiB accounting, request-correlated KV/cache/allocator/workspace telemetry, explicit live-token/headroom hypothesis, randomized stratified one-factor replay, separate OOM and rejection denominators, correctness/latency/SLO gates, conservative admission and cleanup safeguards, evidence requirements, confounders, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made failure-domain classification, byte/GiB accounting, request-correlated KV/allocator/workspace/host telemetry, explicit live-token/headroom hypothesis and falsification criteria, randomized stratified one-factor replay, separate OOM and rejection denominators, correctness/latency/SLO gates, conservative admission and cleanup safeguards, evidence requirements, confounders, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 # Latest run: Batch 0130
 
