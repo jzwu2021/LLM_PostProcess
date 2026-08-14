@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 930 / 5399
+train processed: 940 / 5399
 validation processed: 0 / 601
-total processed: 930 / 6000
-progress: 15.50%
+total processed: 940 / 6000
+progress: 15.67%
 ```
+
+## Batch 0094
+
+Input: train records 931-940 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01023` through `corpus-01027` and `corpus-01029` through `corpus-01033`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first write encoded JSONL record separators as literal backslash-n text
+repair: PASS; repaired separators and rewrote no semantic fields
+final schema check: PASS
+```
+
+This batch independently recalibrated ten serving-capacity evaluation-plan variants. Corrections made fixed deployment and workload assumptions, an explicit falsifiable hypothesis, randomized paired A/B replay, prefill/decode separation, queue and tail metrics, warm-up and repetition policy, request-level timestamps, resource/cache/thermal telemetry, confounders, uncertainty, correctness checks, independent replay, and rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 ## Batch 0093
 
