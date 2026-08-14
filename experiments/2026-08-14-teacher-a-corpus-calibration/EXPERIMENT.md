@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 990 / 5399
+train processed: 1000 / 5399
 validation processed: 0 / 601
-total processed: 990 / 6000
-progress: 16.50%
+total processed: 1000 / 6000
+progress: 16.67%
 ```
+
+## Batch 0100
+
+Input: train records 991-1000 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01091` through `corpus-01100`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS; verifier repaired an initial whole-result comparison that ignored the existing batches' nonconsecutive source-ID ordering, then confirmed the processed-ID set exactly equals train records 1-1000 with no duplicates or omissions
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first aggregate verifier compared result-file concatenation directly with raw-file order; existing batch files are not numerically ordered by source ID
+repair: PASS; verifier changed alignment validation to corpus-position mapping and strict set/order checks within the new batch; no semantic output fields were rewritten
+final schema check: PASS
+```
+
+This batch independently recalibrated ten serving-capacity evaluation-plan variants. Corrections made deployment assumptions, falsifiable hypotheses and prespecified effect/uncertainty/stopping rules, randomized paired replay, warm-up and repetition policy, request-level queue/prefill/decode timestamps, explicit TTFT/TPOT/throughput/queue/tail-latency denominators, workload stratification, correctness/error accounting, GPU/CPU/cache/thermal telemetry, confounders, evidence requirements, uncertainty limits, and rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 ## Batch 0099
 
