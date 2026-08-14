@@ -4,7 +4,26 @@
 
 `IN_PROGRESS`. This directory stores provisional calibration produced by the current conversational model. It is not an expert-approved gold set and must not overwrite the source corpus.
 
-## Latest run: Batch 0118
+## Latest run: Batch 0119
+
+Input: train records 1181-1190 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01305` through `corpus-01314`, preserving corpus order).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made the competing mechanisms, measured-versus-estimated memory units, live-KV boundedness hypothesis, one-factor replay design, allocator/KV/request lifecycle traces, post-drain accounting, workload strata, correctness and failure denominators, confounders, evidence requirements, uncertainty limits, admission safeguards, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
+## Batch 0118
 
 Input: train records 1171-1180 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01294`, `corpus-01296` through `corpus-01304`, preserving corpus order and the corpus's nonconsecutive IDs).
 
@@ -70,10 +89,10 @@ This batch independently recalibrated ten serving-capacity evaluation plans. Cor
 ## Progress
 
 ```text
-train processed: 1180 / 5399
+train processed: 1190 / 5399
 validation processed: 0 / 601
-total processed: 1180 / 6000
-progress: 19.67%
+total processed: 1190 / 6000
+progress: 19.83%
 ```
 
 ## Batch 0115
