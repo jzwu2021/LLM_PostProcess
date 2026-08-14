@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 160 / 5399
+train processed: 170 / 5399
 validation processed: 0 / 601
-total processed: 160 / 6000
-progress: 2.67%
+total processed: 170 / 6000
+progress: 2.83%
 ```
 
 ## Batch 0001
@@ -316,6 +316,26 @@ manifest hash check: PASS
 ```
 
 This batch calibrated continuous-batching latency, throughput, and memory interactions; measurement plans; and assumptions for performance claims. Corrections made iteration-boundary slot replacement, workload and KV-capacity boundaries, matched-baseline assumptions, request-level latency/goodput metrics, failure accounting, correctness checks, and uncertainty requirements explicit.
+
+## Batch 0017
+
+Input: train records 161-170 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00181` through `corpus-00190`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier used an incorrect corpus path
+repair: PASS; verifier path was corrected and the batch was rechecked
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated training-versus-inference distinctions and misleading continuous-batching intuitions. Corrections separated teacher-forced forward/backward and optimizer semantics from inference prefill/decode scheduling, stated iteration-boundary admission as the mechanism, identified phase, packing, gradient, and memory boundaries, and required phase-specific measurements and evidence.
 
 ## Output schema
 
