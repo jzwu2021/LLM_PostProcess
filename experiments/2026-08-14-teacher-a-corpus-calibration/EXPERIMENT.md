@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 130 / 5399
+train processed: 140 / 5399
 validation processed: 0 / 601
-total processed: 130 / 6000
-progress: 2.17%
+total processed: 140 / 6000
+progress: 2.33%
 ```
 
 ## Batch 0001
@@ -257,6 +257,25 @@ final schema check: PASS
 ```
 
 This batch corrected misleading intuitions about decode and specified controlled experiments. Corrections made incremental K/V reuse, batching and queueing effects, cache compatibility/capacity boundaries, output-correctness checks, separate prefill/decode metrics, telemetry, uncertainty, and failure accounting explicit.
+
+## Batch 0014
+
+Input: train records 131-140 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00146`, `corpus-00148`, `corpus-00150` through `corpus-00155`, and `corpus-00157`-`corpus-00158`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch added concise runbook and definition/contrast calibrations for decode and continuous batching. Corrections made decode K/V reuse, dynamic admission/retirement, length-skew utilization, scheduler and KV-memory limits, queueing/tail-latency trade-offs, matched-baseline assumptions, per-request measurements, and failure accounting explicit.
 
 ## Output schema
 
