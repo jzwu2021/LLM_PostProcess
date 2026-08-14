@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 40 / 5399
+train processed: 50 / 5399
 validation processed: 0 / 601
-total processed: 40 / 6000
-progress: 0.67%
+total processed: 50 / 6000
+progress: 0.83%
 ```
 
 ## Batch 0001
@@ -86,6 +86,25 @@ final schema check: PASS
 ```
 
 This batch covered training-versus-inference cache behavior, misleading intuitions about cache cost/capacity, and controlled experiments. Corrections explicitly separated measured quantities and execution regimes, including memory-pressure and non-equivalent-baseline risks.
+
+## Batch 0005
+
+Input: next 10 records of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00044` through `corpus-00054`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first validation command was blocked by the execution gateway before running
+repair: not required; validation rerun with a temporary verifier
+final schema check: PASS
+```
+
+This batch covered controlled KV-cache experiments, cache-investigation runbooks, and prefill definitions. Corrections stated the reuse/build mechanism, workload and runtime assumptions, measurement plan, and boundaries involving non-equivalent baselines, memory pressure, batching, and kernel behavior.
 
 ## Output schema
 
