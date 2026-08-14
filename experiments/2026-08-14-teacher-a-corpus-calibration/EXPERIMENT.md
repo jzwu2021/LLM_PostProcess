@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 850 / 5399
+train processed: 860 / 5399
 validation processed: 0 / 601
-total processed: 850 / 6000
-progress: 14.17%
+total processed: 860 / 6000
+progress: 14.33%
 ```
+
+## Batch 0086
+
+Input: train records 851-860 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00935` through `corpus-00944`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch independently recalculated one-request K/V-cache logical payloads for INT8 and BF16/FP16 cases. Corrections made dense-retention, nominal-dtype, no-sharing/no-eviction assumptions explicit; distinguished logical payload from runtime allocation; and required deployment metadata plus matched memory, capacity/OOM or eviction, correctness, latency, throughput, and tail-latency measurements.
 
 ## Batch 0083
 
