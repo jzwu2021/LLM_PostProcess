@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 230 / 5399
+train processed: 240 / 5399
 validation processed: 0 / 601
-total processed: 230 / 6000
-progress: 3.83%
+total processed: 240 / 6000
+progress: 4.00%
 ```
 
 ## Batch 0001
@@ -458,6 +458,26 @@ manifest hash check: pending until final manifest regeneration
 This batch covered concise tensor-parallelism investigation runbooks. Corrections made partitioned-operation and collective mechanisms, per-rank fit limits, matched-baseline assumptions, topology and workload boundaries, phase-specific telemetry, failure accounting, correctness checks, and uncertainty/evidence requirements explicit.
 
 ## Output schema
+
+## Batch 0024
+
+Input: train records 231-240 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00258` through `corpus-00267`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; strict accumulated JSONL parse, required-field, enum, source-field, duplicate, and corpus-order checks passed
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated pipeline-parallelism contrasts, failure modes/trade-offs, and latency/throughput/memory interactions. Corrections stated stage partitioning, activation transfer and schedule mechanisms, microbatch bubbles, stage imbalance, per-stage memory limits, workload-dependent boundaries, matched baselines, phase-specific telemetry, correctness checks, and evidence requirements explicitly.
 
 Each output record includes:
 
