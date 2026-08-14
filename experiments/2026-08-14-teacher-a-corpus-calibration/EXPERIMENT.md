@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 290 / 5399
+train processed: 300 / 5399
 validation processed: 0 / 601
-total processed: 290 / 6000
-progress: 4.83%
+total processed: 300 / 6000
+progress: 5.00%
 ```
 
 ## Batch 0001
@@ -608,3 +608,23 @@ Accumulated verification after batch 0029: `PASS total=290 unique=290 train_alig
 ## Next batches
 
 Continue train-only calibration in immutable batch files (`train-batch-0030.jsonl`, etc.). Do not use validation or benchmark records as training targets. After the user switches models, write the second model's outputs under a separate `teacher-b-corpus-calibration/` directory and compare by source ID, decision, answer content, and disagreement type.
+
+## Batch 0030
+
+Input: train records 291-300 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00321`, `corpus-00323` through `corpus-00331`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; fresh accumulated JSONL parse, required-field, enum, duplicate, source-field, and corpus-order checks passed
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated MoE serving measurement plans, assumptions for performance claims, and training-versus-inference differences. Corrections made matched quality/workload baselines, phase-specific metrics, top-k routing and dispatch/combine mechanisms, capacity/overflow and topology boundaries, memory distinctions, uncertainty, failure accounting, and evidence requirements explicit.
