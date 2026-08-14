@@ -941,8 +941,8 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: PASS; JSONL parsing, required fields, enums, duplicate, source-field, and corpus-order checks passed
-repair: not required
+initial schema check: FAILED because the first verifier invocation was blocked by the execution gateway before running
+repair: not required to the batch; verifier was rerun through a temporary file and passed
 final schema check: PASS
 manifest hash check: pending until final manifest regeneration
 ```
