@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 190 / 5399
+train processed: 200 / 5399
 validation processed: 0 / 601
-total processed: 190 / 6000
-progress: 3.17%
+total processed: 200 / 6000
+progress: 3.33%
 ```
 
 ## Batch 0001
@@ -376,6 +376,26 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated tensor-parallelism definitions, matched contrasts, and failure modes/trade-offs. Corrections made sharding and collective mechanisms, per-rank memory and topology boundaries, workload assumptions, measurement plans, output checks, and evidence requirements explicit.
+
+## Batch 0020
+
+Input: train records 191-200 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00213`, `corpus-00214`, `corpus-00215`, `corpus-00216`, `corpus-00217`, `corpus-00219`, `corpus-00220`, `corpus-00221`, `corpus-00222`, and `corpus-00224`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS for the new batch; accumulated JSONL, duplicate, source-field, and enum checks passed
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch covered tensor-parallelism failure modes and trade-offs, latency/throughput/memory interactions, and measurement plans. Corrections made sharded-operation and collective mechanisms, per-rank memory and topology boundaries, matched workload requirements, phase-specific latency/throughput metrics, failure accounting, output checks, and uncertainty/evidence requirements explicit.
 
 ## Output schema
 
