@@ -1,8 +1,8 @@
-# Latest run: Batch 0136
+# Latest run: Batch 0137
 
-Input: train records 1351-1360 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01495` through `corpus-01504`, preserving corpus order and the corpus's nonconsecutive IDs).
+Input: train records 1361-1370 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01505` through `corpus-01514`, preserving corpus order and the corpus's nonconsecutive IDs).
 
-Progress: train 1360/5399; validation 0/601; total 1360/6000; remaining 4640.
+Progress: train 1370/5399; validation 0/601; total 1370/6000; remaining 4630.
 
 Result:
 ```text
@@ -11,13 +11,14 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: FAILED once because the validator's final decision-count comprehension unpacked three-tuples incorrectly; the JSONL artifact was not changed
-repair: corrected the validator expression and reran validation; no result-file repair was needed
+initial schema check: FAILED once because the first validator used the numeric suffix as a contiguous corpus index; the JSONL artifact was not changed
+repair: corrected validation to compare each batch row against its exact corpus-position row; no result-file repair was needed
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made failure-domain classification, byte/GiB accounting, a falsifiable live-KV/headroom hypothesis, competing fragmentation/workspace/collective/host/leak/cache causes, randomized one-factor replay by workload strata, request-correlated KV/allocator/cache/workspace telemetry, explicit OOM and rejection denominators, correctness/latency/SLO gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made failure-domain classification, byte/GiB accounting, a falsifiable live-KV/headroom hypothesis, competing fragmentation/workspace/collective/host/leak/cache causes, randomized one-factor replay by workload strata, request-correlated KV/allocator/cache/workspace/device-host telemetry, explicit OOM/rejection/timeout/cancellation denominators, correctness/latency/SLO gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 
 # Latest run: Batch 0135
 
