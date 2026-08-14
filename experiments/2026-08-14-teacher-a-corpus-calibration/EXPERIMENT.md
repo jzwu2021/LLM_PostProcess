@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 310 / 5399
+train processed: 320 / 5399
 validation processed: 0 / 601
-total processed: 310 / 6000
-progress: 5.17%
+total processed: 320 / 6000
+progress: 5.33%
 ```
 
 ## Batch 0001
@@ -648,3 +648,23 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated MoE training-versus-inference explanations, misleading intuitions, and a controlled experiment design. Corrections distinguished training gradients/optimizer state from inference prefill/decode and KV-cache behavior, stated dispatch/combine mechanisms, resident-memory versus active-compute boundaries, routing skew/capacity/topology risks, phase-aware measurements, quality matching, and evidence requirements.
+
+## Batch 0032
+
+Input: train records 311-320 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00342`, `corpus-00343`, `corpus-00344`, `corpus-00346`, `corpus-00347`, `corpus-00348`, `corpus-00350`, and `corpus-00351`-`corpus-00353`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; fresh accumulated JSONL parse, required-field, enum, duplicate, source-field, and corpus-order checks passed
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated small controlled MoE experiments, investigation runbooks, and quantization definitions. Corrections specified matched workloads and quality targets, router dispatch/expert execution/combine mechanisms, phase-specific telemetry, memory accounting, kernel and calibration assumptions, capacity/overflow boundaries, failure modes, and evidence requirements.
