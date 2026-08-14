@@ -1,0 +1,13 @@
+# Environment snapshot: 2026-08-14 domain evaluator
+
+Host: icx-inspur-gpu
+OS/kernel: Linux 5.15.0-125-generic x86_64
+Python: 3.12.9
+Python environment: /media/home/johnson/llm/qwen35-env
+Repository HEAD before this evaluation: 76bb2f6f49577a90eb6a3ecdb9cc4b972d871c45
+Branch: main
+Benchmark SHA-256: 30eb88766f916dd487dc2921b9479e238c1074a96d20611f099068af917cc869
+Input generations SHA-256: 508735d8453ef17f30840948e7c3dbe952d1b9754ef4954290c70c735bd69d42
+Evaluator SHA-256: 4ac3e5827c06c79ef8368da21edcd98f6d1b868cb2974305a60f4a2a67c4e566
+
+This phase evaluates already-recorded raw generations and does not load a model or allocate GPUs. No credentials, tokens, passwords, keys, or connection information are recorded.
