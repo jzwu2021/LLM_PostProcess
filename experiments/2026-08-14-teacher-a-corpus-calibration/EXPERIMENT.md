@@ -1,8 +1,8 @@
-# Latest run: Batch 0182
+# Latest run: Batch 0183
 
-Input: train records 1811-1820 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01995`, `corpus-01997`, `corpus-01998`, `corpus-01999`, `corpus-02000`, `corpus-02001`, `corpus-02002`, `corpus-02003`, `corpus-02004`, and `corpus-02005`, preserving corpus order and source-ID gaps).
+Input: train records 1821-1830 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-02006`, `corpus-02007`, `corpus-02009`, `corpus-02010`, `corpus-02011`, `corpus-02013`, `corpus-02014`, `corpus-02015`, `corpus-02016`, and `corpus-02017`, preserving corpus order and source-ID gaps).
 
-Progress: train 1820/5399; validation 0/601; total 1820/6000; remaining 4180.
+Progress: train 1830/5399; validation 0/601; total 1830/6000; remaining 4170.
 
 Result:
 ```text
@@ -17,7 +17,7 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/dec
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made the weight-only treatment boundary, scenario-specific falsifiable hypotheses, cost-per-successful-token estimand, randomized paired trials, disjoint calibration/held-out evaluation, quality/safety/correctness gates, confidence intervals, units, tail latency, resource/failure/cleanup/fallback measurements, confounders, complete cost accounting, authorization, bounded canary rollback, and evidence requirements explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made treatment isolation, a scenario-specific falsifiable cost-per-successful-token hypothesis, randomized paired trials, disjoint calibration/held-out evaluation, quality/safety/correctness gates, confidence intervals, units, tail latency, resource/failure/cleanup/fallback measurements, confounders, complete cost accounting, authorization, bounded canary controls, rollback safeguards, and evidence requirements explicit. Results remain provisional and require domain-expert review.
 
 # Latest run: Batch 0181
 
