@@ -4,7 +4,26 @@
 
 `IN_PROGRESS`. This directory stores provisional calibration produced by the current conversational model. It is not an expert-approved gold set and must not overwrite the source corpus.
 
-## Latest run: Batch 0117
+## Latest run: Batch 0118
+
+Input: train records 1171-1180 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01294`, `corpus-01296` through `corpus-01304`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated six serving-capacity evaluation plans and four long-context OOM diagnosis plans. Corrections made assumptions, mechanisms, boundaries, falsifiable thresholds or bounded-memory hypotheses, controlled replay/one-factor experiments, warm-up and repetition policy, request/allocator/KV traces, explicit metric definitions, correctness and failure accounting, resource and thermal telemetry, confounders, evidence requirements, uncertainty limits, protective admission controls, and staged canary rollback criteria explicit. The initial validator passed; no repair was required. Results remain provisional and require domain-expert review.
+
+## Batch 0117
 
 Input: train records 1161-1170 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01283` through `corpus-01293`, preserving corpus order and the corpus's nonconsecutive IDs).
 
@@ -51,10 +70,10 @@ This batch independently recalibrated ten serving-capacity evaluation plans. Cor
 ## Progress
 
 ```text
-train processed: 1170 / 5399
+train processed: 1180 / 5399
 validation processed: 0 / 601
-total processed: 1170 / 6000
-progress: 19.50%
+total processed: 1180 / 6000
+progress: 19.67%
 ```
 
 ## Batch 0115
