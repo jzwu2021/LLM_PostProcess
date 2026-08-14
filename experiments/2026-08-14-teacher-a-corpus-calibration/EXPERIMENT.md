@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 450 / 5399
+train processed: 460 / 5399
 validation processed: 0 / 601
-total processed: 450 / 6000
-progress: 7.50%
+total processed: 460 / 6000
+progress: 7.67%
 ```
 
 ## Batch 0001
@@ -928,3 +928,23 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated speculative-decoding misleading intuitions, controlled experiments, and investigation runbooks. Corrections made draft proposal and target verification, committed-token accounting, matched baselines, correctness gates, workload and memory boundaries, phase-specific and tail metrics, and evidence requirements explicit.
+
+## Batch 0046
+
+Input: train records 451-460 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00500`-`corpus-00508` and `corpus-00510`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, required fields, enums, duplicate, source-field, and corpus-order checks passed
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated speculative-decoding runbook requirements and KV-cache memory calculations. Corrections independently stated draft/target verification and commit behavior, exact calculation formulas and binary GiB units, payload-versus-runtime boundaries, matched measurement plans, allocation overhead, cache layout assumptions, memory pressure, and evidence requirements.
