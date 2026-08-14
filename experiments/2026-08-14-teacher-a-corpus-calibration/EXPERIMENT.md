@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 170 / 5399
+train processed: 180 / 5399
 validation processed: 0 / 601
-total processed: 170 / 6000
-progress: 2.83%
+total processed: 180 / 6000
+progress: 3.00%
 ```
 
 ## Batch 0001
@@ -336,6 +336,26 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated training-versus-inference distinctions and misleading continuous-batching intuitions. Corrections separated teacher-forced forward/backward and optimizer semantics from inference prefill/decode scheduling, stated iteration-boundary admission as the mechanism, identified phase, packing, gradient, and memory boundaries, and required phase-specific measurements and evidence.
+
+## Batch 0018
+
+Input: train records 171-180 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00191` through `corpus-00195`, `corpus-00197`, `corpus-00199` through `corpus-00202`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier invocation was blocked by the execution gateway before running
+repair: not required; verifier was written to a temporary script and rerun successfully
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated controlled experiments and runbooks for continuous batching, plus tensor-parallelism definitions. Corrections made the scheduler mechanism, matched-baseline design, phase-specific metrics, topology and capacity boundaries, correctness checks, failure accounting, and evidence requirements explicit.
 
 ## Output schema
 
