@@ -1,8 +1,8 @@
-# Latest run: Batch 0147
+# Latest run: Batch 0148
 
-Input: train records 1461-1470 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01615` through `corpus-01624`, preserving corpus order).
+Input: train records 1471-1480 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01626` through `corpus-01635`, preserving corpus order).
 
-Progress: train 1470/5399; validation 0/601; total 1470/6000; remaining 4530.
+Progress: train 1480/5399; validation 0/601; total 1480/6000; remaining 4520.
 
 Result:
 ```text
@@ -17,7 +17,8 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/dec
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten multi-GPU collective-initialization diagnosis plans. Corrections made assumptions, rank-correlated evidence, rendezvous/interface/topology/GPU-visibility checks, a falsifiable rank-specific rendezvous or transport hypothesis with falsification criteria, randomized blocked single-node/reduced-world/full-world experiments, competing membership/network/version/resource causes, separate success/timeout/hang/rank-failure/transport/cleanup denominators, correctness and latency gates, bounded watchdog and cleanup safeguards, evidence requirements, uncertainty limits, and staged rollback criteria explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten multi-GPU collective-initialization diagnosis plans. Corrections made assumptions, per-rank membership and rendezvous evidence, interface/path/topology/GPU checks, a falsifiable rank-specific membership or transport hypothesis with explicit falsification criteria, repeated randomized blocked single-node/reduced-world/full-world experiments, competing network/topology/software/resource causes, separate success/timeout/hang/rank-failure/transport/checksum/cleanup denominators, correctness and latency gates, bounded watchdog and cleanup safeguards, evidence requirements, uncertainty limits, and staged rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 
 
 # Latest run: Batch 0144
