@@ -1,3 +1,24 @@
+# Latest run: Batch 0181
+
+Input: train records 1801-1810 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01984`, `corpus-01985`, `corpus-01986`, `corpus-01987`, `corpus-01988`, `corpus-01990`, `corpus-01991`, `corpus-01992`, `corpus-01993`, and `corpus-01994`, preserving corpus order and source-ID gaps).
+
+Progress: train 1810/5399; validation 0/601; total 1810/6000; remaining 4190.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (first aggregate validation enumerated result files lexically, producing a false prefix-order mismatch)
+repair: validator corrected to numeric batch ordering; output batch unchanged
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and exact train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made treatment isolation, a falsifiable cost-per-successful-token hypothesis, matched randomized trials, held-out quality/safety/correctness gates, confidence intervals, memory/latency/throughput/concurrency/error/OOM/cleanup measurements, kernel/fallback checks, confounders, complete cost accounting, authorization, bounded canary rollback, and evidence requirements explicit. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0180
 
 Input: train records 1791-1800 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01972`, `corpus-01973`, `corpus-01974`, `corpus-01975`, `corpus-01976`, `corpus-01977`, `corpus-01978`, `corpus-01979`, `corpus-01981`, and `corpus-01983`, preserving corpus order and source-ID gaps).
