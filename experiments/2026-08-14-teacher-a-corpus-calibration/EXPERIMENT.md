@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 830 / 5399
+train processed: 840 / 5399
 validation processed: 0 / 601
-total processed: 830 / 6000
-progress: 13.83%
+total processed: 840 / 6000
+progress: 14.00%
 ```
 
 ## Batch 0083
@@ -1660,3 +1660,22 @@ final schema check: PASS
 ```
 
 This batch independently recalculated each K/V logical payload and binary-GiB result. Corrections stated one-request, dense-retention, nominal dtype, and logical-payload assumptions, while recording implementation/layout/paging/quantization/sharing/eviction/batching/allocator/OOM risks and required memory, correctness, latency, throughput, and tail-latency evidence. Strict accumulated verification confirmed 800 unique ordered source IDs and exact source-field alignment. No failure or repair was required.
+
+## Batch 0084
+
+Input: train records 831-840 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs ['corpus-00914', 'corpus-00915', 'corpus-00916', 'corpus-00917', 'corpus-00918', 'corpus-00919', 'corpus-00920', 'corpus-00921', 'corpus-00922', 'corpus-00923'], preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch independently recalculated logical K/V-cache payloads for the stated BF16/FP16 or INT8 widths, while making one-request dense-retention assumptions, runtime-allocation boundaries, cache-policy risks, and matched memory/OOM/correctness/latency/throughput/tail-latency measurements explicit.
