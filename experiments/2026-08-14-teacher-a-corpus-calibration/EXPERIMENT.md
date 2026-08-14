@@ -1,5 +1,24 @@
 # Teacher-A corpus calibration
 
+## Latest run: Batch 0125
+
+Input: train records 1241-1250 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01373` through `corpus-01382`, preserving corpus order).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made allocator attribution, measured-versus-estimated units, a falsifiable live-KV/headroom hypothesis, competing prefill/activation/communication/host/leak causes, randomized one-factor replay by workload strata, request/KV/allocator/cache telemetry, explicit OOM and rejection denominators, correctness and latency gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 ## Latest run: Batch 0124
 
 Input: train records 1231-1240 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01362` through `corpus-01364`, `corpus-01366` through `corpus-01372`, preserving corpus order and the corpus's nonconsecutive IDs).
@@ -165,10 +184,10 @@ This batch independently recalibrated ten long-context OOM diagnosis and mitigat
 ## Progress
 
 ```text
-train processed: 1240 / 5399
+train processed: 1250 / 5399
 validation processed: 0 / 601
-total processed: 1240 / 6000
-progress: 20.67%
+total processed: 1250 / 6000
+progress: 20.83%
 ```
 
 ## Batch 0115
