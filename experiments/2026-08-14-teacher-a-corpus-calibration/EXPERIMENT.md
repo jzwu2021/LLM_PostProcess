@@ -13,11 +13,29 @@
 ## Progress
 
 ```text
-train processed: 1070 / 5399
+train processed: 1080 / 5399
 validation processed: 0 / 601
-total processed: 1070 / 6000
-progress: 17.83%
+total processed: 1080 / 6000
+progress: 18.00%
 ```
+
+## Batch 0108
+
+Input: train records 1071-1080 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01180` through `corpus-01182`, plus `corpus-01184` through `corpus-01190`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first generated batch used a sequential source-ID assumption and emitted corpus-01183 instead of the raw corpus-position record corpus-01190
+repair: PASS; corrected the source record and variant text to corpus-01190, reordered the batch by raw corpus position, and rewrote no unrelated records
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence, unique-ID set, exact source-field matching, aggregate alignment, and new-batch corpus-position alignment passed
+```
+
+This batch independently recalibrated ten serving-capacity evaluation-plan variants. Corrections made assumptions and units, variant-specific falsifiable goodput/latency hypotheses, randomized paired replay, warm-up and repetition policy, request-level queue/prefill/decode timestamps, explicit TTFT/TPOT/throughput/queue/P99 definitions and denominators, workload stratification, correctness and failure accounting, GPU/KV/CPU/power/thermal telemetry, confounders, evidence requirements, uncertainty limits, and rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 ## Batch 0107
 
