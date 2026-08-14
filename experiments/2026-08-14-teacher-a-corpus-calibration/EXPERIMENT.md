@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS
 repair: not required
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
-manifest verification: pending until commit preparation
+manifest verification: PASS; first regeneration attempt used experiment-prefixed paths and failed `sha256sum -c`; repaired by regenerating from the experiment directory, then all 217 hashes verified
 ```
 
 This provisional batch independently recalibrated ten tensor-versus-pipeline parallelism decisions. Corrections made assumptions, a variant-specific falsifiable p99 hypothesis, randomized paired trials, disjoint tuning and held-out evaluation, layer partition and microbatch behavior, communication/synchronization/pipeline-bubble measurements, queueing and tail-latency units, quality/reliability gates, authorized isolated failure testing, recovery, confounder controls, and reversible rollback criteria explicit. Results require domain-expert review.
