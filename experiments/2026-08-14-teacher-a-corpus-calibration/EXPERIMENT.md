@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 90 / 5399
+train processed: 100 / 5399
 validation processed: 0 / 601
-total processed: 90 / 6000
-progress: 1.50%
+total processed: 100 / 6000
+progress: 1.67%
 ```
 
 ## Batch 0001
@@ -181,6 +181,25 @@ final schema check: PASS
 ```
 
 This batch covered controlled prefill experiments, prefill investigation runbooks, and the definition and serving impact of decode. Corrections stated K/V construction and reuse, exact-compatible-prefix and cache-capacity boundaries, runtime and workload assumptions, and separate prefill/decode measurements. No failures required repair.
+
+## Batch 0010
+
+Input: train records 91-100 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00103`, `corpus-00105` through `corpus-00113`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier command had a Python quoting error before checking the batch
+repair: not required; verifier command was corrected and rerun against all accumulated results
+final schema check: PASS
+```
+
+This batch covered decode definitions, contrast with a no-cache full-prefix implementation, and decode failure modes/trade-offs. Corrections stated incremental K/V reuse, exact-prefix and cache-capacity boundaries, memory and scheduling risks, and separate prefill/decode measurement plans.
 
 ## Output schema
 
