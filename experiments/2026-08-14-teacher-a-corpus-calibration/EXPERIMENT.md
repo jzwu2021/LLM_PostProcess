@@ -3333,3 +3333,23 @@ final schema check: PASS
 ```
 
 This batch independently recalculated the logical K/V-cache payload and binary-GiB result for each INT8 or BF16/FP16 case. Corrections stated one-request dense-retention and nominal-dtype assumptions, distinguished logical payload from runtime allocation, and required deployment metadata plus matched memory/OOM, correctness, latency, throughput, and tail-latency evidence. The strict accumulated verifier confirmed 850 unique ordered source IDs and exact source-field alignment. No failure or repair was required.
+ # Latest run: Batch 0178
+
+Input: train records 1771-1780 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01951` through `corpus-01960`, preserving corpus order).
+
+Progress: train 1780/5399; validation 0/601; total 1780/6000; remaining 4220.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and exact train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made the isolation boundary, falsifiable cost-per-successful-token hypothesis, held-out quality/safety/correctness gates, randomized paired trials, confidence intervals, memory/latency/throughput/concurrency/error/OOM/cleanup measurements, kernel/fallback checks, confounders, redaction, authorization, bounded canary rollback, and evidence requirements explicit. Results remain provisional and require domain-expert review.
