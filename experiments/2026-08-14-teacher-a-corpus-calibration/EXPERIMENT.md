@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 1140 / 5399
+train processed: 1150 / 5399
 validation processed: 0 / 601
-total processed: 1140 / 6000
-progress: 19.00%
+total processed: 1150 / 6000
+progress: 19.17%
 ```
+
+## Batch 0115
+
+Input: train records 1141-1150 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01259`, `corpus-01262` through `corpus-01267`, `corpus-01269` through `corpus-01271`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED once because the first generation wrote literal JSONL separator text; JSON parsing failed and no aggregate verification was claimed
+repair: PASS; regenerated the batch with real line separators and JSON-escaped answer newlines; no source or unrelated result was changed
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten serving-capacity evaluation plans. Corrections made assumptions, workload strata, randomized paired replay, warm-up and repetition policy, request lifecycle timestamps, explicit TTFT/TPOT/throughput/queue/P99 definitions and denominators, prefill/decode separation, correctness and failure accounting, GPU/KV/CPU/network/power/thermal telemetry, confounders, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 ## Batch 0114
 
