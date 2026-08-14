@@ -1,8 +1,8 @@
-# Latest run: Batch 0187
+# Latest run: Batch 0188
 
-Input: train records 1861-1870 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-02052`, `corpus-02054`, `corpus-02055`, `corpus-02056`, `corpus-02057`, `corpus-02058`, `corpus-02059`, `corpus-02061`, `corpus-02062`, and `corpus-02063`, preserving corpus order and source-ID gaps).
+Input: train records 1871-1880 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-02064` through `corpus-02075`, preserving corpus order and source-ID gaps).
 
-Progress: train 1870/5399; validation 0/601; total 1870/6000; remaining 4130.
+Progress: train 1880/5399; validation 0/601; total 1880/6000; remaining 4120.
 
 Result:
 ```text
@@ -11,13 +11,14 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: FAIL (first validator invocation had a syntax error in its reporting expression; no artifact was accepted as valid)
-repair: corrected validator syntax and reran the full aggregate validation; output batch unchanged
+initial schema check: PASS
+repair: not required
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and exact train-prefix alignment passed
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made the isolation boundary, falsifiable cost-per-successful-token hypothesis, randomized interleaved paired trials, disjoint calibration and held-out evaluation, quality/safety/correctness gates, confidence intervals, units, tail latency, resource/failure/cleanup/fallback measurements, confounders, complete cost accounting, authorization, bounded canary controls, rollback safeguards, redaction, and evidence requirements explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made the treatment isolation boundary, variant-specific falsifiable cost-per-successful-token hypothesis, randomized interleaved paired trials, disjoint calibration and held-out evaluation, quality/safety/correctness gates, confidence intervals, units, tail latency, resource/failure/cleanup/fallback measurements, confounders, complete cost accounting, authorization, bounded canary controls, rollback safeguards, redaction, and evidence requirements explicit. Results remain provisional and require domain-expert review.
+
 
 # Latest run: Batch 0186
 
