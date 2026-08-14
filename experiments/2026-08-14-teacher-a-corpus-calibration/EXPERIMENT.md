@@ -1,8 +1,8 @@
-# Latest run: Batch 0149
+# Latest run: Batch 0150
 
-Input: train records 1481-1490 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01636` through `corpus-01646`, preserving corpus order).
+Input: train records 1491-1500 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01647`, `corpus-01648`, `corpus-01649`, `corpus-01650`, `corpus-01651`, `corpus-01653`, `corpus-01654`, `corpus-01655`, `corpus-01656`, and `corpus-01657`, preserving corpus order and corpus gaps).
 
-Progress: train 1490/5399; validation 0/601; total 1490/6000; remaining 4510.
+Progress: train 1500/5399; validation 0/601; total 1500/6000; remaining 4500.
 
 Result:
 ```text
@@ -12,12 +12,12 @@ keep: 0
 rewrite: 10
 reject: 0
 initial schema check: PASS
-repair: validation command was corrected after an initial aggregate-count assertion expected 1480 rather than the post-batch 1490 rows; the JSONL artifact was unchanged
-final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and corpus-position-sorted aggregate alignment passed
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and exact corpus-position alignment passed
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten multi-GPU collective-initialization diagnosis plans. Corrections made assumptions, per-rank membership and rendezvous evidence, interface/path/topology/GPU checks, a falsifiable rank-specific membership or transport hypothesis with explicit falsification criteria, randomized blocked single-node/reduced-world/full-world experiments, competing network/topology/software/resource causes, separate success/timeout/hang/rank-failure/transport/checksum/cleanup denominators, correctness and latency gates, bounded watchdog and cleanup safeguards, evidence requirements, uncertainty limits, and rollback criteria explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten multi-GPU collective-initialization diagnosis plans. Corrections made assumptions, per-rank membership and rendezvous evidence, interface/path/topology/GPU checks, a falsifiable rank-specific membership or transport hypothesis with explicit falsification criteria, randomized matched single-node/reduced-world/full-world experiments, competing collective-order/network/topology/software/resource/container causes, separate success/timeout/hang/rank-failure/transport/checksum/cleanup denominators, correctness and latency gates, bounded watchdog and cleanup safeguards, evidence requirements, uncertainty limits, and rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 # Latest run: Batch 0148
 
