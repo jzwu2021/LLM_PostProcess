@@ -1,3 +1,24 @@
+# Latest run: Batch 0139
+
+Input: train records 1381-1390 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01525` through `corpus-01536` with corpus gaps preserved; exact source-field alignment verified).
+
+Progress: train 1390/5399; validation 0/601; total 1390/6000; remaining 4610.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: validator initially compared aggregate IDs in filesystem glob order rather than corpus order; result JSONL was unchanged
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made device/host failure classification, measured-versus-estimated units, a falsifiable live-KV/headroom hypothesis and falsification criteria, competing fragmentation/workspace/collective/host/cache/accounting causes, randomized matched replay by workload strata, request-correlated KV/allocator/cache/workspace/device-host telemetry, separate OOM/rejection/timeout/cancellation denominators, correctness/latency/SLO gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0138
 
 Input: train records 1371-1380 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01515` through `corpus-01524`, preserving corpus order).
