@@ -1,3 +1,24 @@
+# Latest run: Batch 0208
+
+Input: train records 2071-2080 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02281 through corpus-02291, preserving corpus order and source-ID gaps).
+
+Progress: train 2080/5399; validation 0/601; total 2080/6000; remaining 3920.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten tensor-versus-pipeline parallelism decisions with explicit assumptions, falsifiable latency hypothesis, controlled paired trials, held-out evaluation, resource and synchronization measurements, tail-latency units, quality/reliability gates, failure/recovery handling, confounder controls, authorized isolation, and reversible rollback. Results require domain-expert review.
+
 # Latest run: Batch 0207
 
 Input: train records 2061-2070 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-02271` through `corpus-02280`, preserving corpus order).
