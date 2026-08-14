@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 210 / 5399
+train processed: 220 / 5399
 validation processed: 0 / 601
-total processed: 210 / 6000
-progress: 3.50%
+total processed: 220 / 6000
+progress: 3.67%
 ```
 
 ## Batch 0001
@@ -416,6 +416,26 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch covered measurement plans, assumptions for tensor-parallelism performance claims, and training-versus-inference differences. Corrections made partition and collective mechanisms, matched workload and baseline assumptions, phase-specific memory/latency/throughput metrics, topology boundaries, failure accounting, output checks, and uncertainty/evidence requirements explicit.
+
+## Batch 0022
+
+Input: train records 211-220 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00236` through `corpus-00245`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS for the new batch; focused temporary verifier passed strict accumulated alignment and schema checks
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch covered misleading intuitions about tensor parallelism and small controlled experiments. Corrections made sharded-operation and collective mechanisms, matched-baseline and workload controls, per-rank memory and topology boundaries, phase-specific latency/throughput metrics, failure accounting, correctness checks, and uncertainty/evidence requirements explicit.
 
 ## Output schema
 
