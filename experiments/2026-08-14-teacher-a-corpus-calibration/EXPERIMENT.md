@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 330 / 5399
+train processed: 340 / 5399
 validation processed: 0 / 601
-total processed: 330 / 6000
-progress: 5.50%
+total processed: 340 / 6000
+progress: 5.67%
 ```
 
 ## Batch 0001
@@ -688,3 +688,23 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated quantization definitions, contrasts with an unquantized path, failure modes/trade-offs, and latency/throughput/memory interactions. Corrections made scale/dequantization or fused-kernel mechanisms, calibration and outlier assumptions, kernel/fallback and tensor-coverage boundaries, quality risks, phase-specific measurements, memory accounting, and evidence requirements explicit.
+
+## Batch 0034
+
+Input: train records 331-340 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00367` through `corpus-00376`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; fresh JSONL parse, required-field, enum, duplicate, source-field, and corpus-order checks passed
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated quantization latency/throughput/memory explanations, serving-workload measurement plans, and performance-claim assumptions. Corrections made low-bit GEMM and fused-scale mechanisms, tensor-coverage and kernel boundaries, matched workload design, phase-specific tail metrics, memory-component accounting, quality/reliability thresholds, uncertainty, and evidence requirements explicit.
