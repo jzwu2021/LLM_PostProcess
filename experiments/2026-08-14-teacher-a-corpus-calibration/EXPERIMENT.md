@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 400 / 5399
+train processed: 410 / 5399
 validation processed: 0 / 601
-total processed: 400 / 6000
-progress: 6.67%
+total processed: 410 / 6000
+progress: 6.83%
 ```
 
 ## Batch 0001
@@ -828,3 +828,23 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated misleading NCCL intuitions, controlled experiments, and an investigation runbook. Corrections made collective and synchronization mechanisms, topology/rank and contract boundaries, matched-baseline measurement, serving workload limits, memory/reliability risks, correctness gates, and evidence requirements explicit.
+
+## Batch 0041
+
+Input: train records 401-410 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00447`-`corpus-00454`, `corpus-00456`, and `corpus-00457`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because an initial draft selected the already-processed first ten corpus records and was removed before submission
+repair: PASS; regenerated the batch from train records 401-410 and reran strict JSONL, required-field, enum, duplicate, source-field, and corpus-order checks
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated NCCL investigation runbooks and speculative-decoding definitions and contrasts. Corrections made rank participation, collective contracts, topology/transport, timeout and straggler boundaries, draft/target verification, acceptance-rate and overhead trade-offs, output-correctness gates, phase-specific measurements, and matched-baseline evidence explicit.
