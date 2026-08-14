@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 670 / 5399
+train processed: 680 / 5399
 validation processed: 0 / 601
-total processed: 670 / 6000
-progress: 11.17%
+total processed: 680 / 6000
+progress: 11.33%
 ```
 
 ## Batch 0001
@@ -1356,3 +1356,22 @@ final schema check: PASS
 ```
 
 This batch independently recalculated each K/V logical payload and binary-GiB result. Corrections stated single-request, dense-retention, nominal dtype, and logical-payload assumptions, while recording implementation/layout/paging/quantization/sharing/eviction/batching/allocator/OOM risks and required memory, correctness, latency, throughput, and tail-latency evidence. Strict accumulated verification confirmed 670 unique ordered source IDs and exact source-field alignment.
+
+## Batch 0068
+
+Input: train records 671-680 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00742`, `corpus-00743`, `corpus-00745` through `corpus-00752`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first accumulated verifier invocation was blocked by the execution gateway
+repair: not required; verifier was written to a temporary script, corrected for batch-file ordering, and rerun successfully
+final schema check: PASS
+```
+
+This batch independently recalculated each K/V logical payload and binary-GiB result. Corrections stated one-request, dense-retention, nominal dtype, and logical-payload assumptions, while recording implementation/layout/paging/quantization/sharing/eviction/batching/allocator/OOM risks and required memory, correctness, latency, throughput, and tail-latency evidence. Strict accumulated verification confirmed 680 unique ordered source IDs and exact source-field alignment.
