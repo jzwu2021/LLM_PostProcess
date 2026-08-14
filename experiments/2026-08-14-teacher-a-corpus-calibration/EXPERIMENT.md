@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 950 / 5399
+train processed: 960 / 5399
 validation processed: 0 / 601
-total processed: 950 / 6000
-progress: 15.83%
+total processed: 960 / 6000
+progress: 16.00%
 ```
+
+## Batch 0096
+
+Input: train records 951-960 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01048` through `corpus-01057`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch independently recalibrated ten serving-capacity evaluation-plan variants. Corrections made fixed deployment and workload assumptions, explicit falsifiable hypotheses and effect criteria, randomized paired controlled replays, warm-up and repetition policy, request-level queue/prefill/decode timestamps, TTFT/TPOT/throughput/queue/tail metrics, workload stratification, correctness/error denominators, GPU/CPU/cache/resource telemetry, confounders, uncertainty, and rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 ## Batch 0095
 
