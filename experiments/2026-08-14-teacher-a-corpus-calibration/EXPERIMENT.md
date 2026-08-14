@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 610 / 5399
+train processed: 620 / 5399
 validation processed: 0 / 601
-total processed: 610 / 6000
-progress: 10.17%
+total processed: 620 / 6000
+progress: 10.33%
 ```
 
 ## Batch 0001
@@ -1241,3 +1241,23 @@ final schema check: PASS
 ```
 
 This batch independently recalculated the K/V payload and binary-GiB result for each INT8 or BF16/FP16 case, and made single-request, dense-retention, nominal dtype, logical-payload, and implementation-overhead assumptions explicit. Corrections recorded quantization metadata, layout, padding, paging, sharing, eviction, batching, allocator, OOM, correctness, latency, throughput, and tail-latency risks plus required deployment evidence. Strict accumulated verification confirmed 610 unique ordered source IDs, exact source-field alignment, required schema fields, valid enums, and non-empty corrected answers. No failure or repair was required.
+
+## Batch 0062
+
+Input: train records 611-620 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00678`, `corpus-00680`, `corpus-00681`, `corpus-00682`, `corpus-00683`, `corpus-00684`, `corpus-00685`, `corpus-00686`, `corpus-00687`, and `corpus-00688`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first generation verifier script had a regex group-order bug before writing the batch
+repair: PASS; corrected the generator, regenerated the batch, and reran strict accumulated verification
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch independently recalculated each K/V logical payload and binary-GiB result. Corrections stated single-request, dense-retention, nominal dtype, and logical-payload assumptions, while recording implementation/layout/paging/quantization/sharing/eviction/batching/allocator/OOM risks and required memory, correctness, latency, throughput, and tail-latency evidence. Accumulated verification confirmed 620 unique ordered source IDs and exact source-field alignment.
