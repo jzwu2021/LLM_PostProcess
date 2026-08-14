@@ -1,0 +1,33 @@
+{
+  "status": "AUDIT_SCAFFOLD_ONLY",
+  "records": 500,
+  "calibration_cases": 20,
+  "numeric_metadata_drafts": 50,
+  "code_fixture_plans": 50,
+  "categories": {
+    "Knowledge": 50,
+    "Concept Understanding": 50,
+    "Calculation": 50,
+    "System Design": 50,
+    "Performance Analysis": 50,
+    "Troubleshooting": 50,
+    "Architecture Comparison": 50,
+    "Reasoning": 50,
+    "Long-form Technical Analysis": 50,
+    "Code": 50
+  },
+  "difficulty": {
+    "easy": 40,
+    "medium": 220,
+    "hard": 240
+  },
+  "verifiers": {
+    "rubric_1_4": 305,
+    "contains_key_points": 95,
+    "numeric_tolerance": 50,
+    "unit_test": 45,
+    "unit_test_plus_rubric": 5
+  },
+  "all_records_require_expert_review": true,
+  "authoritative_score_available": false
+}

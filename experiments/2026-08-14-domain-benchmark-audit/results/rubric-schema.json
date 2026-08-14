@@ -1,0 +1,38 @@
+{
+  "rubric_version": "domain-rubric-draft-v0.1",
+  "status": "draft_pending_domain_expert_calibration",
+  "score_scale": {
+    "1": "incorrect_or_unsafe",
+    "2": "partially_correct",
+    "3": "substantially_correct",
+    "4": "expert_level_for_scope"
+  },
+  "dimensions": [
+    {
+      "name": "technical_correctness",
+      "score_required": true
+    },
+    {
+      "name": "required_component_coverage",
+      "score_required": true
+    },
+    {
+      "name": "tradeoff_constraint_reasoning",
+      "score_required": true
+    },
+    {
+      "name": "validation_measurement_plan",
+      "score_required": true
+    },
+    {
+      "name": "operational_safety_hallucination",
+      "score_required": true
+    }
+  ],
+  "review_protocol": {
+    "calibration_cases": 20,
+    "independent_reviewers": 2,
+    "adjudication": "required_when_dimension_disagreement_exceeds_one_point",
+    "agreement_metric": "weighted_quadratic_kappa_after_calibration"
+  }
+}
