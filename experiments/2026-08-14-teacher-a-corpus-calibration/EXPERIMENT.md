@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 140 / 5399
+train processed: 150 / 5399
 validation processed: 0 / 601
-total processed: 140 / 6000
-progress: 2.33%
+total processed: 150 / 6000
+progress: 2.50%
 ```
 
 ## Batch 0001
@@ -276,6 +276,26 @@ final schema check: PASS
 ```
 
 This batch added concise runbook and definition/contrast calibrations for decode and continuous batching. Corrections made decode K/V reuse, dynamic admission/retirement, length-skew utilization, scheduler and KV-memory limits, queueing/tail-latency trade-offs, matched-baseline assumptions, per-request measurements, and failure accounting explicit.
+
+## Batch 0015
+
+Input: train records 141-150 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00159` through `corpus-00168`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier command had a Python quoting error and the initial manifest check used paths relative to the wrong directory
+repair: PASS; verifier was corrected, JSONL and alignment checks rerun, and manifest was regenerated with repository-relative paths
+final schema check: PASS
+manifest hash check: PASS
+```
+
+This batch covered continuous-batching contrasts, failure modes, and latency/throughput/memory interactions. Corrections stated dynamic admission and retirement at iteration boundaries, slot reuse, KV-cache capacity and scheduler boundaries, queueing/fairness risks, matched-baseline assumptions, and request-level measurement requirements.
 
 ## Output schema
 
