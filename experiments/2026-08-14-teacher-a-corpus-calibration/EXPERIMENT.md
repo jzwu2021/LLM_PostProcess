@@ -1,8 +1,8 @@
-# Latest run: Batch 0145
+# Latest run: Batch 0146
 
-Input: train records 1441-1450 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01595` through `corpus-01604`, preserving corpus order).
+Input: train records 1451-1460 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01605` through `corpus-01614`, preserving corpus order).
 
-Progress: train 1450/5399; validation 0/601; total 1450/6000; remaining 4550.
+Progress: train 1460/5399; validation 0/601; total 1460/6000; remaining 4540.
 
 Result:
 ```text
@@ -17,7 +17,7 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/dec
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated six long-context OOM and four multi-GPU collective-initialization plans. Corrections made assumptions, measured-versus-estimated units, failure-mode classification, request/rank-correlated telemetry, falsifiable hypotheses with explicit falsification criteria, randomized matched or reduced-world controlled experiments, competing KV/allocator/cache/transport/rendezvous/topology causes, correctness/latency/SLO gates, conservative admission and timeout/cleanup safeguards, evidence requirements, uncertainty limits, and staged rollback criteria explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten multi-GPU collective-initialization diagnosis plans. Corrections made assumptions, rank- and request-correlated evidence, rendezvous/interface/topology/GPU-visibility checks, a falsifiable rank-specific rendezvous or transport hypothesis with falsification criteria, randomized blocked single-node/reduced-world/full-world controlled experiments, competing rank-membership/network/version/resource causes, separate success/timeout/hang/rank-failure/cleanup denominators, correctness and latency SLO gates, bounded watchdog and cleanup safeguards, evidence requirements, uncertainty limits, and staged rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 # Latest run: Batch 0144
 
