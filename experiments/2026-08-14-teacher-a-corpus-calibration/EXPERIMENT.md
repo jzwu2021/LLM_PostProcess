@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 180 / 5399
+train processed: 190 / 5399
 validation processed: 0 / 601
-total processed: 180 / 6000
-progress: 3.00%
+total processed: 190 / 6000
+progress: 3.17%
 ```
 
 ## Batch 0001
@@ -356,6 +356,26 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated controlled experiments and runbooks for continuous batching, plus tensor-parallelism definitions. Corrections made the scheduler mechanism, matched-baseline design, phase-specific metrics, topology and capacity boundaries, correctness checks, failure accounting, and evidence requirements explicit.
+
+## Batch 0019
+
+Input: train records 181-190 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00203` through `corpus-00212`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS for the new batch; accumulated verification initially found one stale source_assistant field in train-batch-0003
+repair: PASS; restored corpus-00032's source_assistant from the immutable source corpus and reran accumulated verification
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated tensor-parallelism definitions, matched contrasts, and failure modes/trade-offs. Corrections made sharding and collective mechanisms, per-rank memory and topology boundaries, workload assumptions, measurement plans, output checks, and evidence requirements explicit.
 
 ## Output schema
 
