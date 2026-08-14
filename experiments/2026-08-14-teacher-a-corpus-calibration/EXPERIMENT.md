@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 80 / 5399
+train processed: 90 / 5399
 validation processed: 0 / 601
-total processed: 80 / 6000
-progress: 1.33%
+total processed: 90 / 6000
+progress: 1.50%
 ```
 
 ## Batch 0001
@@ -162,6 +162,25 @@ final schema check: PASS
 ```
 
 This batch covered training-versus-inference prefill, misleading equivalences between training throughput and serving latency, and memory/bottleneck differences. Corrections stated teacher-forcing, gradients/optimizer state, K/V-cache construction and reuse, exact-prefix limits, and matched measurement requirements for forward/backward, prefill, decode, memory, throughput, and tail latency.
+
+## Batch 0009
+
+Input: train records 81-90 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00091` through `corpus-00101`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch covered controlled prefill experiments, prefill investigation runbooks, and the definition and serving impact of decode. Corrections stated K/V construction and reuse, exact-compatible-prefix and cache-capacity boundaries, runtime and workload assumptions, and separate prefill/decode measurements. No failures required repair.
 
 ## Output schema
 
