@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 870 / 5399
+train processed: 880 / 5399
 validation processed: 0 / 601
-total processed: 870 / 6000
-progress: 14.50%
+total processed: 880 / 6000
+progress: 14.67%
 ```
+
+## Batch 0088
+
+Input: train records 871-880 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00955` through `corpus-00964`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier used lexicographic batch-file ordering and falsely reported an alignment mismatch
+repair: not required; verifier was corrected to sort by numeric batch sequence, then rerun
+final schema check: PASS
+```
+
+This batch independently recalculated one-request dense K/V-cache logical payloads for BF16/FP16 and INT8 cases. Corrections preserved the formula and GiB conversion while making nominal dtype width, no-sharing/no-eviction/no-paging assumptions, logical-versus-runtime memory boundaries, deployment confirmation, and matched memory, capacity/OOM or eviction, correctness, latency, throughput, and tail-latency measurements explicit. The initial validation failure was verifier-only; the output was not rewritten.
 
 ## Batch 0087
 
