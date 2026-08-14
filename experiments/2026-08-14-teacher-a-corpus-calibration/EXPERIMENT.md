@@ -13,11 +13,29 @@
 ## Progress
 
 ```text
-train processed: 1050 / 5399
+train processed: 1060 / 5399
 validation processed: 0 / 601
-total processed: 1050 / 6000
-progress: 17.50%
+total processed: 1060 / 6000
+progress: 17.67%
 ```
+
+## Batch 0106
+
+Input: train records 1051-1060 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01157` through `corpus-01162`, plus `corpus-01164`, `corpus-01165`, `corpus-01168`, and `corpus-01169`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier assertion incorrectly required the file-concatenation order of prior batches to equal corpus order; existing batches are stored by batch number and contain nonconsecutive source IDs
+repair: PASS; verifier assertion corrected to validate the aggregate ID set and the new batch's exact corpus-position sequence; no semantic output fields were rewritten
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence, unique-ID set, and new-batch corpus-position alignment passed
+```
+
+This batch independently recalibrated ten serving-capacity evaluation-plan variants. Corrections made deployment assumptions, a falsifiable goodput/latency/correctness hypothesis, randomized paired crossover, warm-up and repetition policy, request-level queue/prefill/decode timestamps, explicit TTFT/TPOT/throughput/goodput/queue/P99 definitions and denominators, workload stratification, correctness and failure accounting, GPU/KV/CPU/power/thermal telemetry, confounders, evidence requirements, uncertainty limits, and rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 ## Batch 0105
 
