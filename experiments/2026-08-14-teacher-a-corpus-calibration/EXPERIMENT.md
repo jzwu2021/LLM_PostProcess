@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 470 / 5399
+train processed: 480 / 5399
 validation processed: 0 / 601
-total processed: 470 / 6000
-progress: 7.83%
+total processed: 480 / 6000
+progress: 8.00%
 ```
 
 ## Batch 0001
@@ -968,3 +968,23 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated KV-cache payload calculations. Corrections stated K/V and byte-width assumptions, exact binary-GiB arithmetic, payload-versus-runtime allocation boundaries, cache-layout and capacity risks, and evidence needed from actual allocation and workload measurements.
+
+## Batch 0048
+
+Input: train records 471-480 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00521`, `corpus-00522`, `corpus-00523`, `corpus-00525` through `corpus-00531`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier command had a quoting error before checking the batch
+repair: not required to the batch; verifier command was corrected and rerun successfully
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated KV-cache payload calculations across BF16/FP16 and INT8 cases. Corrections made arithmetic, binary units, K/V storage assumptions, payload-versus-runtime boundaries, quantization metadata, cache policy, workload risks, and runtime measurement evidence explicit.
