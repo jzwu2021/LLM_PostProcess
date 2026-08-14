@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 60 / 5399
+train processed: 70 / 5399
 validation processed: 0 / 601
-total processed: 60 / 6000
-progress: 1.00%
+total processed: 70 / 6000
+progress: 1.17%
 ```
 
 ## Batch 0001
@@ -124,6 +124,25 @@ final schema check: PASS
 ```
 
 This batch covered prefill definitions, contrasts with a naive prompt-processing path, failure modes and trade-offs, latency/throughput/memory interactions, and measurement plans. Corrections made the K/V construction mechanism, scheduler and memory boundaries, matched-baseline assumptions, and required telemetry explicit.
+
+## Batch 0007
+
+Input: train records 61-70 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00069`, `corpus-00070`, `corpus-00071`, `corpus-00072`, `corpus-00073`, `corpus-00074`, `corpus-00075`, `corpus-00076`, `corpus-00079`, and `corpus-00080`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first validation command was blocked before running
+repair: not required; validation rerun with a temporary verifier
+final schema check: PASS
+```
+
+This batch covered KV-cache definitions, contrast with a no-cache implementation, and cache trade-offs. Corrections independently stated the K/V append and reuse mechanism, compute/memory boundary, compatible-prefix assumptions, workload-dependent risks, and a matched measurement plan.
 
 ## Output schema
 
