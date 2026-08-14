@@ -4,6 +4,25 @@
 
 `IN_PROGRESS`. This directory stores provisional calibration produced by the current conversational model. It is not an expert-approved gold set and must not overwrite the source corpus.
 
+## Latest run: Batch 0123
+
+Input: train records 1221-1230 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01350` through `corpus-01353`, `corpus-01355` through `corpus-01359`, and `corpus-01361`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made the falsifiable live-KV/headroom hypothesis, competing non-KV causes, controlled one-factor replay by workload strata, request-correlated KV/allocator/cache telemetry, post-drain retention checks, explicit OOM and rejection denominators, correctness and latency gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 ## Latest run: Batch 0121
 
 Input: train records 1201-1210 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01328` through `corpus-01337`, preserving corpus order).
@@ -127,10 +146,10 @@ This batch independently recalibrated ten long-context OOM diagnosis and mitigat
 ## Progress
 
 ```text
-train processed: 1220 / 5399
+train processed: 1230 / 5399
 validation processed: 0 / 601
-total processed: 1220 / 6000
-progress: 20.33%
+total processed: 1230 / 6000
+progress: 20.50%
 ```
 
 ## Batch 0115
