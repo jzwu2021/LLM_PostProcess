@@ -1,8 +1,8 @@
-# Latest run: Batch 0222
+# Latest run: Batch 0223
 
-Input: train records 2211-2220 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02434 through corpus-02446, preserving corpus order and source-ID gaps).
+Input: train records 2221-2230 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02447 through corpus-02456, preserving corpus order).
 
-Progress: train 2220/5399; validation 0/601; total 2220/6000; remaining 3780.
+Progress: train 2230/5399; validation 0/601; total 2230/6000; remaining 3770.
 
 Result:
 ```text
@@ -17,7 +17,7 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/dec
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten tensor-versus-pipeline parallelism decisions with explicit assumptions, a falsifiable held-out p99 hypothesis, randomized paired trials, disjoint tuning and evaluation, memory/topology and stage-partition feasibility, batch/microbatch and synchronization behavior, measured units, confounder controls, quality/reliability gates, authorized isolated canary/failure testing, recovery, and reversible rollback criteria. Results require domain-expert review.
+This provisional batch independently recalibrated ten tensor-versus-pipeline parallelism decisions with explicit assumptions, topology and memory feasibility, a falsifiable held-out p99 hypothesis, randomized paired trials, disjoint tuning and evaluation, layer partitioning, batch/microbatch and synchronization behavior, measured units and uncertainty, confounder controls, quality/reliability gates, authorized isolated failure testing, recovery, and reversible rollback criteria. Results require domain-expert review.
 
 
 # Latest run: Batch 0220
