@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 550 / 5399
+train processed: 560 / 5399
 validation processed: 0 / 601
-total processed: 550 / 6000
-progress: 9.17%
+total processed: 560 / 6000
+progress: 9.33%
 ```
 
 ## Batch 0001
@@ -1127,3 +1127,22 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated KV-cache payload calculations across BF16/FP16 and INT8 cases. Corrections independently stated the exact K/V formula and binary GiB units, distinguished logical payload from allocated/reserved runtime memory, and covered stored-head, dtype, paging, quantization, sharing, batching, retention, eviction, concurrency, correctness, OOM, latency, throughput, and tail-latency evidence requirements.
+
+## Batch 0056
+
+Input: train records 551-560 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00612`, `corpus-00613`, `corpus-00614`, `corpus-00615`, `corpus-00616`, `corpus-00617`, `corpus-00618`, `corpus-00620`, `corpus-00621`, and `corpus-00622`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch calibrated KV-cache payload calculations for INT8 and BF16/FP16. Corrections stated the K/V factor-of-two mechanism, binary GiB conversion, retained-head and dense-cache assumptions, logical-payload versus runtime-allocation boundary, quantization/layout/paging/batching/prefix-sharing/retention risks, and evidence-required memory, failure, correctness, latency, throughput, and tail-latency measurements. The accumulated verifier also confirmed 560 unique, ordered source IDs and the new batch's source text alignment; pre-existing wording drift in earlier batches remains outside this batch's repair scope.
