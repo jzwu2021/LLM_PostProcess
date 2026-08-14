@@ -1,3 +1,24 @@
+# Latest run: Batch 0164
+
+Input: train records 1631-1640 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01795` through `corpus-01804`, preserving corpus order).
+
+Progress: train 1640/5399; validation 0/601; total 1640/6000; remaining 4360.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and exact train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten NCCL collective-initialization diagnosis plans. Corrections covered explicit measured-versus-estimated assumptions, per-rank membership and ordering, rendezvous/store and interface/path checks, topology/GPU/container/resource boundaries, a falsifiable rank-specific membership or transport hypothesis with falsification criteria, randomized matched single-node/reduced-world/full-world minimal all-reduce trials, correctness/latency/timeout/rank-failure/transport/cleanup measurements, confounders, redaction, authorization, bounded watchdogs, evidence requirements, uncertainty, and reversible rollback safeguards. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0163
 
 Input: train records 1621-1630 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01785` through `corpus-01794`, preserving corpus order).
