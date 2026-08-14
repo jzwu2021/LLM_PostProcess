@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 100 / 5399
+train processed: 110 / 5399
 validation processed: 0 / 601
-total processed: 100 / 6000
-progress: 1.67%
+total processed: 110 / 6000
+progress: 1.83%
 ```
 
 ## Batch 0001
@@ -200,6 +200,25 @@ final schema check: PASS
 ```
 
 This batch covered decode definitions, contrast with a no-cache full-prefix implementation, and decode failure modes/trade-offs. Corrections stated incremental K/V reuse, exact-prefix and cache-capacity boundaries, memory and scheduling risks, and separate prefill/decode measurement plans.
+
+## Batch 0011
+
+Input: train records 101-110 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00114` through `corpus-00124`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial generation check: FAILED because the draft contained one extra answer before writing
+repair: PASS; removed the extra answer and regenerated the batch
+final schema check: PASS
+```
+
+This batch covered decode failure modes, latency/throughput/memory interactions, and matched measurement plans. Corrections stated incremental K/V reuse, cache-capacity and batching boundaries, separate prefill/decode telemetry, and workload-specific evidence requirements.
 
 ## Output schema
 
