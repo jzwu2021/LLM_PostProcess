@@ -1,3 +1,24 @@
+# Latest run: Batch 0144
+
+Input: train records 1431-1440 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01585` through `corpus-01594`, preserving corpus order).
+
+Progress: train 1440/5399; validation 0/601; total 1440/6000; remaining 4560.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED once because the aggregate validator compared filesystem glob order with corpus order; the JSONL artifact was unchanged
+repair: corrected validation to sort aggregate rows by corpus position before strict alignment comparison; no result-file repair was needed
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made assumptions, explicit device/host/outcome classification, measured-versus-estimated byte/GiB accounting, request-correlated KV/allocator/cache/workspace/collective/process-limit telemetry, a falsifiable live-KV/headroom hypothesis with explicit falsification criteria, randomized blocked matched replay, competing fragmentation/retention/host/workspace causes, separate OOM/rejection/timeout/cancellation denominators, correctness/latency/SLO/fairness gates, conservative admission and cleanup safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0143
 
 Input: train records 1421-1430 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01571`, `corpus-01572`, `corpus-01574` through `corpus-01577`, `corpus-01579`, `corpus-01581`, `corpus-01583`, and `corpus-01584`; corpus gaps preserved and exact source-field alignment verified).
