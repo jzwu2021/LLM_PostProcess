@@ -4,9 +4,9 @@
 
 `IN_PROGRESS`. This directory stores provisional calibration produced by the current conversational model. It is not an expert-approved gold set and must not overwrite the source corpus.
 
-## Latest run: Batch 0120
+## Latest run: Batch 0121
 
-Input: train records 1191-1200 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01317` through `corpus-01327`, preserving corpus order and the corpus's nonconsecutive IDs).
+Input: train records 1201-1210 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01328` through `corpus-01337`, preserving corpus order).
 
 Result:
 ```text
@@ -21,7 +21,7 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/dec
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made competing causes, measured-versus-estimated units, a bounded live-KV memory hypothesis, post-drain retention and fragmentation tests, one-factor replay across workload strata, request/KV/allocator/cache telemetry, explicit failure denominators, correctness and latency gates, evidence requirements, uncertainty limits, admission safeguards, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made competing causes, measured-versus-estimated units, a falsifiable live-KV/headroom hypothesis, post-drain retention and fragmentation tests, one-factor replay across workload strata, request/KV/allocator/cache telemetry, explicit OOM denominators, correctness and latency gates, evidence requirements, uncertainty limits, conservative admission safeguards, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 ## Batch 0119
 
@@ -108,10 +108,10 @@ This batch independently recalibrated ten serving-capacity evaluation plans. Cor
 ## Progress
 
 ```text
-train processed: 1200 / 5399
+train processed: 1210 / 5399
 validation processed: 0 / 601
-total processed: 1200 / 6000
-progress: 20.00%
+total processed: 1210 / 6000
+progress: 20.17%
 ```
 
 ## Batch 0115
