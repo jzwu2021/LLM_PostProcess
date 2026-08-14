@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 820 / 5399
+train processed: 830 / 5399
 validation processed: 0 / 601
-total processed: 820 / 6000
-progress: 13.67%
+total processed: 830 / 6000
+progress: 13.83%
 ```
+
+## Batch 0083
+
+Input: train records 821-830 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs ['corpus-00904', 'corpus-00905', 'corpus-00906', 'corpus-00907', 'corpus-00908', 'corpus-00909', 'corpus-00910', 'corpus-00911', 'corpus-00912', 'corpus-00913'], preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch independently recalculated K/V-cache logical payloads and made one-request, dense-retention, dtype-width, cache-policy, runtime-allocation, measurement, and uncertainty boundaries explicit.
 
 ## Batch 0082
 
