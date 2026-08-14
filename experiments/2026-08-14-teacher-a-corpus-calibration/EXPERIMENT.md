@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 250 / 5399
+train processed: 260 / 5399
 validation processed: 0 / 601
-total processed: 250 / 6000
-progress: 4.17%
+total processed: 260 / 6000
+progress: 4.33%
 ```
 
 ## Batch 0001
@@ -476,6 +476,26 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated pipeline-parallelism serving measurement plans and performance-claim assumptions. Corrections made matched baselines, workload/load sweeps, stage/activation mechanisms, latency-throughput-memory distinctions, topology and imbalance boundaries, failure accounting, correctness checks, and uncertainty/evidence requirements explicit.
+
+## Batch 0026
+
+Input: train records 251-260 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00280` through `corpus-00289`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; strict accumulated JSONL parse, required-field, enum, duplicate, source-field, and corpus-order checks passed
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated pipeline-parallelism assumptions, training-versus-inference contrasts, and misleading intuitions. Corrections made activation/gradient/KV-cache mechanisms, stage imbalance, microbatch and memory boundaries, matched-baseline assumptions, phase-specific telemetry, failure accounting, correctness checks, and evidence requirements explicit.
 
 ## Output schema
 
