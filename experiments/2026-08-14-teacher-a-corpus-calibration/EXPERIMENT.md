@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 270 / 5399
+train processed: 280 / 5399
 validation processed: 0 / 601
-total processed: 270 / 6000
-progress: 4.50%
+total processed: 280 / 6000
+progress: 4.67%
 ```
 
 ## Batch 0001
@@ -498,6 +498,26 @@ manifest hash check: pending until final manifest regeneration
 This batch calibrated pipeline-parallelism assumptions, training-versus-inference contrasts, and misleading intuitions. Corrections made activation/gradient/KV-cache mechanisms, stage imbalance, microbatch and memory boundaries, matched-baseline assumptions, phase-specific telemetry, failure accounting, correctness checks, and evidence requirements explicit.
 
 ## Output schema
+
+## Batch 0028
+
+Input: train records 271-280 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00300` through `corpus-00309`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; strict accumulated JSONL parse, required-field, enum, duplicate, source-field, and corpus-order checks passed
+repair: not required
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated MoE definitions and dense-versus-MoE contrasts. Corrections made router top-k selection, token dispatch/combine and all-to-all mechanisms, active-compute versus total-capacity distinctions, capacity overflow and expert-imbalance boundaries, matched-baseline assumptions, expert-level telemetry, failure accounting, correctness/quality checks, and evidence requirements explicit.
 
 ## Batch 0027
 
