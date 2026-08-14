@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 320 / 5399
+train processed: 330 / 5399
 validation processed: 0 / 601
-total processed: 320 / 6000
-progress: 5.33%
+total processed: 330 / 6000
+progress: 5.50%
 ```
 
 ## Batch 0001
@@ -668,3 +668,23 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated small controlled MoE experiments, investigation runbooks, and quantization definitions. Corrections specified matched workloads and quality targets, router dispatch/expert execution/combine mechanisms, phase-specific telemetry, memory accounting, kernel and calibration assumptions, capacity/overflow boundaries, failure modes, and evidence requirements.
+
+## Batch 0033
+
+Input: train records 321-330 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00354`, `corpus-00356` through `corpus-00358`, `corpus-00360` through `corpus-00364`, and `corpus-00366`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; fresh JSONL parse, required-field, enum, duplicate, source-field, and corpus-order checks passed
+repair: PASS; first draft contained 9 rows because one failure-mode variant was omitted; regenerated with all 10 aligned records
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated quantization definitions, contrasts with an unquantized path, failure modes/trade-offs, and latency/throughput/memory interactions. Corrections made scale/dequantization or fused-kernel mechanisms, calibration and outlier assumptions, kernel/fallback and tensor-coverage boundaries, quality risks, phase-specific measurements, memory accounting, and evidence requirements explicit.
