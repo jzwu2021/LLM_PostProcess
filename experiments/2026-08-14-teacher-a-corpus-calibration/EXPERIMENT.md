@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 800 / 5399
+train processed: 810 / 5399
 validation processed: 0 / 601
-total processed: 800 / 6000
-progress: 13.33%
+total processed: 810 / 6000
+progress: 13.50%
 ```
+
+## Batch 0081
+
+Input: train records 801-810 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00880` through `corpus-00884`, plus `corpus-00886` through `corpus-00888`, `corpus-00890`, and `corpus-00891`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial generation command: FAILED after writing because its post-write reporting expression read JSONL lines as raw strings
+repair: not required; the output write completed before the reporting-only exception, and an independent strict verifier passed
+final schema check: PASS
+```
+
+This batch covered exact numeric K/V-cache payload estimates. Corrections retained the formula and GiB conversion while stating one-request, dense-layout, nominal-dtype, no-sharing/no-eviction assumptions; distinguishing logical payload from runtime allocation; and requiring deployment metadata plus matched memory, OOM, correctness, latency, throughput, and tail-latency measurements.
 
 ## Batch 0001
 
