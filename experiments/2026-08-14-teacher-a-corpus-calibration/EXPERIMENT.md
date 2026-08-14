@@ -1,8 +1,8 @@
-# Latest run: Batch 0128
+# Latest run: Batch 0129
 
-Input: train records 1271-1280 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01409` through `corpus-01418`, preserving corpus order).
+Input: train records 1281-1290 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01419` through `corpus-01422`, `corpus-01424` through `corpus-01429`, preserving corpus order and the corpus's nonconsecutive IDs).
 
-Progress: train 1280/5399; validation 0/601; total 1280/6000; remaining 4720.
+Progress: train 1290/5399; validation 0/601; total 1290/6000; remaining 4710.
 
 Result:
 ```text
@@ -17,7 +17,7 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/dec
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made failure-domain attribution, measured-versus-estimated units, a falsifiable live-KV/headroom hypothesis, competing allocation causes, randomized one-factor replay by workload strata, request-correlated KV/allocator/cache/workspace telemetry, explicit OOM and rejection denominators, correctness and latency gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made device-versus-host attribution, measured-versus-estimated units, falsifiable live-KV/headroom criteria, competing workspace/collective/host/leak causes, randomized one-factor replay by workload strata, request-correlated KV/allocator/cache/workspace telemetry, explicit OOM and rejection denominators, correctness/latency/SLO gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 # Previous run: Batch 0127
 
