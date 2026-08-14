@@ -4,6 +4,25 @@
 
 `IN_PROGRESS`. This directory stores provisional calibration produced by the current conversational model. It is not an expert-approved gold set and must not overwrite the source corpus.
 
+## Latest run: Batch 0116
+
+Input: train records 1151-1160 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01273` through `corpus-01282`, preserving corpus order).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED once because the first inline validator invocation was blocked before execution; no artifact was changed
+repair: not required; validator was written to a temporary script and rerun
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten serving-capacity evaluation plans. Corrections made assumptions and units, falsifiable SLO-goodput/error/P99 thresholds, randomized paired replay, warm-up and repetition policy, request lifecycle timestamps, explicit TTFT/TPOT/throughput/queue/P99 definitions and denominators, prefill/decode separation, correctness and failure accounting, GPU/KV/CPU/network/power/thermal telemetry, confounders, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 ## Lane separation
 
 - Teacher-A: current GPT-5.6-Luna conversational model.
@@ -13,10 +32,10 @@
 ## Progress
 
 ```text
-train processed: 1150 / 5399
+train processed: 1160 / 5399
 validation processed: 0 / 601
-total processed: 1150 / 6000
-progress: 19.17%
+total processed: 1160 / 6000
+progress: 19.33%
 ```
 
 ## Batch 0115
