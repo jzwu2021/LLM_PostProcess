@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 570 / 5399
+train processed: 580 / 5399
 validation processed: 0 / 601
-total processed: 570 / 6000
-progress: 9.50%
+total processed: 580 / 6000
+progress: 9.67%
 ```
 
 ## Batch 0001
@@ -1165,3 +1165,22 @@ final schema check: PASS
 ```
 
 This batch calibrated KV-cache payload calculations across BF16/FP16 and INT8. Corrections independently stated the K/V factor-of-two formula and binary GiB conversion, separated logical payload from runtime allocation, and recorded dtype/layout, paging, quantization metadata, batching, prefix-sharing, retention, concurrency, OOM, correctness, latency, throughput, and tail-latency risks. The accumulated verifier confirmed 570 unique ordered source IDs and exact source-text alignment; no failure or repair was required.
+
+## Batch 0058
+
+Input: train records 571-580 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00633` through `corpus-00643`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS for the new batch
+repair: PASS; accumulated strict verification found five pre-existing source-field mismatches in train-batch-0041 and restored those fields from the immutable source corpus
+final schema check: PASS
+```
+
+This batch calibrated KV-cache payload calculations across INT8 and BF16/FP16. Corrections independently stated the K/V factor-of-two formula, binary GiB conversion, retained-head and dense-cache assumptions, logical-payload versus runtime-allocation boundary, implementation and quantization risks, and evidence-required memory, failure, correctness, latency, throughput, and tail-latency measurements. Final accumulated verification confirmed 580 unique ordered source IDs, exact source-field alignment, required schema fields, valid enums, and non-empty corrected answers.
