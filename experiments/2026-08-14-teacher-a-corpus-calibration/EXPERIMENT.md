@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 860 / 5399
+train processed: 870 / 5399
 validation processed: 0 / 601
-total processed: 860 / 6000
-progress: 14.33%
+total processed: 870 / 6000
+progress: 14.50%
 ```
+
+## Batch 0087
+
+Input: train records 861-870 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00945` through `corpus-00954`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch independently recalculated the logical dense K/V payload for one request under the stated INT8 or BF16/FP16 nominal width. Corrections made dense-retention, no-sharing/no-eviction/no-paging assumptions explicit; separated logical payload from allocator-visible runtime memory; and required deployment confirmation plus matched memory, capacity/OOM or eviction, correctness, latency, throughput, and tail-latency measurements. No failed validation or repair was required.
 
 ## Batch 0086
 
