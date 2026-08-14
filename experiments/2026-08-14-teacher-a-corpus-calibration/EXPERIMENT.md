@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 590 / 5399
+train processed: 600 / 5399
 validation processed: 0 / 601
-total processed: 590 / 6000
-progress: 9.83%
+total processed: 600 / 6000
+progress: 10.00%
 ```
 
 ## Batch 0001
@@ -1203,3 +1203,22 @@ final schema check: PASS
 ```
 
 This batch calibrated KV-cache payload calculations across BF16/FP16 and INT8. Corrections independently stated the K/V factor-of-two formula, exact bytes and binary GiB, dense single-request assumptions, logical-payload versus runtime-allocation boundaries, quantization/layout/paging/sharing/eviction/batching risks, and evidence-required memory, OOM, correctness, latency, throughput, and tail-latency measurements.
+
+## Batch 0060
+
+Input: train records 591-600 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00655`, `corpus-00656`, `corpus-00657`, `corpus-00658`, `corpus-00659`, `corpus-00661`, `corpus-00662`, `corpus-00663`, `corpus-00664`, and `corpus-00665`, preserving corpus order; the corpus has nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch calibrated KV-cache payload calculations across BF16/FP16 and INT8. Corrections independently stated exact bytes and binary GiB, dense single-request and nominal dtype assumptions, the logical-payload versus runtime-allocation boundary, implementation/layout/paging/quantization/sharing/eviction/batching risks, and evidence-required memory, OOM, correctness, latency, throughput, and tail-latency measurements. Accumulated strict verification confirmed 600 unique ordered source IDs and complete required schema alignment.
