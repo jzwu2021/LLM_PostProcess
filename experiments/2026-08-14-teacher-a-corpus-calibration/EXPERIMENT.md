@@ -1,3 +1,24 @@
+# Latest run: Batch 0157
+
+Input: train records 1561-1570 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01721` through `corpus-01731`, preserving corpus order and the corpus gap at `corpus-01726`).
+
+Progress: train 1570/5399; validation 0/601; total 1570/6000; remaining 4430.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED once because the first draft used literal backslash-n separators in the JSONL artifact
+repair: rewrote the ten records with actual newline separators; no source fields or calibration content changed
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and exact train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten multi-GPU collective-initialization diagnosis plans. Corrections made assumptions, per-rank membership and rendezvous evidence, interface/path/topology/GPU checks, a falsifiable rank-specific membership or transport hypothesis with explicit falsification criteria, randomized matched single-node/reduced-world/full-world experiments, competing collective-order/network/topology/software/resource/container causes, separate correctness/latency/timeout/rank-failure/transport/cleanup outcomes, bounded watchdog and cleanup safeguards, evidence requirements, uncertainty limits, and rollback gates explicit. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0156
 
 Input: train records 1551-1560 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01711` through `corpus-01720`, preserving corpus order).
