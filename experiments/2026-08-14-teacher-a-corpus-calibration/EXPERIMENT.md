@@ -33,6 +33,7 @@ reject: 0
 initial schema check: PASS
 repair: not required
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: initial checksum command was run from the repository root and failed on relative paths; rerun from the experiment directory passed all 115 hashes; no artifact was changed by the failed invocation
 ```
 
 This batch independently recalibrated ten serving-capacity evaluation plans. Corrections made assumptions, units, variant-specific falsifiable SLO-goodput/latency/error thresholds, randomized paired replay, warm-up and repetition policy, request-level queue/admission/prefill/decode timestamps, explicit TTFT/TPOT/throughput/queue/P99 definitions and failure denominators, workload stratification, correctness and failure accounting, GPU/KV/CPU/power/thermal telemetry, confounders, evidence requirements, uncertainty limits, and staged canary/reversion criteria explicit. Results remain provisional and require domain-expert review.
