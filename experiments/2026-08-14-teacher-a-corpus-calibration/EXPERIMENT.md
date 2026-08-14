@@ -1,3 +1,24 @@
+# Latest run: Batch 0163
+
+Input: train records 1621-1630 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01785` through `corpus-01794`, preserving corpus order).
+
+Progress: train 1630/5399; validation 0/601; total 1630/6000; remaining 4370.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and exact train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten multi-GPU collective-initialization diagnosis plans. Corrections explicitly covered assumptions and measured-versus-estimated facts, per-rank membership and ordering, rendezvous/store and interface/path checks, topology/GPU/container/resource boundaries, a falsifiable rank-specific membership or transport hypothesis with falsification criteria, randomized matched single-node/reduced-world/full-world minimal all-reduce trials, correctness/latency/timeout/rank-failure/transport/cleanup measurements, confounders, redaction, authorization, bounded watchdogs, evidence requirements, uncertainty, and reversible rollback safeguards. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0162
 
 Input: train records 1611-1620 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs ['corpus-01775', 'corpus-01776', 'corpus-01777', 'corpus-01778', 'corpus-01779', 'corpus-01780', 'corpus-01781', 'corpus-01782', 'corpus-01783', 'corpus-01784'], preserving corpus order).
