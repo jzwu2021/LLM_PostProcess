@@ -1,3 +1,24 @@
+# Latest run: Batch 0141
+
+Input: train records 1401-1410 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01549`, `corpus-01550`, `corpus-01552` through `corpus-01559`, preserving corpus gaps and exact source-field alignment).
+
+Progress: train 1410/5399; validation 0/601; total 1410/6000; remaining 4590.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED once because the first generated artifact used literal backslash-n separators; the JSONL artifact was not accepted
+repair: rewrote separators as actual newlines; no source content or calibration fields were otherwise changed
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made assumptions, device-versus-host failure classification, measured-versus-estimated byte accounting, a falsifiable live-KV/headroom hypothesis with explicit falsification criteria, randomized blocked matched replay, competing fragmentation/workspace/collective/cache/host/accounting causes, request-correlated telemetry, separate OOM/rejection/timeout/cancellation denominators, correctness/latency/SLO gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0140
 
 Input: train records 1391-1400 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01537` through `corpus-01542`, plus `corpus-01544` through `corpus-01547`; corpus gap at `corpus-01543` preserved and exact source-field alignment verified).
