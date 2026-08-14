@@ -3838,3 +3838,24 @@ manifest verification: pending until commit preparation
 ```
 
 This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made the isolation boundary, falsifiable cost-per-successful-token hypothesis, held-out quality/safety/correctness gates, randomized paired trials, confidence intervals, memory/latency/throughput/concurrency/error/OOM/cleanup measurements, kernel/fallback checks, confounders, redaction, authorization, bounded canary rollback, and evidence requirements explicit. Results remain provisional and require domain-expert review.
+
+# Latest run: Batch 0206
+
+Input: train records 2051-2060 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-02261` through `corpus-02270`, preserving corpus order).
+
+Progress: train 2060/5399; validation 0/601; total 2060/6000; remaining 3940.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique-ID, exact source-field matching, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten tensor-versus-pipeline parallelism decisions. Corrections made assumptions, a numerical falsifiable latency hypothesis, randomized paired trials, disjoint tuning and held-out evaluation, layer partition and microbatch behavior, communication/synchronization/pipeline-bubble measurements, queueing and tail-latency units, quality/reliability gates, failure injection and recovery, confounder controls, authorization, redaction, isolation, and reversible rollback criteria explicit. Results require domain-expert review.
