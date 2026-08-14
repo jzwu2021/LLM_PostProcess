@@ -1,3 +1,24 @@
+# Latest run: Batch 0175
+
+Input: train records 1741-1750 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01919` through `corpus-01928`, preserving corpus order).
+
+Progress: train 1750/5399; validation 0/601; total 1750/6000; remaining 4250.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (validator attempted to enumerate a Path object)
+repair: validator corrected; output file unchanged
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, unique aggregate ID set, exact source-field matching, and exact train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made the isolation boundary, falsifiable cost-per-successful-token hypothesis, held-out quality and safety gates, paired randomized trials, confidence intervals, memory/latency/throughput/concurrency/error/fallback/cleanup measurements, confounders, redaction, authorization, bounded canary rollback, and evidence requirements explicit. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0174
 
 Input: train records 1731-1740 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01908`, `corpus-01910`, `corpus-01911`, `corpus-01912`, `corpus-01913`, `corpus-01914`, `corpus-01915`, `corpus-01916`, `corpus-01917`, and `corpus-01918`, preserving corpus order and source-ID gaps).
