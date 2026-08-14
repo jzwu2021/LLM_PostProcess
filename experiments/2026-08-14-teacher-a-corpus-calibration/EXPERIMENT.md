@@ -99,6 +99,25 @@ manifest verification: pending until commit preparation
 
 This batch independently recalibrated ten serving-capacity evaluation plans. Corrections made assumptions and units, falsifiable SLO-goodput/error/P99 thresholds, randomized paired replay, warm-up and repetition policy, request lifecycle timestamps, explicit TTFT/TPOT/throughput/queue/P99 definitions and denominators, prefill/decode separation, correctness and failure accounting, GPU/KV/CPU/network/power/thermal telemetry, confounders, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
 
+## Latest run: Batch 0122
+
+Input: train records 1211-1220 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01339`, `corpus-01341` through `corpus-01349`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made the falsifiable live-KV/headroom hypothesis, competing non-KV causes, controlled one-factor replay by workload strata, request-correlated KV/allocator/cache telemetry, post-drain retention checks, explicit OOM and rejection denominators, correctness and latency gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 ## Lane separation
 
 - Teacher-A: current GPT-5.6-Luna conversational model.
@@ -108,10 +127,10 @@ This batch independently recalibrated ten serving-capacity evaluation plans. Cor
 ## Progress
 
 ```text
-train processed: 1210 / 5399
+train processed: 1220 / 5399
 validation processed: 0 / 601
-total processed: 1210 / 6000
-progress: 20.17%
+total processed: 1220 / 6000
+progress: 20.33%
 ```
 
 ## Batch 0115
