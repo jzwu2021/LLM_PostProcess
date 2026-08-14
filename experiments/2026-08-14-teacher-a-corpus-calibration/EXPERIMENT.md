@@ -1,3 +1,24 @@
+# Latest run: Batch 0202
+
+Input: train records 2011-2020 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-02220` through `corpus-02229`, preserving corpus order).
+
+Progress: train 2020/5399; validation 0/601; total 2020/6000; remaining 3980.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (first generated JSONL used literal backslash-n separators)
+repair: replaced only batch separators with actual newlines and removed the trailing literal separator; reran JSONL, count, schema, exact source-field, unique-ID, and strict train-prefix alignment validation
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten tensor-versus-pipeline parallelism decisions for a latency-sensitive multi-GPU service. Corrections made assumptions, variant-specific falsifiable latency hypotheses, controlled randomized trials, disjoint tuning/held-out evaluation, layer partition and microbatch behavior, communication/synchronization/pipeline-bubble measurements, queueing and tail-latency units, quality/reliability gates, failure injection and recovery, confounder controls, authorization, isolation, redaction, and reversible rollback criteria explicit. Results require domain-expert review.
+
 # Latest run: Batch 0201
 
 Input: train records 2001-2010 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-02209` through `corpus-02219`, preserving corpus order and source-ID gap at `corpus-02218`).
