@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 380 / 5399
+train processed: 390 / 5399
 validation processed: 0 / 601
-total processed: 380 / 6000
-progress: 6.33%
+total processed: 390 / 6000
+progress: 6.50%
 ```
 
 ## Batch 0001
@@ -788,3 +788,23 @@ manifest hash check: pending until final manifest regeneration
 ```
 
 This batch calibrated NCCL failure modes and trade-offs, latency/throughput/memory interactions, and a serving-workload measurement plan. Corrections made collective synchronization, algorithm/transport and topology mechanisms, memory/workspace effects, straggler and timeout boundaries, phase-specific tail metrics, correctness gates, and matched end-to-end evidence requirements explicit.
+
+## Batch 0039
+
+Input: train records 381-390 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00423`-`corpus-00426`, `corpus-00428`, `corpus-00430`-`corpus-00432`, and `corpus-00434`-`corpus-00435`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first validation command was blocked before running
+repair: not required; verifier was written to a temporary file and rerun successfully
+final schema check: PASS
+manifest hash check: pending until final manifest regeneration
+```
+
+This batch calibrated NCCL serving-workload measurement plans, performance-claim assumptions, and training-versus-inference distinctions. Corrections made collective mechanisms, topology/rank and algorithm boundaries, workload matching, phase-specific tail metrics, memory and synchronization risks, correctness gates, and evidence requirements explicit.
