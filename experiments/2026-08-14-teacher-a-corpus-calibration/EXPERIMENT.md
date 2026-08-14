@@ -312,7 +312,7 @@ reject: 0
 initial schema check: FAILED because the first verifier invocation was blocked by the execution gateway before running
 repair: not required; verifier was written to a temporary script and rerun successfully
 final schema check: PASS
-manifest hash check: pending until manifest regeneration
+manifest hash check: PASS
 ```
 
 This batch calibrated continuous-batching latency, throughput, and memory interactions; measurement plans; and assumptions for performance claims. Corrections made iteration-boundary slot replacement, workload and KV-capacity boundaries, matched-baseline assumptions, request-level latency/goodput metrics, failure accounting, correctness checks, and uncertainty requirements explicit.
