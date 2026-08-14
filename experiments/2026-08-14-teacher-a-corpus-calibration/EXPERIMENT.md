@@ -1,8 +1,8 @@
-# Latest run: Batch 0210
+# Latest run: Batch 0211
 
-Input: train records 2081-2090 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02303, corpus-02305 through corpus-02313, preserving corpus order and source-ID gaps).
+Input: train records 2101-2110 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02314 through corpus-02323, preserving corpus order).
 
-Progress: train 2090/5399; validation 0/601; total 2090/6000; remaining 3910.
+Progress: train 2100/5399; validation 0/601; total 2100/6000; remaining 3900.
 
 Result:
 ```text
