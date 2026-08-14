@@ -1,0 +1,13 @@
+# Environment snapshot: teacher-A corpus calibration batch 0001
+
+Date: 2026-08-14
+Host: icx-inspur-gpu
+OS/kernel: Linux 5.15.0-125-generic x86_64
+Repository: /home/johnson/workspace/LLM_PostProcess
+Source corpus: research/ai-infra-expert/corpus/train.jsonl
+Source split: train only, records 1-10 by file order
+Teacher lane: teacher-A
+Teacher model: gpt-5.6-luna-current (conversational model)
+Calibration status: provisional
+
+This batch was produced in the current conversation, without a model endpoint, GPU inference service, credentials, or network-side teacher call. It is a teacher draft and not an expert-approved gold artifact.
