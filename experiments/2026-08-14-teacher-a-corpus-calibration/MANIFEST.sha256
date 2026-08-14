@@ -1,5 +1,5 @@
+e29b6c15ee8ae91ca3a99d19c5a96783449d948536bc839870bf65b0a702d5aa  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/EXPERIMENT.md
 999fcfbfb2e6e020cb6eab1af8929b15aec575feb9439c0cdbbdf9752c5ed750  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/environment.txt
-bfd86c32deb13cee0521f923183191c660cb6b111b217d84f925d46a2312e183  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/EXPERIMENT.md
 18966e32b8e7e1a5392addfaaa0b9bfa8a7c9fae2aa0f8498dde44e47b5bd17a  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0001.jsonl
 3820498aa9ca7df3e1e2404eba5ae927a12a1a124557ff22d48107f78be524ec  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0002.jsonl
 a2e2071357720adbb59d53f20810b7b010276bd8c19c9976933f28e83a627dcc  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0003.jsonl
@@ -41,3 +41,4 @@ a713059d1782983657492daf9ced9bb0b406879f183febc0cb4376a3934ba89e  /home/johnson/
 49987db7f8d9e2e4ecd6b5bf04077b6085a0654b6c03a22f78312440f69a63ea  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0039.jsonl
 8d5f2350c40dca1ea82a348286cf4aeef90795c8156b81014441968df66c38cc  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0040.jsonl
 27711b811d0ad1eeb0b8110a8064444b39390a84d89063f844877965350c039f  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0041.jsonl
+978761cf66e34fcc9347429abf67f5c48f7dd1f912631436d3614a8d534f2675  /home/johnson/workspace/LLM_PostProcess/experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0042.jsonl
