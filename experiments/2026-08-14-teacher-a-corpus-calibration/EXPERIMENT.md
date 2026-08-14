@@ -1,8 +1,8 @@
-# Latest run: Batch 0179
+# Latest run: Batch 0180
 
-Input: train records 1781-1790 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01961`, `corpus-01962`, `corpus-01963`, `corpus-01964`, `corpus-01965`, `corpus-01966`, `corpus-01967`, `corpus-01969`, `corpus-01970`, and `corpus-01971`, preserving corpus order and source-ID gaps).
+Input: train records 1791-1800 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01972`, `corpus-01973`, `corpus-01974`, `corpus-01975`, `corpus-01976`, `corpus-01977`, `corpus-01978`, `corpus-01979`, `corpus-01981`, and `corpus-01983`, preserving corpus order and source-ID gaps).
 
-Progress: train 1790/5399; validation 0/601; total 1790/6000; remaining 4210.
+Progress: train 1800/5399; validation 0/601; total 1800/6000; remaining 4200.
 
 Result:
 ```text
@@ -17,7 +17,9 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/dec
 manifest verification: pending until commit preparation
 ```
 
-This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made the isolation boundary, falsifiable cost-per-successful-token hypothesis, matched paired trials, held-out quality/safety/correctness gates, confidence intervals, memory/latency/throughput/concurrency/error/OOM/cleanup measurements, kernel/fallback checks, confounders, redaction, authorization, bounded canary rollback, and evidence requirements explicit. Results remain provisional and require domain-expert review.
+This batch independently recalibrated ten weight-only quantization comparison plans. Corrections made treatment isolation, a falsifiable cost-per-successful-token hypothesis, matched randomized trials, held-out quality/safety/correctness gates, confidence intervals, memory/latency/throughput/concurrency/error/OOM/cleanup measurements, kernel/fallback checks, confounders, complete cost accounting, authorization, bounded canary rollback, and evidence requirements explicit. Results remain provisional and require domain-expert review.
+
+# Latest run: Batch 0179
 
 # Latest run: Batch 0177
 
