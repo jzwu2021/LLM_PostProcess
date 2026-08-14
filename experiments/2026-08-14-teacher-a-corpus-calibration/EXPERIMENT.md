@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 120 / 5399
+train processed: 130 / 5399
 validation processed: 0 / 601
-total processed: 120 / 6000
-progress: 2.00%
+total processed: 130 / 6000
+progress: 2.17%
 ```
 
 ## Batch 0001
@@ -238,6 +238,25 @@ final schema check: PASS
 ```
 
 This batch covered assumptions for decode performance claims and the training-versus-inference distinction. Corrections specified matched workload variables, incremental K/V reuse, prefill/decode separation, cache compatibility and capacity boundaries, and evidence needed before generalizing claims.
+
+## Batch 0013
+
+Input: train records 121-130 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00136` through `corpus-00145`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS
+```
+
+This batch corrected misleading intuitions about decode and specified controlled experiments. Corrections made incremental K/V reuse, batching and queueing effects, cache compatibility/capacity boundaries, output-correctness checks, separate prefill/decode metrics, telemetry, uncertainty, and failure accounting explicit.
 
 ## Output schema
 
