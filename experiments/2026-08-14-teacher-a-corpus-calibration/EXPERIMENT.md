@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 1000 / 5399
+train processed: 1010 / 5399
 validation processed: 0 / 601
-total processed: 1000 / 6000
-progress: 16.67%
+total processed: 1010 / 6000
+progress: 16.83%
 ```
+
+## Batch 0101
+
+Input: train records 1001-1010 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01101`, `corpus-01103` through `corpus-01111`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the verifier initially retained the pre-write total target of 1000; the batch had been written and the aggregate contained 1010 unique records
+repair: PASS; verifier target corrected to the post-write total, then JSONL/schema/count/set and new-batch corpus-position checks passed
+final schema check: PASS
+```
+
+This batch independently recalibrated ten serving-capacity evaluation-plan variants. Corrections made deployment assumptions, a falsifiable hypothesis with a predefined practically meaningful effect, uncertainty and stopping rules, randomized paired trace replay, warm-up policy, request lifecycle timestamps, queue-inclusive and compute-only TTFT, TPOT denominator conventions, throughput and P99 denominators, workload stratification, correctness and failure accounting, GPU/CPU/cache/thermal telemetry, confounders, evidence requirements, uncertainty limits, and rollback criteria explicit. Results remain provisional and require domain-expert review.
 
 ## Batch 0100
 
