@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 540 / 5399
+train processed: 550 / 5399
 validation processed: 0 / 601
-total processed: 540 / 6000
-progress: 9.00%
+total processed: 550 / 6000
+progress: 9.17%
 ```
 
 ## Batch 0001
@@ -48,6 +48,25 @@ reject: 0
 ```
 
 The first 20 records reused one KV-cache assistant answer across multiple distinct instructions. The original targets did not satisfy contrast, failure-mode, measurement-plan, or explicit-boundary-condition requests. All twenty were therefore rewritten while preserving original source text and recording risks/evidence requirements.
+
+## Batch 0055
+
+Input: train records 541-550 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00600`, `corpus-00601`, `corpus-00602`, `corpus-00603`, `corpus-00604`, `corpus-00605`, `corpus-00606`, `corpus-00608`, `corpus-00609`, and `corpus-00611`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: PASS; removed control characters from the first draft before final validation
+final schema check: PASS
+```
+
+This batch covered KV-cache memory calculations for INT8 and BF16/FP16 payloads. Corrections preserved the exact tensor formula and GiB conversion, while making single-request and dense-layout assumptions, nominal dtype width, quantization metadata, allocator/runtime overhead, and runtime measurement requirements explicit.
 
 ## Batch 0003
 
