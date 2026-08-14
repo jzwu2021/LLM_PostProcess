@@ -13,11 +13,30 @@
 ## Progress
 
 ```text
-train processed: 810 / 5399
+train processed: 820 / 5399
 validation processed: 0 / 601
-total processed: 810 / 6000
-progress: 13.50%
+total processed: 820 / 6000
+progress: 13.67%
 ```
+
+## Batch 0082
+
+Input: train records 811-820 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00892` through `corpus-00903`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial generation command: FAILED because the execution gateway blocked an inline command before it ran
+repair: not required; the batch was regenerated with a temporary script and independently validated
+final schema check: PASS
+```
+
+This batch covered exact K/V-cache payload calculations across BF16/FP16 and INT8. Corrections preserved the formula and GiB conversion while independently stating one-request, dense-layout, nominal-dtype, no-sharing/no-eviction assumptions; separating logical payload from runtime allocation; and requiring deployment metadata plus matched memory, OOM, correctness, latency, throughput, and tail-latency measurements.
 
 ## Batch 0081
 
