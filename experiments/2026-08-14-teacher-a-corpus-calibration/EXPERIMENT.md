@@ -13,10 +13,10 @@
 ## Progress
 
 ```text
-train processed: 150 / 5399
+train processed: 160 / 5399
 validation processed: 0 / 601
-total processed: 150 / 6000
-progress: 2.50%
+total processed: 160 / 6000
+progress: 2.67%
 ```
 
 ## Batch 0001
@@ -296,6 +296,26 @@ manifest hash check: PASS
 ```
 
 This batch covered continuous-batching contrasts, failure modes, and latency/throughput/memory interactions. Corrections stated dynamic admission and retirement at iteration boundaries, slot reuse, KV-cache capacity and scheduler boundaries, queueing/fairness risks, matched-baseline assumptions, and request-level measurement requirements.
+
+## Batch 0016
+
+Input: train records 151-160 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-00169`, `corpus-00170`, `corpus-00171`, `corpus-00173`, `corpus-00174`, and `corpus-00176` through `corpus-00180`, preserving corpus order).
+
+Result:
+
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED because the first verifier invocation was blocked by the execution gateway before running
+repair: not required; verifier was written to a temporary script and rerun successfully
+final schema check: PASS
+manifest hash check: pending until manifest regeneration
+```
+
+This batch calibrated continuous-batching latency, throughput, and memory interactions; measurement plans; and assumptions for performance claims. Corrections made iteration-boundary slot replacement, workload and KV-capacity boundaries, matched-baseline assumptions, request-level latency/goodput metrics, failure accounting, correctness checks, and uncertainty requirements explicit.
 
 ## Output schema
 
