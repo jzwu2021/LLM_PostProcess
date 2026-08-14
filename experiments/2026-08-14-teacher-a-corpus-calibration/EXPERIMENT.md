@@ -1,3 +1,24 @@
+# Latest run: Batch 0135
+
+Input: train records 1341-1350 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01484` through `corpus-01494`, preserving corpus order and the corpus's nonconsecutive IDs).
+
+Progress: train 1350/5399; validation 0/601; total 1350/6000; remaining 4650.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAILED once because an aggregate-count assertion incorrectly expected 1340 after the new batch; the JSONL artifact was not changed
+repair: corrected the validator expectation; no result-file repair was needed
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, confidence range, unique aggregate ID set, exact source-field matching, and new-batch corpus-position alignment passed
+manifest verification: pending until commit preparation
+```
+
+This batch independently recalibrated ten long-context OOM diagnosis and mitigation plans. Corrections made failure-domain classification, byte/GiB accounting, a falsifiable live-KV/headroom hypothesis, competing workspace/collective/host/leak/fragmentation causes, randomized one-factor replay by workload strata, request-correlated KV/allocator/cache/workspace telemetry, explicit OOM and rejection denominators, correctness/latency/SLO gates, conservative admission safeguards, evidence requirements, uncertainty limits, and staged canary rollback criteria explicit. Results remain provisional and require domain-expert review.
+
 # Latest run: Batch 0134
 
 Input: train records 1331-1340 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs `corpus-01474` through `corpus-01483`, preserving corpus order and the corpus's nonconsecutive IDs).
