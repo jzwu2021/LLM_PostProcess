@@ -1,3 +1,24 @@
+# Latest run: Batch 0477
+
+Input: train records 4761-4770 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05292 through corpus-05302, preserving corpus order and corpus-ID gaps).
+
+Progress: train 4770/5399; validation 0/601; total 4770/6000; remaining 1230.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first validator expected 4780 aggregate records although the pre-batch aggregate plus ten new records was 4770; no result file was modified by that failed check
+repair: corrected validator expectation to the actual post-write aggregate and reran the complete JSONL, exact-count, source-field, uniqueness, required-field, lane/status/model/decision, corrected-answer, confidence, strict train-prefix, and exact-batch-range checks
+final schema check: PASS; aggregate validation confirmed 4770 train records and exact new batch range
+manifest verification: completed after this experiment-log update; all hashes regenerated and rechecked
+```
+
+This provisional batch independently recalibrated ten GDR validation-plan prompts across performance, troubleshooting, tool-use, and system-design variants. Corrections make assumptions, topology and NUMA/affinity, peer access, registration and pinning, IOMMU/container permissions, direct-versus-staged path evidence, falsifiable controls, synchronized measurements, units and uncertainty, correctness gates, authorization, rollback thresholds, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0476
 
 Input: train records 4751-4760 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05278 through corpus-05291, preserving corpus order and corpus-ID gaps).
