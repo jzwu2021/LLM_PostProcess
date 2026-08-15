@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0025
+
+Input: validation records 241-250 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02599, corpus-02613, corpus-02615, corpus-02627, corpus-02628, corpus-02630, corpus-02633, corpus-02645, corpus-02659, and corpus-02661, preserving validation order).
+
+Progress: train 5399/5399; validation 250/601; total 5649/6000; remaining 351.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 250 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten calculator-overuse intervention plans. Corrections define counterfactual call necessity, separate tool success from utility, add no-tool and necessary-call controls, specify falsifiable thresholds and randomized held-out comparisons, measure correctness/latency/trajectory/cost/recovery, control confounders, limit preference-signal use, and require shadowing, bounded canaries, privacy-preserving telemetry, fallback, and rollback gates. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0024
 
 Input: validation records 231-240 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02522, corpus-02526, corpus-02533, corpus-02545, corpus-02550, corpus-02555, corpus-02556, corpus-02560, corpus-02564, and corpus-02569, preserving validation order).
