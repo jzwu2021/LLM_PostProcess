@@ -1,8 +1,8 @@
-# Latest run: Validation Batch 0033
+# Latest run: Validation Batch 0034
 
-Input: validation records 321-330 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03385, corpus-03386, corpus-03387, corpus-03388, corpus-03392, corpus-03396, corpus-03405, corpus-03415, corpus-03436, and corpus-03439, preserving validation order).
+Input: validation records 331-340 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03442, corpus-03452, corpus-03453, corpus-03454, corpus-03459, corpus-03461, corpus-03487, corpus-03495, corpus-03500, and corpus-03521, preserving validation order).
 
-Progress: train 5399/5399; validation 330/601; total 5729/6000; remaining 271.
+Progress: train 5399/5399; validation 340/601; total 5739/6000; remaining 261.
 
 Result:
 ```text
@@ -12,12 +12,12 @@ keep: 0
 rewrite: 10
 reject: 0
 initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
-repair: none required; raw corpus, benchmark generations, and prior results were not modified
-final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 330 validation records, with no duplicates or corpus modifications
+repair: initial aggregate validator required sorted batch order; rerun sorted all batches and passed; batch JSONL was not rewritten, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 340 validation records, with no duplicates or corpus modifications
 manifest verification: pending until this experiment-log update and commit preparation
 ```
 
-This provisional batch independently recalibrated six speculative-decoding diagnosis/design plans and four decode memory-bandwidth diagnosis plans. Corrections make the speculation overhead hypothesis, paired randomized controls, acceptance/token accounting, synchronized component traces, workload strata, and fallback explicit; for memory-bound decode they separate weight/KV traffic from launch and occupancy effects and require units, counter/timeline validation, controlled sweeps, correctness checks, canaries, rollback gates, and evidence requirements. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated ten decode memory-hierarchy diagnosis/design plans. Corrections distinguish weight/KV traffic from launch, occupancy, synchronization, and queueing effects; state a falsifiable bandwidth hypothesis; require synchronized counters and units, measured roofline inputs, randomized factorial sweeps, workload strata, correctness/token accounting, bounded canaries, baseline fallback, rollback gates, and evidence requirements. Results remain provisional and are not expert gold or authoritative domain capability.
 
 # Latest run: Validation Batch 0032
 
