@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0052
+
+Input: validation records 511-520 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05172, corpus-05184, corpus-05203, corpus-05204, corpus-05205, corpus-05210, corpus-05215, corpus-05226, corpus-05229, and corpus-05241, preserving validation order).
+
+Progress: train 5399/5399; validation 520/601; total 5919/6000; remaining 81.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator used an over-escaped batch-number regular expression and stopped before validating the aggregate
+repair: corrected the validator implementation; validation-batch-0052.jsonl was not rewritten, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten RoCE unstable-tail-latency cases. Corrections make the verbs/queue-pair and registered-buffer path, PFC/ECN and priority mapping, MTU and route symmetry, congestion and fallback behavior, falsifiable latency/timeout hypothesis, application and device metrics with units, confounders, canary limits, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0051
 
 Input: validation records 501-510 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05095, corpus-05099, corpus-05100, corpus-05101, corpus-05106, corpus-05109, corpus-05126, corpus-05129, corpus-05162, and corpus-05163, preserving validation order).
