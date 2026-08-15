@@ -1,3 +1,24 @@
+# Latest run: Batch 0263
+
+Input: train records 2621-2630 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02894 through corpus-02903, preserving corpus order).
+
+Progress: train 2630/5399; validation 0/601; total 2630/6000; remaining 3370.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (writer initially emitted literal backslash-n separators, causing one-line JSONL with extra data)
+repair: replaced literal separators with real JSONL line breaks
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten sparse-MoE load and tail-latency analyses with a variant-specific falsifiable routing/capacity hypothesis, fixed-system assumptions, matched randomized replay, disjoint held-out evaluation, unchanged-load canarying, per-expert routing/capacity/overflow/drop/padding telemetry, queue/compute/all-to-all/network/placement/batch measurements, quality/goodput/SLO/cost safeguards, confounder controls, and rollback criteria. Results require domain-expert review.
+
 # Latest run: Batch 0262
 
 Input: train records 2611-2620 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02883 through corpus-02892, preserving corpus order).
