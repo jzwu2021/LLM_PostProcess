@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0059
+
+Input: validation records 581-590 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05794, corpus-05795, corpus-05796, corpus-05800, corpus-05803, corpus-05807, corpus-05808, corpus-05816, corpus-05827, and corpus-05854, preserving validation order).
+
+Progress: train 5399/5399; validation 590/601; total 5989/6000; remaining 11.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator incorrectly required the final 6000 records before this provisional run was complete
+repair: corrected the validator expectation to the current aggregate total of 5989; validation-batch-0059.jsonl was not rewritten, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten multi-node NCCL scale-dependent hang evaluations. Corrections make rank and interface mapping, topology and NIC affinity, rendezvous and firewall ports, communicator formation, reduced-world controls, IB/RoCE path health, network counters, falsifiable hypotheses, canary rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0058
 
 Input: validation records 571-580 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05706, corpus-05707, corpus-05720, corpus-05723, corpus-05724, corpus-05726, corpus-05754, corpus-05779, corpus-05781, corpus-05789, preserving validation order).
