@@ -1,8 +1,8 @@
-# Latest run: Batch 0468
+# Latest run: Batch 0469
 
-Input: train records 4671-4680 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05182, corpus-05183, and corpus-05185 through corpus-05192, preserving corpus order and the corpus-ID gap at corpus-05184).
+Input: train records 4681-4690 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05193 through corpus-05202, preserving corpus order).
 
-Progress: train 4680/5399; validation 0/601; total 4680/6000; remaining 1320.
+Progress: train 4690/5399; validation 0/601; total 4690/6000; remaining 1310.
 
 Result:
 ```text
@@ -12,10 +12,13 @@ keep: 0
 rewrite: 10
 reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, and strict aggregate train-prefix alignment
-repair: none required
-final schema check: PASS; batch and aggregate validation confirmed 4680 train records, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
+repair: validator initially compared aggregate records in filesystem glob order and reported a false strict-prefix mismatch; no result file was changed. Validator corrected to sort aggregate records by corpus position and rerun all checks.
+final schema check: PASS; batch and aggregate validation confirmed 4690 train records, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
 manifest verification: pending until commit preparation
 ```
+
+This provisional batch independently recalibrated ten RoCE GPU-collective prompts across tool use, system design, performance analysis, and troubleshooting. Corrections make topology and transport/fallback assumptions, GPU-direct versus staging, MTU, route symmetry, lossless priority/PFC/ECN, queue pairs and registration, congestion, tail metrics, matched baselines, synchronized evidence, read-only collection, canary authorization, rollback thresholds, and credential/safety boundaries explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 
 This provisional batch independently recalibrated ten RoCE GPU-cluster collective tail-latency prompts across performance analysis, safe tool use, system design, and troubleshooting. Corrections make assumptions, topology and transport selection, verbs/completions and buffer registration, GPU-direct versus host staging, MTU, route symmetry, lossless-priority/PFC/ECN, congestion, queue pressure, fallback detection, matched baselines, percentile uncertainty, correctness gates, reversible canaries or read-only collection, rollback thresholds, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
 
