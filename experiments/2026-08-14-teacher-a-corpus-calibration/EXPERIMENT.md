@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0040
+
+Input: validation records 391-400 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04164, corpus-04183, corpus-04188, corpus-04189, corpus-04196, corpus-04200, corpus-04260, corpus-04263, corpus-04267, and corpus-04268, preserving validation order).
+
+Progress: train 5399/5399; validation 400/601; total 5799/6000; remaining 201.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first generated JSONL serialization used literal newline separators, so the ten records were initially parsed as one malformed line
+repair: regenerated validation-batch-0040.jsonl with real JSONL record separators; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated six tensor-parallel validator implementation plans and four tool-call parser implementation plans. Corrections make type/value rejection, duplicate-key detection, exact-field contracts, boundary tests, complexity, untrusted-input limits, non-dispatch behavior, assumptions, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0039
 
 Input: validation records 381-390 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03961, corpus-03992, corpus-04007, corpus-04018, corpus-04034, corpus-04047, corpus-04128, corpus-04130, corpus-04134, and corpus-04158, preserving validation order).
