@@ -9402,3 +9402,25 @@ manifest verification: pending until commit preparation
 ```
 
 This provisional batch independently recalibrated ten tensor-versus-pipeline parallelism decisions across troubleshooting, performance-analysis, and system-design variants. Corrections made assumptions, variant-specific falsifiable latency hypotheses, randomized paired trials, disjoint tuning and held-out evaluation, layer partition and microbatch behavior, communication/synchronization/pipeline-bubble measurements, queueing and tail-latency units, quality/correctness/error/availability gates, authorized failure and recovery testing, confounder controls, and reversible canary rollback criteria explicit. Results require domain-expert review.
+
+
+# Latest run: Batch 0506
+
+Input: train records 5051-5060 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05610 through corpus-05619, preserving corpus order).
+
+Progress: train 5060/5399; validation 0/601; total 5060/6000; remaining 940.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+repair: none required
+final schema check: PASS; aggregate validation confirmed 5060 train records and exact new train range
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten Mooncake disaggregated KV-cache prompts. Corrections make assumptions, prefill/decode ownership, KV schema and keying, placement, replication, leases, validation, eviction, admission, authorization, tenant isolation, bounded fallback, fencing, rollback, falsifiable hypotheses, matched baselines, synchronized metrics with units, tail latency, confounders, failure injection, output equivalence, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
