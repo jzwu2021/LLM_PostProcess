@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0048
+
+Input: validation records 471-480 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04863, corpus-04870, corpus-04876, corpus-04885, corpus-04904, corpus-04908, corpus-04914, corpus-04923, corpus-04926, and corpus-04931, preserving validation order).
+
+Progress: train 5399/5399; validation 480/601; total 5879/6000; remaining 121.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 480 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated four duplicate-detector implementation plans and six capacity-planner implementation plans. Corrections make tagged no-result semantics, one-pass iterator behavior, stable hash/equality contracts, invalid-input handling, exact rounding, dimensional consistency, utilization and redundancy policies, deterministic boundary tests, constant complexity, empirical calibration, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0047
 
 Input: validation records 461-470 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04803, corpus-04805, corpus-04816, corpus-04817, corpus-04827, corpus-04829, corpus-04844, corpus-04856, corpus-04860, and corpus-04861, preserving validation order).
