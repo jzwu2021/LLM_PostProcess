@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
 repair: none required; raw corpus, benchmark generations, and prior results were not modified
 final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 550 validation records, with no duplicates or corpus modifications
-manifest verification: pending until this experiment-log update and commit preparation
+manifest verification: PASS; regenerated manifest covers all 597 experiment files excluding itself and all 597 hashes revalidated
 ```
 
 This provisional batch independently recalibrated nine GPUDirect Storage evaluation plans and one Mooncake disaggregated KV-cache serving plan. Corrections make direct-path validation, storage-versus-DMA attribution, queue depth, cache and durability controls, interruption/restart integrity, prefill/decode ownership, KV consistency and eviction, RDMA cost, matched baselines, SLO metrics, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
