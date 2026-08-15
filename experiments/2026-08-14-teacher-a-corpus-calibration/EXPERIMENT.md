@@ -1,3 +1,24 @@
+# Latest run: Batch 0275
+
+Input: train records 2741-2750 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03024 through corpus-03033, preserving corpus order).
+
+Progress: train 2750/5399; validation 0/601; total 2750/6000; remaining 3250.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten sparse-MoE analyses with variant-specific falsifiable hypotheses for expert placement/topology, token routing skew, padding amplification, straggler queueing, replica imbalance, batch composition, capacity policy, network contention, router tie-breaking, and tenant/workload mix. Each specifies fixed assumptions, matched randomized control/treatment, held-out replay, unchanged-load canarying, routing/capacity/overflow/drop/padding and stage/per-expert/network telemetry, confounder controls, quality/goodput/SLO/error/memory/cost safeguards, fail-closed failure handling, evidence requirements, and rollback criteria. Results require domain-expert review.
+
 # Latest run: Batch 0274
 
 Input: train records 2731-2740 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03013 through corpus-03017, then corpus-03019 through corpus-03023, preserving corpus order and source-ID gap at corpus-03018).
