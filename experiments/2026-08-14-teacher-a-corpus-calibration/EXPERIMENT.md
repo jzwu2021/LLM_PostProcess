@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0030
+
+Input: validation records 291-300 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03107, corpus-03114, corpus-03116, corpus-03130, corpus-03145, corpus-03178, corpus-03179, corpus-03187, corpus-03195, and corpus-03197, preserving validation order).
+
+Progress: train 5399/5399; validation 300/601; total 5699/6000; remaining 301.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 300 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten speculative-decoding diagnosis plans. Corrections distinguish target-only from speculative latency, define a falsifiable acceptance-versus-overhead hypothesis, require per-step draft/verification/acceptance/recomputation/synchronization/transfer measurements, matched randomized workload-stratified trials, correctness and token accounting, confounder controls, bounded canaries, target-only fallback, rollback gates, and evidence requirements. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0029
 
 Input: validation records 281-290 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02979, corpus-03004, corpus-03018, corpus-03035, corpus-03049, corpus-03059, corpus-03074, corpus-03077, corpus-03097, and corpus-03104, preserving validation order).
