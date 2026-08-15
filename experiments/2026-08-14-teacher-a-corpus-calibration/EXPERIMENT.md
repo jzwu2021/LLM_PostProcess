@@ -1,3 +1,24 @@
+# Latest run: Batch 0540
+
+Input: train records 5391-5399 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05991 through corpus-06000, preserving corpus order and corpus-ID gaps).
+
+Progress: train 5399/5399; validation 0/601; total 5399/6000; remaining 601.
+
+Result:
+```text
+records processed: 9
+source ID alignment: PASS
+keep: 0
+rewrite: 9
+reject: 0
+initial schema check: FAIL; the first generated batch used literal JSONL record separators, so the parser reported extra data on the final line
+repair: replaced only the literal inter-record separators with real JSONL line terminators and removed the trailing literal separator; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated nine cluster scheduling and recovery prompts across code/tool use, system design, performance analysis, and troubleshooting. Corrections make assumptions, falsifiable hypotheses, topology-aware gang admission, fragmentation-aware packing, GPU/NIC/NUMA placement, checkpoint-safe preemption, node fencing and drain, bounded elastic restart, readiness-gated replica routing, SLOs, resource accounting, synchronized metrics with units, matched baselines, confounders, least-privilege rollout, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0539
 
 Input: train records 5381-5390 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05978, corpus-05979, corpus-05980, corpus-05981, corpus-05982, corpus-05983, corpus-05986, corpus-05987, corpus-05989, corpus-05990, preserving corpus order and corpus-ID gaps).
