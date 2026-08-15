@@ -1,8 +1,8 @@
-# Latest run: Batch 0300
+# Latest run: Batch 0301
 
-Input: train records 2991-3000 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03303 through corpus-03312, preserving corpus order).
+Input: train records 3001-3010 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03313 through corpus-03322, preserving corpus order).
 
-Progress: train 3000/5399; validation 0/601; total 3000/6000; remaining 3000.
+Progress: train 3010/5399; validation 0/601; total 3010/6000; remaining 2990.
 
 Result:
 ```text
@@ -17,7 +17,7 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/mod
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten speculative-decoding diagnosis prompts with intervention-specific hypotheses covering draft admission throttling, verification microbatch packing, position-wise confidence gating, queue-aware lookahead, dependency-safe overlap, tokenizer/cache admission, workload-conditioned routing, draft resource quotas, verification-priority scheduling, and speculative KV admission. Each includes unit-labeled measurements, randomized target-only/current/intervention controls, held-out replay, workload stratification, confounder controls, boundary conditions, fail-closed rollback, safety limits, and evidence requirements. Results require domain-expert review.
+This provisional batch independently recalibrated ten speculative-decoding diagnosis prompts with intervention-specific hypotheses covering bounded draft admission throttling, verification microbatch packing, position-wise confidence gating, queue-aware lookahead, dependency-safe overlap, tokenizer/cache admission, workload-conditioned routing, draft resource quotas, verification-priority scheduling, and speculative KV admission. Each includes assumptions, falsifiable hypotheses, unit-labeled measurements, randomized target-only/current/intervention controls, held-out replay, workload stratification, confounder controls, boundary conditions, fail-closed rollback, resource and quality safeguards, and evidence requirements. Results require domain-expert review.
 
 # Latest run: Batch 0299
 
