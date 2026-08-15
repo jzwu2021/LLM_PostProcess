@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0027
+
+Input: validation records 261-270 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02792, corpus-02797, corpus-02804, corpus-02806, corpus-02821, corpus-02830, corpus-02836, corpus-02838, corpus-02864, and corpus-02868, preserving validation order).
+
+Progress: train 5399/5399; validation 270/601; total 5659/6000; remaining 341.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first generated JSONL used literal newline escapes as record separators, and a normalization attempt also altered escaped answer content
+repair: regenerated validation-batch-0027.jsonl from the corpus with JSON serialization, preserving escaped answer content; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated five calculator-overuse intervention plans and five sparse-MoE uneven-load/tail-latency diagnosis plans. Corrections make counterfactual necessity, no-tool and necessary-call controls, routing/capacity/placement mechanisms, all-to-all and token-overflow measurements, falsifiable hypotheses, matched experiments, confounders, correctness checks, bounded canaries, fallback, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0026
 
 Input: validation records 251-260 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02672, corpus-02682, corpus-02714, corpus-02732, corpus-02737, corpus-02741, corpus-02742, corpus-02751, corpus-02758, and corpus-02766, preserving validation order).
