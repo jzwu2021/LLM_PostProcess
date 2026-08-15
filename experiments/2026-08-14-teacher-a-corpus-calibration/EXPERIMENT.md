@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0045
+
+Input: validation records 441-450 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04586, corpus-04595, corpus-04598, corpus-04622, corpus-04626, corpus-04645, corpus-04654, corpus-04658, corpus-04679, and corpus-04692, preserving validation order).
+
+Progress: train 5399/5399; validation 450/601; total 5849/6000; remaining 151.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first JSONL serialization used literal backslash-n separators and was not parseable as ten physical JSONL lines
+repair: replaced the literal separators with real newlines; no raw corpus, benchmark generation, or prior result was modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated three paged-block implementations, six NCCL environment-checker implementations, and one prefill/decode classifier implementation. Corrections make threshold and empty-value semantics, secret non-disclosure, explicit configuration ownership, token-count validation, boundary behavior, deterministic tests, complexity, downstream assumptions, untrusted-input limits, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0044
 
 Input: validation records 431-440 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04525, corpus-04527, corpus-04529, corpus-04539, corpus-04541, corpus-04545, corpus-04547, corpus-04559, corpus-04568, and corpus-04584, preserving validation order).
