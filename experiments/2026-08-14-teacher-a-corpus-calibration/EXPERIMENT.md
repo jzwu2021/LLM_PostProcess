@@ -1,8 +1,8 @@
-# Latest run: Batch 0430
+# Latest run: Batch 0431
 
-Input: train records 4291-4300 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04745 through corpus-04752, corpus-04754, and corpus-04755, preserving corpus order and the corpus-ID gap at corpus-04753).
+Input: train records 4301-4310 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04756 through corpus-04759, corpus-04761 through corpus-04766, preserving corpus order and the corpus-ID gap at corpus-04760).
 
-Progress: train 4300/5399; validation 0/601; total 4300/6000; remaining 1700.
+Progress: train 4310/5399; validation 0/601; total 4310/6000; remaining 1690.
 
 Result:
 ```text
@@ -12,10 +12,12 @@ keep: 0
 rewrite: 10
 reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
-repair: none required
+repair: validator command was blocked once by the gateway guard and was rerun successfully with an equivalent standalone validator; no result or source corpus changes were needed
 final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
-manifest verification: PASS; regenerated and rechecked all 432 hashes
+manifest verification: pending until commit preparation
 ```
+
+This provisional batch independently recalibrated ten prefill/decode classifier prompts. Corrections specify a typed Policy, token-unit provenance, zero-output behavior, strict invalid-input handling, exhaustive decision-table and boundary tests, constant complexity, and evidence boundaries for serving and phase claims. Results remain provisional and are not expert gold or authoritative domain capability.
 
 This provisional batch independently recalibrated ten prefill/decode classifier prompts. Corrections define a typed Policy and label contract, token-count provenance, explicit endpoint and overlap semantics, zero-output behavior, strict invalid-input handling, exhaustive boundary and decision-table tests, constant complexity, and evidence boundaries for serving and phase claims. Results remain provisional and are not expert gold or authoritative domain capability.
 
