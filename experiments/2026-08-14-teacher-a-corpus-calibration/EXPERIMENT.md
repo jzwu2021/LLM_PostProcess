@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0020
+
+Input: validation records 191-200 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02046, corpus-02053, corpus-02060, corpus-02069, corpus-02071, corpus-02076, corpus-02083, corpus-02087, corpus-02108, and corpus-02110, preserving validation order).
+
+Progress: train 5399/5399; validation 200/601; total 5599/6000; remaining 401.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: the first aggregate assertion incorrectly expected the post-completion total of 6000; corrected it to the expected post-batch total of 5599 (5399 train plus 200 validation), then reran validation; result batch was not changed, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 200 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten weight-only quantization comparison plans. Corrections make artifact and workload controls, quality/correctness gates, kernel fallback checks, memory decomposition, TTFT/TPOT/throughput and tail-latency measurement, cost accounting, confidence intervals, confounders, calibration/evaluation separation, canary limits, rollback criteria, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0019
 
 Input: validation records 181-190 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-01968, corpus-01980, corpus-01982, corpus-01989, corpus-01996, corpus-02008, corpus-02012, corpus-02019, corpus-02026, and corpus-02030, preserving validation order).
