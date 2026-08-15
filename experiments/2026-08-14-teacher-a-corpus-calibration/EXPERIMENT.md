@@ -1,3 +1,24 @@
+# Latest run: Validation Batches 0060-0061
+
+Input: validation records 591-601 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05906, corpus-05920, corpus-05924, corpus-05965, corpus-05966, corpus-05968, corpus-05970, corpus-05984, corpus-05985, corpus-05988, and corpus-05997, preserving validation order). Batch 0060 contains records 591-600; batch 0061 contains the final record 601 because the prior aggregate contained 600 validation records.
+
+Progress: train 5399/5399; validation 601/601; total 6000/6000; remaining 0.
+
+Result:
+```text
+records processed: 11 across validation-batch-0060.jsonl and validation-batch-0061.jsonl
+source ID alignment: PASS
+keep: 0
+rewrite: 11
+reject: 0
+initial schema check: FAIL; aggregate count was 5999 after batch 0060 because the pre-existing train results contained 5399 records but validation had only 600; missing validation source ID corpus-05997 was identified
+repair: calibrated the missing final validation record in validation-batch-0061.jsonl; no existing batch, raw corpus, or benchmark generation was modified
+final schema check: PASS; JSONL parsing, exact counts, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix plus validation-prefix alignment confirmed 6000 records
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional work independently recalibrated eleven cluster scheduling and recovery evaluations. Corrections make gang scheduling, GPU/NIC/topology-aware placement, fragmentation accounting, checkpoint-safe preemption, node drain and fencing, elastic restart, replica readiness/routing, SLO metrics, retry bounds, split-brain protection, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0059
 
 Input: validation records 581-590 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05794, corpus-05795, corpus-05796, corpus-05800, corpus-05803, corpus-05807, corpus-05808, corpus-05816, corpus-05827, and corpus-05854, preserving validation order).
