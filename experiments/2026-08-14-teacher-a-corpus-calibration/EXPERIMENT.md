@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0035
+
+Input: validation records 341-350 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03549, corpus-03560, corpus-03564, corpus-03571, corpus-03587, corpus-03612, corpus-03617, corpus-03640, corpus-03646, and corpus-03668, preserving validation order).
+
+Progress: train 5399/5399; validation 350/601; total 5749/6000; remaining 251.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator concatenated result files in filesystem glob order and compared source fields by aggregate index rather than dataset batch order
+repair: corrected validation to sort each dataset's batches numerically and compare source fields by aligned corpus index; regenerated validation-batch-0035.jsonl was not needed, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten memory-hierarchy decode diagnosis/design plans. Corrections distinguish weight/KV traffic from launch, synchronization, occupancy, queueing, transfer, and clock effects; state a falsifiable bytes-per-token and bandwidth hypothesis; require synchronized counters with units, randomized paired factorial trials, workload strata, correctness/token accounting, bounded canaries, baseline fallback, rollback gates, and evidence requirements. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0034
 
 Input: validation records 331-340 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03442, corpus-03452, corpus-03453, corpus-03454, corpus-03459, corpus-03461, corpus-03487, corpus-03495, corpus-03500, and corpus-03521, preserving validation order).
