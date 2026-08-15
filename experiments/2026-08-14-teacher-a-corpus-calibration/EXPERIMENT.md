@@ -1,8 +1,8 @@
-# Latest run: Batch 0537
+# Latest run: Batch 0538
 
-Input: train records 5361-5370 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05954 through corpus-05963, preserving corpus order).
+Input: train records 5371-5380 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05964, corpus-05967, corpus-05969, corpus-05971 through corpus-05977, preserving corpus order and corpus-ID gaps).
 
-Progress: train 5370/5399; validation 0/601; total 5370/6000; remaining 630.
+Progress: train 5380/5399; validation 0/601; total 5380/6000; remaining 620.
 
 Result:
 ```text
@@ -11,13 +11,13 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: FAIL; the first validator invocation used an invalid ad-hoc expected-ID expression and did not read or modify experiment files
-repair: corrected the standalone validator to sort aggregate results by corpus order; batch file was not changed
-final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+repair: none required
+final schema check: PASS; aggregate validation confirmed 5380 unique train records and exact new train range
 manifest verification: pending until this experiment-log update and commit preparation
 ```
 
-This provisional batch independently recalibrated ten cluster scheduling and recovery prompts across troubleshooting, code/tool use, system design, and performance analysis. Corrections make assumptions, falsifiable scheduler and recovery hypotheses, topology-aware gang admission, fragmentation-aware packing, GPU/NIC/NUMA placement, checkpoint-safe preemption, node fencing and drain, bounded elastic restart, readiness-gated replica routing, SLOs, resource accounting, synchronized metrics with units, matched baselines, confounders, least-privilege rollout, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated ten cluster scheduling and recovery prompts across system design, code/tool use, performance analysis, and troubleshooting. Corrections make assumptions, falsifiable scheduler and recovery hypotheses, topology-aware gang admission, fragmentation-aware packing, GPU/NIC/NUMA placement, checkpoint-safe preemption, node fencing and drain, bounded elastic restart, readiness-gated replica routing, SLOs, resource accounting, synchronized metrics with units, matched baselines, confounders, least-privilege rollout, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
 
 # Latest run: Batch 0536
 
