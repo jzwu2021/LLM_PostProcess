@@ -14,7 +14,7 @@ reject: 0
 initial schema check: FAIL; the first aggregate-validator invocation was blocked by the execution environment before reading or modifying experiment files
 repair: reran the equivalent validator from a standalone file; no result repair was required
 final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
-manifest verification: pending until this experiment-log update and commit preparation
+manifest verification: PASS; all experiment hashes regenerated and rechecked before commit
 ```
 
 This provisional batch independently recalibrated ten larger-world-size multi-node NCCL hang prompts. Corrections make communicator and rank-order, placement and NIC affinity, rendezvous and port reachability, topology and transport, resource/configuration hypotheses, synchronized metrics with units, matched controls, uncertainty, least-privilege diagnostics, canary rollback, cleanup, redaction, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
