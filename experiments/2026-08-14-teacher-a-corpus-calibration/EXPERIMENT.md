@@ -1,8 +1,8 @@
-# Latest run: Batch 0373
+# Latest run: Batch 0374
 
-Input: train records 3721-3730 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04107 through corpus-04116, preserving corpus order).
+Input: train records 3731-3740 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04117 through corpus-04126, preserving corpus order).
 
-Progress: train 3730/5399; validation 0/601; total 3730/6000; remaining 2270.
+Progress: train 3740/5399; validation 0/601; total 3740/6000; remaining 2260.
 
 Result:
 ```text
@@ -11,9 +11,9 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: failed because the first validator used an over-escaped batch-number regex; corrected to parse batch numbers from filenames
-repair: validator command only; result JSONL was not changed
-final schema check: PASS; JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required
+final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
 manifest verification: pending until commit preparation
 ```
 
