@@ -1,5 +1,5 @@
-60da529fc1f0d445bf82433d5bc88cfca105dec27a9864fd01cac089aca3e494  ./EXPERIMENT.md
 999fcfbfb2e6e020cb6eab1af8929b15aec575feb9439c0cdbbdf9752c5ed750  ./environment.txt
+047719f2f2e4676bea98dd8170afb75cbee477f80ddffb568de161598726a99c  ./EXPERIMENT.md
 2c86d3883c973f098f3f93a211ce00bcde579cb98f7dd190725271018dc0353a  ./results/train-batch-0001.jsonl
 c4f7f6b8d58b3b90a72c56c79d508c54f7a4e5a74c394c16a1dec1c4cc4cfbf6  ./results/train-batch-0002.jsonl
 f5803dd09969db901bef8c069f425da5fe1498ceffa4c3668414da384e9bb730  ./results/train-batch-0003.jsonl
@@ -551,3 +551,4 @@ ad17ed15bbe03713e8bce3367b55b8423c8802b3f5b45ecd4930e08d3be92df7  ./results/vali
 96de9f213d997a93d64cbfbbc284ed77d4a728f1940f6e9d92a1e37d1b7b83e7  ./results/validation-batch-0009.jsonl
 81ed0c96a0d3eb29051a512c4e2037d1f4d04e2a0ef0c1be46f9bbd887fb4a8b  ./results/validation-batch-0010.jsonl
 b4dec663e4f9265790b07713f3e15f6ace6c15acdf7c463e1c1141b65f7f6e61  ./results/validation-batch-0011.jsonl
+1247c15e41f6994fd87dc30bcca838571b9997b0f8a8171f9ffb1ea5fb472469  ./results/validation-batch-0012.jsonl
