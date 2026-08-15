@@ -1,3 +1,24 @@
+# Latest run: Batch 0443
+
+Input: train records 4421-4430 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04895 through corpus-04903, then corpus-04905, preserving corpus order and the corpus-ID gap at corpus-04904).
+
+Progress: train 4430/5399; validation 0/601; total 4430/6000; remaining 1570.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validation command used a streaming jq object as an array and emitted indexing errors without validating the source slice
+repair: validator corrected to slurp the source JSONL before slicing; result batch was unchanged and no source corpus or prior result was modified
+final schema check: PASS; JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated six duplicate-detector implementation prompts and four capacity-planner implementation prompts. Corrections define second-occurrence and early-termination semantics, ID/error policy, deterministic tests, complexity and memory bounds, conservative capacity formulas with units, validation, rounding, redundancy/headroom assumptions, measurement plans, and privacy/evidence boundaries. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0442
 
 Input: train records 4411-4420 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04884, corpus-04886 through corpus-04894, preserving corpus order and the corpus-ID gap at corpus-04885).
