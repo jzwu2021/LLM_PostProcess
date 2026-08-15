@@ -1,3 +1,24 @@
+# Latest run: Batch 0364
+
+Input: train records 3631-3640 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04014 through corpus-04024, preserving corpus order and the corpus-ID gap at corpus-04018).
+
+Progress: train 3640/5399; validation 0/601; total 3640/6000; remaining 2360.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required
+final schema check: PASS; standalone validator confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten KV-cache estimator implementation prompts. Corrected answers provide integer-only validation, explicitly account for both K and V tensors, define dense-layout and byte-unit assumptions, include deterministic valid/invalid boundary tests, state constant-time/constant-space complexity, and flag padding, metadata, fragmentation, sharing, eviction, allocator, quantization, and integer-width limitations. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0363
 
 Input: train records 3621-3630 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04003 through corpus-04013, preserving corpus order and the corpus-ID gap at corpus-04007).
