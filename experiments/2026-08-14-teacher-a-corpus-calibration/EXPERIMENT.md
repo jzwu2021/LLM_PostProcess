@@ -1,3 +1,24 @@
+# Latest run: Batch 0495
+
+Input: train records 4941-4950 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05490 through corpus-05499, preserving corpus order).
+
+Progress: train 4950/5399; validation 0/601; total 4950/6000; remaining 1050.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; validator crashed while selecting the new-batch filenames because a tuple index was treated as a path; no result file was modified
+repair: corrected the validator tuple unpacking and reran JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+final schema check: PASS; aggregate validation confirmed 4950 train records and exact new batch range
+manifest verification: completed after this experiment-log update; all hashes regenerated and rechecked
+```
+
+This provisional batch independently recalibrated ten GDS checkpoint and dataset-I/O prompts across troubleshooting, tool use, system design, and performance analysis. Corrections make filesystem/kernel/runtime prerequisites, topology and NUMA/storage affinity, direct GPU-DMA activation evidence, storage-versus-GPU-DMA separation, matched CPU-staged controls, queue depth and tail latency, synchronized metrics with units and uncertainty, cache/compression/contention controls, checksum and interruption/node-failure recovery, rollback thresholds, authorization, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0494
 
 Input: train records 4931-4940 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05480 through corpus-05489, preserving corpus order).
