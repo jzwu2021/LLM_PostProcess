@@ -1,3 +1,24 @@
+# Latest run: Batch 0313
+
+Input: train records 3121-3130 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03455 through corpus-03466, preserving corpus order and source-ID gaps at corpus-03459 and corpus-03461).
+
+Progress: train 3130/5399; validation 0/601; total 3130/6000; remaining 2870.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; aggregate alignment assertion used filesystem glob order rather than numeric batch order, while the new artifact itself had correct JSONL/schema/source-field content
+repair: corrected the validation script to sort train-batch files numerically/lexically before aggregate alignment; no artifact rewrite was needed
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique-ID, exact source-field matching, and strict aggregate train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten memory-hierarchy decode prompts. Each corrected answer distinguishes weight/KV/intermediate/copy traffic from cache, launch, synchronization, and overlap effects; states a variant-specific falsifiable hypothesis; specifies randomized target-only/current/intervention controls; measures unit-labeled latency, throughput, bandwidth, counters, traces, cache, launch, power, thermal, and quality signals; identifies confounders and workload boundaries; and defines canary, guardrail, fail-closed rollback, and evidence requirements. Results require domain-expert review.
+
 # Latest run: Batch 0312
 
 Input: train records 3111-3120 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03441 through corpus-03451, preserving corpus order and source-ID gap at corpus-03442).
