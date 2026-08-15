@@ -1,4 +1,24 @@
-# Latest run: Batch 0469
+# Latest run: Batch 0470
+
+Input: train records 4691-4700 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05206 through corpus-05217, preserving corpus order and corpus-ID gaps).
+
+Progress: train 4700/5399; validation 0/601; total 4700/6000; remaining 1300.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first generation selected source records 4701-4710 instead of the required next records 4691-4700; no prior result or corpus file was modified, and the batch was regenerated from the correct slice
+repair: corrected source slice and reran generation and validation
+final schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten RoCE GPU-cluster collective tail-latency prompts across system design, performance analysis, troubleshooting, and safe tool use. Corrections make topology and affinity, GPU-direct versus staging, transport/fallback, MTU, route symmetry, priority/PFC/ECN, queue pairs and registration, congestion, synchronized multi-layer metrics, matched baselines, uncertainty, read-only collection, authorization, correctness gates, and rollback thresholds explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 
 Input: train records 4681-4690 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05193 through corpus-05202, preserving corpus order).
 
