@@ -1,3 +1,24 @@
+# Latest run: Batch 0251
+
+Input: train records 2501-2510 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02760 through corpus-02765, corpus-02767 through corpus-02770, preserving corpus order and source-ID gap at corpus-02766).
+
+Progress: train 2510/5399; validation 0/601; total 2510/6000; remaining 3490.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (JSONL writer initially emitted literal record separators and a trailing escaped separator)
+repair: replaced the literal inter-record separators with real JSONL line breaks and removed the trailing escaped separator
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten calculator-overuse interventions with category-aware assumptions, conservative unnecessary-call criteria, typed answer/stop/calculator-needed/clarify gating, expression/unit/precision/ambiguity/authorization checks, bounded retries, result/type/range/consistency/provenance validation, fail-closed timeout/malformed/duplicate/unavailable/unauthorized/contradictory/adversarial handling, correctness/call-rate/trajectory/latency/cost/recovery/preference measurement, held-out non-inferiority testing, randomized paired evaluation with disjoint tuning, confounder logging, minimized telemetry, reward safeguards, canary monitoring, and rollback thresholds. Results require domain-expert review.
+
 # Latest run: Batch 0250
 
 Input: train records 2491-2500 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02748 through corpus-02750, corpus-02752 through corpus-02757, and corpus-02759, preserving corpus order and source-ID gaps at corpus-02751 and corpus-02758).
