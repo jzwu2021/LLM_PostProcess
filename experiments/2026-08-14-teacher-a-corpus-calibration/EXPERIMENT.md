@@ -1,3 +1,24 @@
+# Latest run: Batch 0323
+
+Input: train records 3221-3230 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03563, corpus-03565 through corpus-03570, and corpus-03572 through corpus-03574, preserving corpus order and the corpus-ID gaps at corpus-03564 and corpus-03571).
+
+Progress: train 3230/5399; validation 0/601; total 3230/6000; remaining 2770.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique-ID, exact source-field matching, and strict aggregate train-prefix alignment passed
+repair: not required
+final schema check: PASS; standalone validator confirmed JSONL parsing, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten decode diagnosis prompts. Each corrected answer distinguishes measured utilization and bandwidth from causal attribution; separates weight/KV/intermediate/copy traffic and DRAM/L2/cache/interconnect from launch, synchronization, occupancy, and overlap effects; states a falsifiable hypothesis with a declared endpoint and counter signature; specifies randomized reference/current/intervention trials across workload, batch, sequence, precision, cache, and kernel strata; measures unit-labeled latency, throughput, traffic, utilization, cache, launch, power, thermal, memory, correctness, and quality signals; identifies telemetry and confounding limits; and defines canary, guardrail, fail-closed, rollback, and evidence requirements. Results require domain-expert review.
+
 # Latest run: Batch 0322
 
 Input: train records 3211-3220 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03552 through corpus-03562, preserving corpus order).
