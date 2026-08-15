@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS
 repair: not required
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix alignment passed
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated 305 experiment-file hashes excluding MANIFEST.sha256 and rechecked every hash
 ```
 
 This provisional batch independently recalibrated ten speculative-decoding diagnosis prompts with intervention-specific hypotheses for bounded draft admission, verification microbatch packing, position-wise confidence gating, queue-aware lookahead, dependency-safe overlap, tokenizer/cache admission, workload-conditioned routing, draft resource quotas, verification-priority scheduling, and speculative KV-cache admission budgeting. Each includes assumptions, falsifiable success criteria, unit-labeled per-step and per-request measurements, randomized target-only/current/intervention controls, held-out replay, workload stratification, confounder controls, boundary conditions, hard resource and quality safeguards, fail-closed rollback, and evidence requirements. Results require domain-expert review.
