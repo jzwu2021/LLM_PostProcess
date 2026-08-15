@@ -1,3 +1,24 @@
+# Latest run: Batch 0501
+
+Input: train records 5001-5010 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05558 through corpus-05561, then corpus-05563 through corpus-05568, preserving corpus order and the corpus-ID gap at corpus-05562).
+
+Progress: train 5010/5399; validation 0/601; total 5010/6000; remaining 990.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+repair: none required
+final schema check: PASS; aggregate validation confirmed 5010 train records and exact new train range
+manifest verification: completed after this experiment-log update; all hashes regenerated and rechecked
+```
+
+This provisional batch independently recalibrated ten Mooncake disaggregated KV-cache prompts across performance analysis, troubleshooting, tool use, and system design. Corrections make prefill/decode ownership, KV placement/replication/eviction/versioning, RDMA attribution, matched baselines, admission control, stale or partial data handling, node/link/control-plane recovery, bounded fallback, rollback gates, authorization, tenant isolation, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0500
 
 Input: train records 4991-5000 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05545, corpus-05546, corpus-05548 through corpus-05552, corpus-05554 through corpus-05555, and corpus-05557, preserving corpus order and corpus-ID gaps).
