@@ -1,8 +1,8 @@
-# Latest run: Batch 0501
+# Latest run: Batch 0502
 
-Input: train records 5001-5010 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05558 through corpus-05561, then corpus-05563 through corpus-05568, preserving corpus order and the corpus-ID gap at corpus-05562).
+Input: train records 5011-5020 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05569 through corpus-05578, preserving corpus order).
 
-Progress: train 5010/5399; validation 0/601; total 5010/6000; remaining 990.
+Progress: train 5020/5399; validation 0/601; total 5020/6000; remaining 980.
 
 Result:
 ```text
@@ -13,11 +13,12 @@ rewrite: 10
 reject: 0
 initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
 repair: none required
-final schema check: PASS; aggregate validation confirmed 5010 train records and exact new train range
+final schema check: PASS; aggregate validation confirmed 5020 train records and exact new train range
 manifest verification: completed after this experiment-log update; all hashes regenerated and rechecked
 ```
 
-This provisional batch independently recalibrated ten Mooncake disaggregated KV-cache prompts across performance analysis, troubleshooting, tool use, and system design. Corrections make prefill/decode ownership, KV placement/replication/eviction/versioning, RDMA attribution, matched baselines, admission control, stale or partial data handling, node/link/control-plane recovery, bounded fallback, rollback gates, authorization, tenant isolation, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated ten Mooncake disaggregated KV-cache prompts across system design, performance analysis, troubleshooting, and tool use. Corrections make prefill/decode ownership, KV placement/replication/eviction/versioning, RDMA attribution, matched local and conventional baselines, admission control, stale or partial data handling, node/link/control-plane recovery, bounded fallback, rollback gates, authorization, tenant isolation, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 
 # Latest run: Batch 0500
 
