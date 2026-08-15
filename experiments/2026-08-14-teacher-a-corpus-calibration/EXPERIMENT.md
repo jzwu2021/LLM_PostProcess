@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0041
+
+Input: validation records 401-410 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04274, corpus-04280, corpus-04296, corpus-04297, corpus-04302, corpus-04304, corpus-04311, corpus-04313, corpus-04341, and corpus-04345, preserving validation order).
+
+Progress: train 5399/5399; validation 410/601; total 5809/6000; remaining 191.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate verification assertion incorrectly expected the new validation prefix to end at record 411 rather than record 410 after adding ten records to the completed prefix of 400
+repair: corrected the aggregate validator's prefix expectation; regenerated validation-batch-0041.jsonl was not needed, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated four dependency-light tool-call parser implementations and six bounded-retry implementations. Corrections make exact field/type contracts, duplicate-key handling, non-dispatch behavior, retry attempt semantics, exception boundaries, capped delays, idempotency, timeout limits, deterministic tests, complexity, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0040
 
 Input: validation records 391-400 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04164, corpus-04183, corpus-04188, corpus-04189, corpus-04196, corpus-04200, corpus-04260, corpus-04263, corpus-04267, and corpus-04268, preserving validation order).
