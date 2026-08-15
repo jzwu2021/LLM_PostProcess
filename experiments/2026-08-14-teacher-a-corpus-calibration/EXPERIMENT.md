@@ -1,3 +1,24 @@
+# Latest run: Batch 0399
+
+Input: train records 3981-3990 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04396 through corpus-04405, preserving corpus order).
+
+Progress: train 3990/5399; validation 0/601; total 3990/6000; remaining 2010.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required
+final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated five bounded-retry and five latency-percentile implementation prompts. Corrections specify strict retry argument validation, exception classification, capped backoff without a final sleep, injected timing, cancellation and idempotency limits, declared linear-interpolation percentile semantics, empty-input and finite-value handling, deterministic boundary tests, complexity, precision, unit, and large-input risks, and evidence boundaries. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0398
 
 Input: train records 3971-3980 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04385 through corpus-04395, preserving corpus order and the corpus-ID gap at corpus-04388).
