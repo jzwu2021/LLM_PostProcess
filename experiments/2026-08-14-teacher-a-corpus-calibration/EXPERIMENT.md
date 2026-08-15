@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0039
+
+Input: validation records 381-390 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03961, corpus-03992, corpus-04007, corpus-04018, corpus-04034, corpus-04047, corpus-04128, corpus-04130, corpus-04134, and corpus-04158, preserving validation order).
+
+Progress: train 5399/5399; validation 390/601; total 5789/6000; remaining 211.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; validator initially treated the validation target 601 as the current processed count rather than allowing the completed validation prefix
+repair: corrected validator to require the complete train set and a validation prefix within the target; batch JSONL was not rewritten, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: PASS; regenerated manifest covers 581 experiment files excluding itself and all 581 hashes revalidated
+```
+
+This provisional batch independently recalibrated two serving-system throughput comparison plans, five dependency-light KV-cache estimator implementation plans, and three tensor-parallel validator implementation plans. Corrections make definitions and contracts explicit, cover type and positivity validation, boundary cases, complexity, falsifiable performance mechanisms, units, matched controls, synchronized measurements, confounders, bounded canaries, fallback, rollback gates, and evidence requirements. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0038
 
 Input: validation records 371-380 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03847, corpus-03849, corpus-03851, corpus-03894, corpus-03896, corpus-03907, corpus-03909, corpus-03910, corpus-03935, and corpus-03941, preserving validation order).
