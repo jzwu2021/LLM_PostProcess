@@ -1,3 +1,24 @@
+# Latest run: Batch 0430
+
+Input: train records 4291-4300 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04745 through corpus-04752, corpus-04754, and corpus-04755, preserving corpus order and the corpus-ID gap at corpus-04753).
+
+Progress: train 4300/5399; validation 0/601; total 4300/6000; remaining 1700.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required
+final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: PASS; regenerated and rechecked all 432 hashes
+```
+
+This provisional batch independently recalibrated ten prefill/decode classifier prompts. Corrections define a typed Policy and label contract, token-count provenance, explicit endpoint and overlap semantics, zero-output behavior, strict invalid-input handling, exhaustive boundary and decision-table tests, constant complexity, and evidence boundaries for serving and phase claims. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0429
 
 Input: train records 4281-4290 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04734 through corpus-04740, corpus-04742 through corpus-04744, preserving corpus order and the corpus-ID gap at corpus-04741).
