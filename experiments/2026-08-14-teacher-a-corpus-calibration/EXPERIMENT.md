@@ -1,3 +1,24 @@
+# Latest run: Batch 0487
+
+Input: train records 4861-4870 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05401, corpus-05403 through corpus-05411, preserving corpus order and the corpus-ID gap at corpus-05402).
+
+Progress: train 4870/5399; validation 0/601; total 4870/6000; remaining 1130.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the ad-hoc aggregate validator initially used filesystem glob order instead of numeric batch order, causing a false prefix-alignment failure; no result file was modified
+repair: corrected validator to sort train batches by numeric batch sequence, then reran JSONL parsing, exact batch count, required fields, source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict train-prefix alignment, and exact new train range
+final schema check: PASS; aggregate validation confirmed 4870 train records and exact new batch range
+manifest verification: pending until experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten GPUDirect Storage checkpoint and dataset-I/O prompts across distributed-training evaluation variants. Corrections make assumptions, topology and NUMA placement, filesystem/kernel prerequisites, direct-DMA activation, storage-versus-GPU-DMA separation, matched CPU-staged controls, queue depth and tail latency, synchronized metrics with units and uncertainty, cache and contention confounders, checksum and interrupted-restart gates, rollback thresholds, authorization, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0486
 
 Input: train records 4851-4860 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05391 through corpus-05400, preserving corpus order).
