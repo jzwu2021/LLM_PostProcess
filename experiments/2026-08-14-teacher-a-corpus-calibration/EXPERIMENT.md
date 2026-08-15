@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
 repair: none required
 final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated and rechecked all 429 hashes
 ```
 
 This provisional batch independently recalibrated ten prefill/decode classifier prompts. Corrections define token-count units, strict non-boolean integer validation, explicit threshold and label policy, zero and exact-boundary behavior, deterministic overlap handling, O(1) complexity, and evidence boundaries for serving-path and performance claims. Results remain provisional and are not expert gold or authoritative domain capability.
