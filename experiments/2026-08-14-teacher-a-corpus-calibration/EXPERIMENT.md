@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0049
+
+Input: validation records 481-490 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04942, corpus-04943, corpus-04957, corpus-04968, corpus-04978, corpus-04984, corpus-04987, corpus-04988, corpus-04996, and corpus-04998, preserving validation order).
+
+Progress: train 5399/5399; validation 490/601; total 5889/6000; remaining 111.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator used an incorrect expected total of 5890 rather than the actual 5889 after adding ten records to the prior total of 5879
+repair: corrected the validator total and validation-prefix expectation; validation-batch-0049.jsonl was not rewritten, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten capacity-planner implementation plans. Corrections make capacity units and intervals, dimensional validation, conservative bottleneck selection, utilization/headroom/redundancy policy, workload and deployment assumptions, deterministic boundary tests, complexity, empirical measurement, overload behavior, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0048
 
 Input: validation records 471-480 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04863, corpus-04870, corpus-04876, corpus-04885, corpus-04904, corpus-04908, corpus-04914, corpus-04923, corpus-04926, and corpus-04931, preserving validation order).
