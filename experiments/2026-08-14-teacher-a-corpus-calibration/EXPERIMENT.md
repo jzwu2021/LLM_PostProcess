@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0024
+
+Input: validation records 231-240 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02522, corpus-02526, corpus-02533, corpus-02545, corpus-02550, corpus-02555, corpus-02556, corpus-02560, corpus-02564, and corpus-02569, preserving validation order).
+
+Progress: train 5399/5399; validation 240/601; total 5639/6000; remaining 361.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate check compared validation IDs in filesystem glob order rather than dataset batch order
+repair: corrected the validator to sort result batches by dataset and numeric batch sequence; result batch was not changed, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten agent-runtime calculator overuse intervention plans. Corrections define counterfactual call necessity, separate tool success from utility, add no-tool baselines and necessary-call controls, specify randomized held-out experiments, correctness/latency/trajectory/cost/recovery measures, confounders, preference-signal limits, bounded canaries, failure handling, rollback gates, privacy safeguards, and evidence requirements. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0023
 
 Input: validation records 221-230 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02389, corpus-02391, corpus-02404, corpus-02442, corpus-02443, corpus-02445, corpus-02458, corpus-02478, corpus-02482, and corpus-02498, preserving validation order).
