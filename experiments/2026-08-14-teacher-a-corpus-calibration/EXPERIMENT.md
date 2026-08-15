@@ -1,3 +1,24 @@
+# Latest run: Batch 0533
+
+Input: train records 5321-5330 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05912 through corpus-05919, then corpus-05921 through corpus-05922, preserving corpus order and corpus-ID gaps).
+
+Progress: train 5330/5399; validation 0/601; total 5330/6000; remaining 670.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first generated JSONL used literal record separators, so the aggregate parser reported extra data on line 1
+repair: regenerated the batch with real JSONL line terminators; no raw corpus, benchmark generation, or prior result was modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten cluster scheduling and recovery prompts across system design, performance analysis, troubleshooting, and code/tool use. Corrections make assumptions, falsifiable scheduler and recovery hypotheses, topology-aware gang admission, fragmentation-aware packing, GPU/NIC/NUMA placement, preemption, checkpoint integrity and cadence, node drain and fencing, elastic restart, replica routing, SLOs, resource accounting, synchronized metrics with units, matched baselines, confounders, least-privilege rollout, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0532
 
 Input: train records 5311-5320 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05901 through corpus-05905, then corpus-05907 through corpus-05911, preserving corpus order and corpus-ID gaps).
