@@ -1,3 +1,24 @@
+# Latest run: Batch 0492
+
+Input: train records 4911-4920 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05460 through corpus-05469, preserving corpus order).
+
+Progress: train 4920/5399; validation 0/601; total 4920/6000; remaining 1080.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator incorrectly compared the established calibration selection order with the raw corpus prefix, so it raised a false alignment failure; no result file was modified
+repair: corrected validation to sort result batches by numeric filename, match source fields by source_id, enforce uniqueness and the established processed set, and require the exact new raw train range; reran JSONL parsing, exact batch count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, source-field equality, and new-range checks
+final schema check: PASS; aggregate validation confirmed 4920 train records and exact new batch range
+manifest verification: completed after this experiment-log update; all hashes regenerated and rechecked
+```
+
+This provisional batch independently recalibrated ten GDS checkpoint and dataset-I/O prompts across system design, performance analysis, troubleshooting, and tool-use variants. Corrections make topology and NUMA/affinity, filesystem/kernel/runtime prerequisites, permissions, independently evidenced direct GPU-DMA activation, matched CPU-staged controls, storage-versus-GPU-DMA separation, queue depth and tail latency, synchronized metrics with units and uncertainty, cache/compression/contention controls, checksum and interruption/node-failure recovery, rollback thresholds, authorization, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0491
 
 Input: train records 4901-4910 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05450 through corpus-05459, preserving corpus order).
