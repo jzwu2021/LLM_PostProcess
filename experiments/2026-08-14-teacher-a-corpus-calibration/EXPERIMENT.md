@@ -1,8 +1,8 @@
-# Latest run: Batch 0269
+# Latest run: Batch 0270
 
-Input: train records 2681-2690 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02960 through corpus-02964, corpus-02966 through corpus-02970, preserving corpus order and source-ID gap at corpus-02965).
+Input: train records 2691-2700 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02971 through corpus-02978, then corpus-02980 through corpus-02981, preserving corpus order and source-ID gap at corpus-02979).
 
-Progress: train 2690/5399; validation 0/601; total 2690/6000; remaining 3310.
+Progress: train 2700/5399; validation 0/601; total 2700/6000; remaining 3300.
 
 Result:
 ```text
@@ -17,7 +17,7 @@ final schema check: PASS; JSONL parsing, count, required fields, lane/status/mod
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten sparse-MoE analyses with variant-specific hypotheses for router skew, capacity saturation, microbatch composition, cross-device dispatch, network contention, placement, padding amplification, straggler queueing, autoscaler churn, and router tie-breaking randomness. Each specifies fixed assumptions, matched randomized control/treatment, held-out replay, unchanged-load canarying, stage and per-expert telemetry, confounder controls, quality/goodput/SLO/error/drop/memory/cost safeguards, falsification criteria, and rollback criteria. Results require domain-expert review.
+This provisional batch independently recalibrated ten sparse-MoE analyses with variant-specific falsifiable hypotheses for router score skew, capacity-factor saturation, microbatch composition, cross-device dispatch, network contention, expert placement, padding amplification, straggler queueing, autoscaler churn, and router tie-breaking randomness. Each specifies fixed assumptions, matched randomized control/treatment, held-out replay, unchanged-load canarying, stage and per-expert telemetry, confounder controls, quality/goodput/SLO/error/drop/memory/cost safeguards, falsification criteria, evidence requirements, and rollback criteria. Results require domain-expert review.
 
 # Latest run: Batch 0268
 
