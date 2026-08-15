@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0057
+
+Input: validation records 561-570 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05629, corpus-05643, corpus-05649, corpus-05652, corpus-05655, corpus-05672, corpus-05682, corpus-05694, corpus-05698, and corpus-05699, preserving validation order).
+
+Progress: train 5399/5399; validation 570/601; total 5969/6000; remaining 31.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 570 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten NVIDIA Dynamo disaggregated inference orchestration evaluations. Corrections make frontend routing, prefill/decode ownership, KV movement and compatibility, transport overhead, scheduling, queueing, observability, cancellation, bounded retries, failover tests, matched baselines, SLO metrics, canary limits, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0056
 
 Input: validation records 551-560 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05509, corpus-05515, corpus-05517, corpus-05532, corpus-05547, corpus-05553, corpus-05556, corpus-05562, corpus-05585, and corpus-05626, preserving validation order).
