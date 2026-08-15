@@ -1,3 +1,24 @@
+# Latest run: Batch 0258
+
+Input: train records 2571-2580 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02839 through corpus-02848, preserving corpus order).
+
+Progress: train 2580/5399; validation 0/601; total 2580/6000; remaining 3420.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (first validator expected 2578 aggregate records; corrected to 2580, then corrected corpus-ID lookup to use exact source-ID mapping because corpus IDs contain gaps)
+repair: not required for artifact; validator corrected and rerun
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten sparse-MoE load and tail-latency analyses with variant-specific hypotheses, matched randomized experiments, per-expert routing/capacity/overflow/drop/padding telemetry, queue/compute/all-to-all/network/placement/batch measurements, held-out evaluation, quality and goodput safeguards, confounder controls, canary monitoring, and rollback criteria. Results require domain-expert review.
+
 # Latest run: Batch 0257
 
 Input: train records 2561-2570 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02826 through corpus-02829, corpus-02831 through corpus-02835, and corpus-02837, preserving corpus order and source-ID gaps at corpus-02830 and corpus-02836).
