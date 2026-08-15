@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0001
+
+Input: validation records 1-10 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-00002, corpus-00011, corpus-00016, corpus-00051, corpus-00056, corpus-00058, corpus-00066, corpus-00068, corpus-00077, and corpus-00078, preserving validation order).
+
+Progress: train 5399/5399; validation 10/601; total 5409/6000; remaining 591.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; aggregate validation initially asserted 6000 records before validation was complete, rather than the current processed total of 5409
+repair: corrected the validation expectation to train 5399 plus validation 10; no result batch, raw corpus, or benchmark generation was modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict train-prefix alignment, exact validation-prefix alignment, and no duplicates
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten foundational KV-cache and prefill prompts. Corrections make definitions, concrete mechanisms, memory/latency/throughput trade-offs, cache validity boundaries, measurement units, workload assumptions, failure modes, isolation limits, and rollback/evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0540
 
 Input: train records 5391-5399 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05991 through corpus-06000, preserving corpus order and corpus-ID gaps).
