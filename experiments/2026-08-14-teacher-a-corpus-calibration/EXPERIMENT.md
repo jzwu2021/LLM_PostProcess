@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0046
+
+Input: validation records 451-460 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04693, corpus-04718, corpus-04722, corpus-04741, corpus-04753, corpus-04760, corpus-04769, corpus-04772, corpus-04776, and corpus-04792, preserving validation order).
+
+Progress: train 5399/5399; validation 460/601; total 5859/6000; remaining 141.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator compared result batches in filesystem glob order rather than numeric batch order, producing false prefix mismatches
+repair: reran aggregate validation with numeric dataset/batch ordering; validation-batch-0046.jsonl was corrected once for an exact source_assistant mismatch before final validation, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated one NCCL environment-checker implementation plan and nine prefill/decode classifier implementation plans. Corrections make allowlist ownership, absent-versus-empty semantics, secret non-disclosure, strict token-count validation, threshold inclusivity, simultaneous-boundary behavior, deterministic tests, complexity, provenance, downstream separation, untrusted-input limits, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0045
 
 Input: validation records 441-450 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04586, corpus-04595, corpus-04598, corpus-04622, corpus-04626, corpus-04645, corpus-04654, corpus-04658, corpus-04679, and corpus-04692, preserving validation order).
