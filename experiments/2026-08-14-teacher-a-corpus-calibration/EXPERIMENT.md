@@ -1,8 +1,8 @@
-# Latest run: Batch 0326
+# Latest run: Batch 0327
 
-Input: train records 3251-3260 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03596 through corpus-03605, preserving corpus order).
+Input: train records 3261-3270 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03606 through corpus-03611 and corpus-03613 through corpus-03616, preserving corpus order and the corpus-ID gap at corpus-03612).
 
-Progress: train 3260/5399; validation 0/601; total 3260/6000; remaining 2740.
+Progress: train 3270/5399; validation 0/601; total 3270/6000; remaining 2730.
 
 Result:
 ```text
@@ -17,7 +17,9 @@ final schema check: PASS; standalone validator confirmed JSONL parsing, exact so
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten GPU decode diagnosis prompts. Each corrected answer distinguishes measured utilization and bandwidth from causal attribution; partitions weight/KV/intermediate/copy traffic; states a variant-specific falsifiable hypothesis with a disconfirming result; specifies randomized reference/current/intervention trials across workload, batch, sequence, precision, cache, and kernel strata; measures unit-labeled latency, throughput, traffic, utilization, cache, launch, power, thermal, memory, correctness, and quality signals; identifies telemetry and confounding limits; and defines canary, guardrail, fail-closed, rollback, and evidence requirements. Results require domain-expert review.
+This provisional batch independently recalibrated ten GPU decode diagnosis prompts. Each corrected answer treats utilization and bandwidth as symptoms rather than causal proof; separates weight/KV/intermediate/copy traffic from DRAM/L2, launch, synchronization, occupancy, coalescing, and thermal effects; states a variant-specific falsifiable hypothesis with an explicit disconfirming result; specifies randomized paired reference/current/intervention trials across batch, context, precision, cache, workload, and kernel strata; measures unit-labeled traffic, latency, throughput, counters, queueing, power, thermal, memory, correctness, and quality signals; identifies telemetry and attribution limits; and defines canary, hard guardrails, fail-closed rollback, and evidence requirements. Results require domain-expert review.
+
+# Latest run: Batch 0326
 
 # Latest run: Batch 0325
 
