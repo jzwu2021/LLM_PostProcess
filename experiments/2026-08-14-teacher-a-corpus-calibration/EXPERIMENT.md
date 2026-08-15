@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0002
+
+Input: validation records 11-20 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-00099, corpus-00102, corpus-00104, corpus-00120, corpus-00125, corpus-00147, corpus-00149, corpus-00156, corpus-00172, and corpus-00175, preserving validation order).
+
+Progress: train 5399/5399; validation 20/601; total 5419/6000; remaining 581.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict train-prefix alignment, and exact validation-prefix alignment
+repair: none required
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 20 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten prefill, decode, and continuous-batching prompts. Corrections make mechanisms, latency/throughput/memory interactions, boundary conditions, failure modes, controlled measurement plans, cache correctness, fairness, isolation, and rollback/evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0001
 
 Input: validation records 1-10 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-00002, corpus-00011, corpus-00016, corpus-00051, corpus-00056, corpus-00058, corpus-00066, corpus-00068, corpus-00077, and corpus-00078, preserving validation order).
