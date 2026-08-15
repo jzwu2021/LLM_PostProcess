@@ -1,5 +1,5 @@
 999fcfbfb2e6e020cb6eab1af8929b15aec575feb9439c0cdbbdf9752c5ed750  experiments/2026-08-14-teacher-a-corpus-calibration/environment.txt
-08a84159e219c1f918a2f9487053b1052d860747e2a4f29224ee2daea833110a  experiments/2026-08-14-teacher-a-corpus-calibration/EXPERIMENT.md
+b207bb6819493dd93da7eecacb21de10eafde70b55821456229a1dc1c62f088f  experiments/2026-08-14-teacher-a-corpus-calibration/EXPERIMENT.md
 18966e32b8e7e1a5392addfaaa0b9bfa8a7c9fae2aa0f8498dde44e47b5bd17a  experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0001.jsonl
 3820498aa9ca7df3e1e2404eba5ae927a12a1a124557ff22d48107f78be524ec  experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0002.jsonl
 a2e2071357720adbb59d53f20810b7b010276bd8c19c9976933f28e83a627dcc  experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0003.jsonl
@@ -443,3 +443,4 @@ dacb45a1c6f6bd19e92dcc060c17324dd47248ecfb843b7c3e1a0fec337ed99f  experiments/20
 4d0892d4e152b5105c71a46994c9b849fabeee959236bd1216a3a3b596692223  experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0441.jsonl
 418ffd7749da4282b0ad9066d9a21902f0aa22c093e7b214fd52bdc1c631f313  experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0442.jsonl
 fb634dd2329f7f0a0c2f69931f12e269aab79863e84239b45fad5afa900de281  experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0443.jsonl
+77a7b404ef53badafcb1e48723298a6807b42d551c1e2c04ab24230e15663221  experiments/2026-08-14-teacher-a-corpus-calibration/results/train-batch-0444.jsonl
