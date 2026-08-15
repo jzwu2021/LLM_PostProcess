@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0029
+
+Input: validation records 281-290 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02979, corpus-03004, corpus-03018, corpus-03035, corpus-03049, corpus-03059, corpus-03074, corpus-03077, corpus-03097, and corpus-03104, preserving validation order).
+
+Progress: train 5399/5399; validation 290/601; total 5689/6000; remaining 311.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator incorrectly expected the completion total of 6000 rather than the current processed prefix of 5689
+repair: corrected aggregate expectations to 5399 train plus the first 290 validation records; regenerated validation-batch-0029.jsonl was not needed, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated nine sparse-MoE uneven-load/tail-latency diagnosis plans and one speculative-decoding slowdown diagnosis. Corrections make mechanisms, falsifiable hypotheses, units, per-expert/per-device/request measurements, matched randomized controls, confounder controls, correctness/token accounting, bounded canaries, fallback, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0028
 
 Input: validation records 271-280 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02878, corpus-02880, corpus-02893, corpus-02915, corpus-02918, corpus-02919, corpus-02938, corpus-02944, corpus-02958, and corpus-02965, preserving validation order).
