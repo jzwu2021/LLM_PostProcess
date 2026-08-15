@@ -1,3 +1,24 @@
+# Latest run: Batch 0464
+
+Input: train records 4631-4640 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05139 through corpus-05148, preserving corpus order).
+
+Progress: train 4640/5399; validation 0/601; total 4640/6000; remaining 1360.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, strict aggregate train-prefix alignment, and exact batch range
+repair: none required
+final schema check: PASS; batch and aggregate validation confirmed 4640 train records, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten RoCE GPU collective tail-latency prompts spanning performance, troubleshooting, tool-use, and design. Corrections make topology, route symmetry, MTU, priority/PFC/ECN, congestion, queue pairs, verbs/completions, GPU-direct versus host staging, fallback detection, matched baselines, percentile uncertainty, timestamp correlation, canary rollback, correctness gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0463
 
 Input: train records 4621-4630 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05128 through corpus-05138, preserving corpus order and corpus-ID gaps).
