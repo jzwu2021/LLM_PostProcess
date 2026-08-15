@@ -1,3 +1,24 @@
+# Latest run: Batch 0523
+
+Input: train records 5221-5230 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05806, corpus-05809 through corpus-05815, then corpus-05817 through corpus-05818, preserving corpus order and corpus-ID gaps).
+
+Progress: train 5230/5399; validation 0/601; total 5230/6000; remaining 770.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate-validator invocation was blocked by the execution environment before reading or modifying experiment files
+repair: reran the equivalent validator from a standalone file; no result repair was required
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten larger-world-size multi-node NCCL hang prompts. Corrections make communicator and rank-order, placement and NIC affinity, rendezvous and port reachability, topology and transport, resource/configuration hypotheses, synchronized metrics with units, matched controls, uncertainty, least-privilege diagnostics, canary rollback, cleanup, redaction, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0522
 
 Input: train records 5211-5220 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05792, corpus-05793, corpus-05797 through corpus-05799, corpus-05801, corpus-05802, corpus-05804, and corpus-05805, preserving corpus order and corpus-ID gaps).
