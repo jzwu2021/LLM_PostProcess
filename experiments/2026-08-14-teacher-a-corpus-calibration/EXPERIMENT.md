@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0050
+
+Input: validation records 491-500 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05005, corpus-05007, corpus-05021, corpus-05022, corpus-05025, corpus-05033, corpus-05037, corpus-05049, corpus-05058, and corpus-05090, preserving validation order).
+
+Progress: train 5399/5399; validation 500/601; total 5899/6000; remaining 101.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator expected the final total of 6000 before this provisional run was complete and stopped at the expected-count assertion
+repair: corrected the validator expectation to the current aggregate total of 5899 and validation prefix of 500; validation-batch-0050.jsonl was not rewritten, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten RDMA multi-node GPU training/inference cases. Corrections make verbs and queues, memory registration, transport selection, fallback behavior, topology, units, falsifiable hypotheses, application/device metrics, confounders, link-failure handling, rollback conditions, evidence requirements, and production safety limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0049
 
 Input: validation records 481-490 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-04942, corpus-04943, corpus-04957, corpus-04968, corpus-04978, corpus-04984, corpus-04987, corpus-04988, corpus-04996, and corpus-04998, preserving validation order).
