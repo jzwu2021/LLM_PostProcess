@@ -1,8 +1,8 @@
-# Latest run: Batch 0464
+# Latest run: Batch 0465
 
-Input: train records 4631-4640 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05139 through corpus-05148, preserving corpus order).
+Input: train records 4641-4650 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05149 through corpus-05158, preserving corpus order).
 
-Progress: train 4640/5399; validation 0/601; total 4640/6000; remaining 1360.
+Progress: train 4650/5399; validation 0/601; total 4650/6000; remaining 1350.
 
 Result:
 ```text
@@ -13,7 +13,7 @@ rewrite: 10
 reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, strict aggregate train-prefix alignment, and exact batch range
 repair: none required
-final schema check: PASS; batch and aggregate validation confirmed 4640 train records, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
+final schema check: PASS; batch and aggregate validation confirmed 4650 train records, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
 manifest verification: pending until commit preparation
 ```
 
