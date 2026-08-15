@@ -14,7 +14,7 @@ reject: 0
 initial schema check: FAIL; validator used record objects instead of source-ID strings when constructing the order map
 repair: corrected validator and reran; artifact was unchanged
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-order alignment passed
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated 299 experiment-file hashes excluding MANIFEST.sha256 and rechecked every hash
 ```
 
 This provisional batch independently recalibrated ten speculative-decoding diagnosis prompts with distinct interventions for draft admission throttling, verification packing, position-wise confidence gating, queue-aware lookahead, dependency-safe overlap, tokenizer-boundary admission, workload-conditioned routing, draft resource quotas, verification-priority scheduling, and speculative KV admission. Each states assumptions, a falsifiable hypothesis, controlled target-only/current/intervention experiment, measurements with explicit units, workload stratification, confounders, boundary conditions, fail-closed rollback, safety limits, and evidence requirements. Results require domain-expert review.
