@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0018
+
+Input: validation records 171-180 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-01888, corpus-01891, corpus-01892, corpus-01893, corpus-01895, corpus-01900, corpus-01901, corpus-01909, corpus-01943, and corpus-01949, preserving validation order).
+
+Progress: train 5399/5399; validation 180/601; total 5579/6000; remaining 421.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 180 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten multi-GPU collective-initialization diagnosis plans. Corrections make phase boundaries, rendezvous/rank/device/topology/transport hypotheses, per-rank evidence, finite-timeout minimal all-reduce controls, single-host/reduced/full-world comparisons, correctness checks, confounders, bounded mitigations, rollback gates, redaction, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0017
 
 Input: validation records 161-170 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-01726, corpus-01745, corpus-01747, corpus-01754, corpus-01806, corpus-01811, corpus-01818, corpus-01841, corpus-01852, and corpus-01863, preserving validation order).
