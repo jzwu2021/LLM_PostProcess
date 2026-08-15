@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0038
+
+Input: validation records 371-380 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03847, corpus-03849, corpus-03851, corpus-03894, corpus-03896, corpus-03907, corpus-03909, corpus-03910, corpus-03935, and corpus-03941, preserving validation order).
+
+Progress: train 5399/5399; validation 380/601; total 5779/6000; remaining 221.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; validator used an incorrect corpus path and then incorrectly expected the full validation target rather than the current processed prefix
+repair: corrected validator corpus path and current-prefix expectation; regenerated validation-batch-0038.jsonl was not needed, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten serving-system throughput comparison plans. Corrections define tokens/s and goodput denominators, freeze model/runtime/hardware/topology/workload variables, state a falsifiable mechanism hypothesis, require randomized paired workload-stratified trials with synchronized latency, token, queue, batch, kernel, communication, error, correctness, and resource measurements, publish redacted raw traces and analysis metadata, control thermal/clock/cache/background/retry/quality confounders, and require bounded canaries, fallback, rollback gates, and evidence before generalization. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0037
 
 Input: validation records 361-370 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03742, corpus-03758, corpus-03760, corpus-03766, corpus-03779, corpus-03790, corpus-03814, corpus-03824, corpus-03835, and corpus-03845, preserving validation order).
