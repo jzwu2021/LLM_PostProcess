@@ -1,3 +1,24 @@
+# Latest run: Batch 0317
+
+Input: train records 3161-3170 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03499, corpus-03501 through corpus-03514, preserving corpus order and the corpus-ID gap at corpus-03500).
+
+Progress: train 3170/5399; validation 0/601; total 3170/6000; remaining 2830.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique-ID, exact source-field matching, and strict aggregate train-prefix alignment passed
+repair: initial combined validation command was blocked by the execution gateway before running; reran artifact generation and the full validation as separate commands; artifact was unchanged
+final schema check: PASS; reran validation after artifact creation with exact source-field matching and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten memory-hierarchy decode diagnosis prompts. Each corrected answer treats utilization and bandwidth as observations requiring attribution; separates weight/KV/intermediate/copy traffic and DRAM/L2/fabric from launch, synchronization, and overlap effects; states a variant-specific falsifiable hypothesis with a declared endpoint and counter signature; specifies randomized reference/current/intervention trials across workload, precision, cache, and kernel strata; measures unit-labeled latency, throughput, traffic, utilization, cache, launch, power, thermal, memory, correctness, and quality signals; identifies telemetry and confounding limits; and defines canary, guardrail, fail-closed, rollback, and evidence requirements. Results require domain-expert review.
+
 # Latest run: Batch 0316
 
 Input: train records 3151-3160 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03488 through corpus-03494, corpus-03496 through corpus-03498, preserving corpus order and the corpus-ID gap at corpus-03495).
