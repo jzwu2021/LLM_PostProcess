@@ -1,3 +1,24 @@
+# Latest run: Batch 0485
+
+Input: train records 4841-4850 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05379, corpus-05380, corpus-05382 through corpus-05384, and corpus-05386 through corpus-05390, preserving corpus order and corpus-ID gaps).
+
+Progress: train 4850/5399; validation 0/601; total 4850/6000; remaining 1150.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+repair: none required
+final schema check: PASS; aggregate validation confirmed 4850 train records and exact new batch range, source fields, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
+manifest verification: completed after experiment-log update; all hashes regenerated and rechecked
+```
+
+This provisional batch independently recalibrated ten GPUDirect Storage validation-plan prompts across tool use, system design, troubleshooting, and performance analysis. Corrections make storage-versus-GPU-DMA stages, filesystem and kernel support, topology and NUMA placement, cache state, queue depth, matched CPU-staged controls, synchronized metrics with units and uncertainty, checksum and restart gates, authorization, rollback thresholds, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0484
 
 Input: train records 4831-4840 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05367, corpus-05369 through corpus-05372, corpus-05374 through corpus-05378, preserving corpus order and corpus-ID gaps).
