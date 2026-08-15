@@ -1,3 +1,24 @@
+# Latest run: Batch 0311
+
+Input: train records 3101-3110 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03429 through corpus-03435, corpus-03437 through corpus-03438, and corpus-03440, preserving corpus order and source-ID gaps at corpus-03436 and corpus-03439).
+
+Progress: train 3110/5399; validation 0/601; total 3110/6000; remaining 2890.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique-ID, exact source-field matching, and strict aggregate train-prefix alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten memory-hierarchy decode diagnosis prompts. Each corrected answer gives an intervention-specific hypothesis, randomized target-only/current/intervention controls, unit-labeled latency, throughput, bandwidth, launch, synchronization, cache, memory, power, thermal, and quality measurements; addresses cache scope, launch overhead, arithmetic limits, confounders, workload boundaries, held-out evidence, and fail-closed rollback. Results require domain-expert review.
+
 # Latest run: Batch 0310
 
 Input: train records 3091-3100 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03419 through corpus-03428, preserving corpus order and source-ID gaps).
