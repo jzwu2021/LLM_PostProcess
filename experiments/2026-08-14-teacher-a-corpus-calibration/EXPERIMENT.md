@@ -1,8 +1,8 @@
-# Latest run: Batch 0292
+# Latest run: Batch 0293
 
-Input: train records 2911-2920 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03214 through corpus-03222 with corpus-03223 absent, then corpus-03224, preserving corpus order and source-ID gap).
+Input: train records 2921-2930 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03225 through corpus-03234, preserving corpus order).
 
-Progress: train 2920/5399; validation 0/601; total 2920/6000; remaining 3080.
+Progress: train 2930/5399; validation 0/601; total 2930/6000; remaining 3070.
 
 Result:
 ```text
@@ -14,10 +14,11 @@ reject: 0
 initial schema check: PASS
 repair: not required
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated 295 experiment-file hashes excluding MANIFEST.sha256 and rechecked every hash
 ```
 
-This provisional batch independently recalibrated ten speculative-decoding analyses with variant-specific hypotheses for draft launch amortization, verification packing, acceptance-position gating, synchronization overlap, draft/target resource isolation, workload-aware scheduling, acceptance calibration, KV-cache pressure control, verification priority, and dependency-scoped synchronization. Each includes assumptions, controlled target-only/current/intervention comparison, held-out replay, unchanged-load canarying, draft/verification/acceptance/queue/resource/cache telemetry, workload stratification, confounder controls, quality/goodput/SLO/error/fairness/memory/cost safeguards, fail-closed rollback, and evidence requirements. Results require domain-expert review.
+This provisional batch independently recalibrated ten speculative-decoding analyses with variant-specific falsifiable hypotheses for bounded lookahead, draft batching, confidence-gated launch, verification packing, synchronization overlap, draft/target resource isolation, workload-aware routing, KV-cache pressure control, verification priority, and dependency-scoped synchronization. Each includes assumptions, randomized target-only/current/intervention comparison, held-out replay, unchanged-load canarying, draft/verification/acceptance/queue/resource/cache telemetry, workload stratification, confounder controls, quality/goodput/SLO/error/fairness/memory/cost safeguards, fail-closed rollback, and evidence requirements. Results require domain-expert review.
+
 
 # Latest run: Batch 0291
 
