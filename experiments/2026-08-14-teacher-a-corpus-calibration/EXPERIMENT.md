@@ -1,3 +1,24 @@
+# Latest run: Batch 0341
+
+Input: train records 3401-3410 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03764 through corpus-03774, preserving corpus order and corpus-ID gaps at corpus-03766).
+
+Progress: train 3410/5399; validation 0/601; total 3410/6000; remaining 2590.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required
+final schema check: PASS; standalone validator confirmed JSONL parsing, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten serving-system comparison prompts. Corrected answers standardize token/timing contracts and environment variables, test a variant-specific falsifiable scheduling/queueing hypothesis with randomized paired crossover trials and a sole admission/batching intervention, predeclare endpoints, margins, uncertainty, and disconfirmation, measure unit-labeled traces/counters/resources/errors/correctness/quality, identify confounders and telemetry limits, and require canary guardrails, fail-closed rollback, and domain-expert review.
+
 # Latest run: Batch 0340
 
 Input: train records 3391-3400 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03752 through corpus-03763, preserving corpus order and corpus-ID gaps).
