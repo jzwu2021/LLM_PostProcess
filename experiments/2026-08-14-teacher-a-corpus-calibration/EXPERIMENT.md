@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0056
+
+Input: validation records 551-560 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05509, corpus-05515, corpus-05517, corpus-05532, corpus-05547, corpus-05553, corpus-05556, corpus-05562, corpus-05585, and corpus-05626, preserving validation order).
+
+Progress: train 5399/5399; validation 560/601; total 5959/6000; remaining 41.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first serialization used literal backslash-n separators, so the batch was not valid physical JSONL
+repair: replaced the ten literal separators with real newlines; validation-batch-0056.jsonl was not otherwise rewritten, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated nine Mooncake-style disaggregated KV-cache serving evaluations and one NVIDIA Dynamo disaggregated inference orchestration evaluation. Corrections make prefill/decode ownership, KV placement and versioning, eviction, admission, cancellation, RDMA/transport cost, queueing, model compatibility, observability, fault recovery, matched baselines, SLO metrics, canary limits, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0055
 
 Input: validation records 541-550 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05402, corpus-05413, corpus-05421, corpus-05422, corpus-05428, corpus-05432, corpus-05433, corpus-05436, corpus-05438, and corpus-05508, preserving validation order).
