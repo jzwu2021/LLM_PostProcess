@@ -1,3 +1,24 @@
+# Latest run: Batch 0462
+
+Input: train records 4611-4620 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05117 through corpus-05125, preserving corpus order and the corpus-ID gap at corpus-05126).
+
+Progress: train 4620/5399; validation 0/601; total 4620/6000; remaining 1380.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validation assertion retained the pre-write total of 4610 and failed after the new batch correctly brought the aggregate to 4620; no result file was changed
+repair: validator corrected to expect the post-write aggregate and rerun all checks
+final schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, strict aggregate train-prefix alignment, and exact batch range confirmed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten RDMA and RoCE multi-node GPU communication prompts across system design, performance analysis, troubleshooting, and tool-use variants. Corrections make verbs, queues, completions, registration, GPU-direct versus host staging, RoCE PFC/ECN and congestion checks where applicable, fallback behavior, falsifiable thresholds, matched interleaved baselines, distributions and uncertainty, ordered diagnostics, canary changes, correctness checks, rollback thresholds, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0461
 
 Input: train records 4601-4610 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05105, corpus-05107, corpus-05108, corpus-05110 through corpus-05116, preserving corpus order and corpus-ID gaps).
