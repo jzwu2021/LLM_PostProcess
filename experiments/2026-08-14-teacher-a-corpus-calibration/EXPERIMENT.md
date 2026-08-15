@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, and strict aggregate train-prefix alignment
 repair: none required
 final schema check: PASS; validator confirmed 453 numeric train batch files, 4530 records, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated and rechecked SHA-256 for all 455 experiment files excluding the manifest
 ```
 
 This provisional batch independently recalibrated ten RDMA multi-node GPU training/inference prompts. Corrections trace verbs, queues, work requests/completions, memory registration, transport and fallback, host staging/GPU-direct effects, topology and workload variables, application timing versus device counters, distributions, confounders, link-failure recovery, rollback thresholds, correctness, and telemetry privacy limits. Results remain provisional and are not expert gold or authoritative domain capability.
