@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS
 repair: validator execution was blocked once by the gateway safety guard before running; reran with an equivalent non-heredoc validator; no artifact change was needed
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated 285 experiment-file hashes excluding MANIFEST.sha256 and rechecked every hash
 ```
 
 This provisional batch independently recalibrated ten speculative-decoding analyses with variant-specific hypotheses for draft compute, acceptance amortization, synchronization, tokenizer alignment, workload dependence, draft contention, lookahead, verification capacity, scheduler queueing, and memory pressure. Each specifies matched control/treatment, held-out replay, unchanged-load canarying, position-level acceptance and draft/target/synchronization telemetry, workload stratification, confounder controls, quality/goodput/SLO/error/memory/cost safeguards, fail-closed rollback, and evidence requirements. Results require domain-expert review.
