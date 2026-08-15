@@ -1,3 +1,24 @@
+# Latest run: Batch 0422
+
+Input: train records 4211-4220 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04659 through corpus-04668, preserving corpus order).
+
+Progress: train 4220/5399; validation 0/601; total 4220/6000; remaining 1780.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required
+final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten NCCL environment-checker prompts. Corrections define a typed mapping contract, absence versus empty-value semantics, conservative malformed-name handling without echoing input, deterministic de-duplicated reporting, non-string policy, secret-safe failure/logging behavior, boundary and canary tests, complexity, and evidence boundaries for NCCL/runtime claims. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0421
 
 Input: train records 4201-4210 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04647 through corpus-04653, corpus-04655, corpus-04656, and corpus-04657, preserving corpus order and the corpus-ID gap at corpus-04654).
