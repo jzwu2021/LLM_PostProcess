@@ -1,3 +1,24 @@
+# Latest run: Batch 0489
+
+Input: train records 4881-4890 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05425 through corpus-05427, corpus-05429 through corpus-05431, and corpus-05434 through corpus-05435 plus corpus-05437 and corpus-05439, preserving corpus order and corpus-ID gaps).
+
+Progress: train 4890/5399; validation 0/601; total 4890/6000; remaining 1110.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+repair: none required
+final schema check: PASS; aggregate validation confirmed 4890 train records and exact new batch range, source fields, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
+manifest verification: pending until experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten GDS checkpoint and dataset-I/O prompts across performance analysis, troubleshooting, and tool-use variants. Corrections make topology and NUMA/affinity, filesystem/kernel/runtime prerequisites, permissions, direct-path activation, matched CPU-staged controls, storage-versus-GPU-DMA separation, queue depth and tail latency, synchronized metrics with units and uncertainty, cache/compression/contention confounders, checksum and interrupted/node-failure recovery, rollback thresholds, authorization, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0488
 
 Input: train records 4871-4880 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05412, corpus-05414 through corpus-05420, and corpus-05423 through corpus-05424, preserving corpus order and corpus-ID gaps).
