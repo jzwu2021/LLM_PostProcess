@@ -1,3 +1,24 @@
+# Latest run: Batch 0368
+
+Input: train records 3671-3680 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04057 through corpus-04066, preserving corpus order).
+
+Progress: train 3680/5399; validation 0/601; total 3680/6000; remaining 2320.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required
+final schema check: PASS; standalone validator confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten KV-cache estimator implementation prompts. Corrected answers implement a dense K+V byte formula with positive-integral validation, deterministic minimal/larger and invalid-input tests, explicit complexity and logical-storage assumptions, and conservative limits for padding, metadata, allocator layout, quantization, sharing, batching, eviction, replication, and resource constraints. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0367
 
 Input: train records 3661-3670 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04046, corpus-04048 through corpus-04056, preserving corpus order and the corpus-ID gap at corpus-04047).
