@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0023
+
+Input: validation records 221-230 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02389, corpus-02391, corpus-02404, corpus-02442, corpus-02443, corpus-02445, corpus-02458, corpus-02478, corpus-02482, and corpus-02498, preserving validation order).
+
+Progress: train 5399/5399; validation 230/601; total 5629/6000; remaining 371.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate assertion retained an incorrect post-batch total of 5630 and validation prefix of 231 instead of the actual 5629 total and 230-record validation prefix
+repair: corrected the validator expectations; result batch was not changed, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten tensor-versus-pipeline parallelism selection plans. Corrections make topology and memory assumptions, layer placement, synchronization and communication costs, microbatch and pipeline-bubble effects, latency/throughput measurements, correctness checks, confounders, fault/reconfiguration behavior, canary limits, rollback criteria, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0022
 
 Input: validation records 211-220 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02285, corpus-02297, corpus-02304, corpus-02326, corpus-02330, corpus-02336, corpus-02348, corpus-02366, corpus-02368, and corpus-02384, preserving validation order).
