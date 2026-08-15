@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
 repair: none required
 final schema check: PASS; aggregate validation confirmed 4820 train records and exact new batch range, source fields, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
-manifest verification: pending until experiment-log update and commit preparation
+manifest verification: completed after experiment-log update; all hashes regenerated and rechecked
 ```
 
 This provisional batch independently recalibrated ten GPUDirect RDMA validation-plan prompts across system design, performance analysis, troubleshooting, and tool use. Corrections make topology and NUMA/affinity, peer access, registration and pinning, IOMMU/container permissions, direct-versus-staged path evidence, falsifiable hypotheses, synchronized measurements with units and uncertainty, matched controls, correctness gates, rollback thresholds, authorization, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
