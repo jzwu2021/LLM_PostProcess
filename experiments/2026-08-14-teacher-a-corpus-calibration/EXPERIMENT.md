@@ -1,8 +1,8 @@
-# Latest run: Batch 0261
+# Latest run: Batch 0262
 
-Input: train records 2601-2610 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02871 through corpus-02877, corpus-02879, corpus-02881, and corpus-02882, preserving corpus order and source-ID gaps at corpus-02878 and corpus-02880).
+Input: train records 2611-2620 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02883 through corpus-02892, preserving corpus order).
 
-Progress: train 2610/5399; validation 0/601; total 2610/6000; remaining 3390.
+Progress: train 2620/5399; validation 0/601; total 2620/6000; remaining 3380.
 
 Result:
 ```text
@@ -18,6 +18,7 @@ manifest verification: pending until commit preparation
 ```
 
 This provisional batch independently recalibrated ten sparse-MoE load and tail-latency analyses with variant-specific falsifiable routing/capacity hypotheses, fixed-system assumptions, matched randomized replay, disjoint held-out evaluation, unchanged-load canarying, per-expert routing/capacity/overflow/drop/padding telemetry, queue/compute/all-to-all/network/placement/batch measurements, quality/goodput/SLO/cost safeguards, confounder controls, and rollback criteria. Results require domain-expert review.
+
 
 # Latest run: Batch 0259
 
