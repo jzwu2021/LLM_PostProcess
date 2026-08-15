@@ -1,8 +1,8 @@
-# Latest run: Batch 0400
+# Latest run: Batch 0401
 
-Input: train records 3991-4000 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04406 through corpus-04416, preserving corpus order and the corpus-ID gap at corpus-04413).
+Input: train records 4001-4010 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04417 through corpus-04426, preserving corpus order).
 
-Progress: train 4000/5399; validation 0/601; total 4000/6000; remaining 2000.
+Progress: train 4010/5399; validation 0/601; total 4010/6000; remaining 1990.
 
 Result:
 ```text
@@ -11,13 +11,14 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: failed because the diagnostic expected the pre-batch aggregate count of 3999; no result-file defect was found
-repair: corrected the validation expectation and reran the full check; no result-file repair was required
+initial schema check: failed because the aggregate diagnostic did not sort batch filenames before comparing the prefix; no result-file defect was found
+repair: corrected the diagnostic ordering and reran validation; no result-file repair was required
 final schema check: PASS; JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten latency-percentile implementation prompts. Corrections declare linear-interpolation semantics, validate finite nonnegative values while excluding bool, preserve caller input, handle generators and empty/small inputs, specify units, deterministic interpolation and precision tests, sorting complexity, and evidence boundaries for production conventions, measurement policy, large-input behavior, and numerical limits. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated ten latency-percentile implementation prompts. Corrections specify one-pass materialization, explicit empty-input failure, finite nonnegative validation excluding bool, declared units, copy-before-sort behavior, q*(n-1) linear interpolation for p50/p99, deterministic boundary/precision tests, complexity, and evidence boundaries for production conventions, measurement policy, numerical limits, and large-input behavior. Results remain provisional and are not expert gold or authoritative domain capability.
+
 
 # Latest run: Batch 0399
 
