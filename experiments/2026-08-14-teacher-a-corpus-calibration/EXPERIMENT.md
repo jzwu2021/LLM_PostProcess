@@ -1,3 +1,24 @@
+# Latest run: Batch 0260
+
+Input: train records 2591-2600 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02859 through corpus-02870, preserving corpus order and source-ID gaps at corpus-02864 and corpus-02868).
+
+Progress: train 2600/5399; validation 0/601; total 2600/6000; remaining 3400.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (first validator incorrectly required every existing quality_dimensions value to be numeric in [0,1]; this was not a stated batch schema requirement and existing artifacts use heterogeneous dimension representations)
+repair: removed the overstrict quality_dimensions value-type assertion; retained JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, strict train-prefix ID-set alignment, and batch-order checks
+final schema check: PASS; all required checks passed after validator repair
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten sparse-MoE load and tail-latency analyses with explicit fixed-system assumptions, a falsifiable routing/capacity hypothesis, matched randomized replay, held-out evaluation, same-load canarying, per-expert routing/capacity/overflow/drop/padding telemetry, queue/compute/all-to-all/network/placement/batch measurements, quality/goodput/SLO/cost safeguards, confounder controls, and rollback criteria. Results require domain-expert review.
+
 # Latest run: Batch 0259
 
 Input: train records 2581-2590 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02849 through corpus-02858, preserving corpus order).
