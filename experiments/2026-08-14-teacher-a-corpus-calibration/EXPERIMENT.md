@@ -1,8 +1,8 @@
-# Latest run: Batch 0515
+# Latest run: Batch 0516
 
-Input: train records 5141-5150 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05713 through corpus-05719, then corpus-05721 through corpus-05722 and corpus-05725, preserving corpus order and corpus-ID gaps at corpus-05720, corpus-05723-05724).
+Input: train records 5151-5160 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05727 through corpus-05736, preserving corpus order).
 
-Progress: train 5150/5399; validation 0/601; total 5150/6000; remaining 850.
+Progress: train 5160/5399; validation 0/601; total 5160/6000; remaining 840.
 
 Result:
 ```text
@@ -13,11 +13,12 @@ rewrite: 10
 reject: 0
 initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
 repair: none required
-final schema check: PASS; aggregate validation confirmed 5150 train records and exact new train range
+final schema check: PASS; aggregate validation confirmed 5160 train records and exact new train range
 manifest verification: pending until this experiment-log update and commit preparation
 ```
 
-This provisional batch independently recalibrated ten NVIDIA Dynamo disaggregated-inference evaluation prompts spanning tool use, system design, performance analysis, and troubleshooting. Corrections make release-scoped assumptions, stage ownership, KV compatibility and integrity, transport and scheduler attribution, read-only-first reversible operation, bounded fault injection, safe fallback, rollback gates, matched baselines, synchronized metrics with units, confounder controls, uncertainty, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated ten NVIDIA Dynamo disaggregated-inference evaluation prompts across performance analysis, troubleshooting, tool use, and system design. Corrections make release-scoped assumptions, component ownership, KV compatibility and integrity, attribution of transport/scheduler effects, read-only-first reversible operation, bounded fault injection, safe fallback, rollback gates, matched baselines, synchronized metrics with units, confounder controls, uncertainty, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 
 # Latest run: Batch 0514
 
