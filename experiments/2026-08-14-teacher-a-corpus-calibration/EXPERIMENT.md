@@ -1,8 +1,8 @@
-# Latest run: Batch 0277
+# Latest run: Batch 0278
 
-Input: train records 2761-2770 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03045 through corpus-03055, preserving corpus order and source-ID gap at corpus-03049).
+Input: train records 2771-2780 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03056 through corpus-03058, then corpus-03060 through corpus-03066, preserving corpus order and source-ID gap at corpus-03059).
 
-Progress: train 2770/5399; validation 0/601; total 2770/6000; remaining 3230.
+Progress: train 2780/5399; validation 0/601; total 2780/6000; remaining 3220.
 
 Result:
 ```text
@@ -12,12 +12,12 @@ keep: 0
 rewrite: 10
 reject: 0
 initial schema check: PASS
-repair: not required
+repair: validator initially used a malformed one-line command and failed before checking the artifact; corrected validator to sort numeric batch suffixes and compare exact corpus-order IDs; batch was unchanged
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten sparse-MoE analyses with variant-specific falsifiable hypotheses for expert placement/topology, capacity overflow, router assignment skew, microbatch composition, token dropping/padding, straggler queueing, network contention, router tie-breaking, tenant/workload mix, and replica imbalance. Each specifies fixed assumptions, matched randomized control/treatment, held-out replay, unchanged-load canarying, routing/capacity/overflow/drop/padding and stage/per-expert/network telemetry, confounder controls, quality/goodput/SLO/error/memory/cost safeguards, fail-closed handling, evidence requirements, and rollback criteria. Results require domain-expert review.
+This provisional batch independently recalibrated ten sparse-MoE analyses with variant-specific falsifiable hypotheses for topology-aware placement, capacity headroom, router assignment skew, tie-breaking, replica imbalance, microbatch composition, token dropping/padding, network contention, communication affinity, and tenant/workload mix. Each specifies fixed assumptions, matched randomized control/treatment, held-out replay, unchanged-load canarying, routing/capacity/overflow/drop/padding and stage/per-expert/network telemetry, confounder controls, quality/goodput/SLO/error/memory/cost safeguards, fail-closed handling, evidence requirements, and rollback criteria. Results require domain-expert review.
 
 # Latest run: Batch 0276
 
