@@ -11,8 +11,8 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
-repair: none required
+initial schema check: diagnostic assertion failed because the validation command initially expected the pre-batch aggregate count; no artifact defect was found
+repair: reran validation with the correct post-batch aggregate count; no result-file repair was required
 final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
 manifest verification: pending until commit preparation
 ```
