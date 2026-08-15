@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
 repair: none required
 final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated with experiment-relative paths and rechecked all 378 hashes
 ```
 
 This provisional batch independently recalibrated ten tensor-parallel validator implementation prompts. Corrected answers specify strict positive non-boolean integer validation without coercion, deterministic valid/non-divisible/boundary/type tests, the modulo divisibility mechanism, constant complexity, and conservative separation of arithmetic validity from device inventory, topology, collective/backend support, model-shape, memory, and runtime evidence. Results remain provisional and are not expert gold or authoritative domain capability.
