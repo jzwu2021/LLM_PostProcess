@@ -1,8 +1,8 @@
-# Latest run: Batch 0475
+# Latest run: Batch 0476
 
-Input: train records 4741-4750 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05268 through corpus-05277, preserving corpus order and corpus-ID gaps).
+Input: train records 4751-4760 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05278 through corpus-05291, preserving corpus order and corpus-ID gaps).
 
-Progress: train 4750/5399; validation 0/601; total 4750/6000; remaining 1250.
+Progress: train 4760/5399; validation 0/601; total 4760/6000; remaining 1240.
 
 Result:
 ```text
@@ -11,13 +11,13 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact batch range
+initial schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
 repair: none required
-final schema check: PASS; aggregate validation confirmed 4750 train records and exact new batch range, source fields, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
+final schema check: PASS; aggregate validation confirmed 4760 train records and exact new batch range, source fields, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
 manifest verification: completed after batch and experiment log update; hashes rechecked
 ```
 
-This provisional batch independently recalibrated ten GPUDirect RDMA validation-plan prompts across performance, troubleshooting, tool-use, and design variants. Corrections make topology and peer-access assumptions, registration and pinning, IOMMU/container permissions, NIC-GPU affinity, direct-versus-staged detection, falsifiable hypotheses, synchronized measurements, matched baselines, correctness gates, uncertainty, authorization, canary rollback, and evidence limitations explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated ten GPUDirect RDMA validation-plan prompts. Corrections make topology, NUMA and affinity, peer access, registration and pinning, IOMMU/container permissions, direct-versus-staged path evidence, falsifiable hypotheses, matched controls, synchronized measurements, percentile uncertainty, correctness checks, canary rollback conditions, authorization, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
 
 # Latest run: Batch 0475
 
