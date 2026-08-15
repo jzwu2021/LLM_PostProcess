@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
 repair: none required
 final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated and rechecked all 393 hashes
 ```
 
 This provisional batch independently recalibrated ten bounded-retry implementation prompts. Corrections specify strict attempt-count and delay validation, retryable versus non-retryable exception semantics, capped exponential backoff with no final sleep, injected timing, deterministic boundary tests, complexity, idempotency/cancellation risks, and evidence boundaries. Results remain provisional and are not expert gold or authoritative domain capability.
