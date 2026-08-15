@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0021
+
+Input: validation records 201-210 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02132, corpus-02140, corpus-02155, corpus-02156, corpus-02165, corpus-02172, corpus-02177, corpus-02192, corpus-02218, and corpus-02246, preserving validation order).
+
+Progress: train 5399/5399; validation 210/601; total 5609/6000; remaining 391.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator incorrectly required the full 601-record validation prefix instead of the processed prefix
+repair: corrected the validator to compare the observed dataset IDs against the corresponding expected prefix; result batch was not changed, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated eight weight-only quantization comparison plans and two tensor-versus-pipeline parallelism plans. Corrections make assumptions, falsifiable hypotheses, controlled replay, quality/correctness gates, memory and communication decomposition, TTFT/TPOT/throughput and tail-latency measurement, confidence intervals, confounders, canary limits, rollback criteria, fault/reconfiguration behavior, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0020
 
 Input: validation records 191-200 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02046, corpus-02053, corpus-02060, corpus-02069, corpus-02071, corpus-02076, corpus-02083, corpus-02087, corpus-02108, and corpus-02110, preserving validation order).
