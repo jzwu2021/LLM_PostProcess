@@ -1,8 +1,8 @@
-# Latest run: Batch 0521
+# Latest run: Batch 0522
 
-Input: train records 5201-5210 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05778, corpus-05780, corpus-05782 through corpus-05788, and corpus-05790, preserving corpus order and corpus-ID gaps).
+Input: train records 5211-5220 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05792, corpus-05793, corpus-05797 through corpus-05799, corpus-05801, corpus-05802, corpus-05804, and corpus-05805, preserving corpus order and corpus-ID gaps).
 
-Progress: train 5210/5399; validation 0/601; total 5210/6000; remaining 790.
+Progress: train 5220/5399; validation 0/601; total 5220/6000; remaining 780.
 
 Result:
 ```text
@@ -11,9 +11,9 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
-repair: validator rerun with numerically sorted batch filenames after an initial diagnostic assertion did not establish a result-file defect; no result file was modified
-final schema check: PASS; aggregate validation confirmed 5210 train records and exact new train range
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+repair: none required
+final schema check: PASS; aggregate validation confirmed 5220 train records and exact new train range
 manifest verification: pending until this experiment-log update and commit preparation
 ```
 
