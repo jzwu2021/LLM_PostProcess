@@ -14,7 +14,7 @@ reject: 0
 initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
 repair: none required; raw corpus, benchmark generations, and prior results were not modified
 final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 260 validation records, with no duplicates or corpus modifications
-manifest verification: pending until this experiment-log update and commit preparation
+manifest verification: PASS; all 568 experiment files were hashed and rechecked after the log update
 ```
 
 This provisional batch independently recalibrated ten calculator-overuse intervention plans. Corrections define conservative counterfactual necessity at requested precision, distinguish necessary/failed/indeterminate cases, specify correctness, calibration, trajectory, latency, recovery, token, and cost measures, retain no-tool and required-call controls, test a falsifiable 30% reduction hypothesis with a <=1-point correctness-loss bound, control workload and runtime confounders, treat preference signals as auxiliary, and require shadowing, bounded canaries, fallback, privacy-preserving telemetry, and rollback gates. Results remain provisional and are not expert gold or authoritative domain capability.
