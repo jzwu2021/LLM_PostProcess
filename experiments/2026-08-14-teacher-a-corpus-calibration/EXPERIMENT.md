@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0054
+
+Input: validation records 531-540 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05290, corpus-05297, corpus-05309, corpus-05320, corpus-05321, corpus-05337, corpus-05368, corpus-05373, corpus-05381, and corpus-05385, preserving validation order).
+
+Progress: train 5399/5399; validation 540/601; total 5939/6000; remaining 61.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator incorrectly expected the final 6000 records before this provisional run was complete
+repair: corrected the validator expectation to the current aggregate total of 5939 and validation prefix of 540; validation-batch-0054.jsonl was not rewritten, and raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated eight GPUDirect RDMA validation plans and two GPUDirect Storage evaluation plans. Corrections make topology and affinity, peer access, registration and pinning, IOMMU/container permissions, direct-versus-staged path verification, storage-versus-DMA metrics, queue depth, falsifiable hypotheses, matched controls, units, confounders, integrity/restart tests, canary limits, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0053
 
 Input: validation records 521-530 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05243, corpus-05246, corpus-05248, corpus-05249, corpus-05251, corpus-05263, corpus-05266, corpus-05280, corpus-05285, and corpus-05289, preserving validation order).
