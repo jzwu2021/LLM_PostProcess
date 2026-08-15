@@ -1,3 +1,24 @@
+# Latest run: Batch 0305
+
+Input: train records 3041-3050 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03361 through corpus-03370, preserving corpus order).
+
+Progress: train 3050/5399; validation 0/601; total 3050/6000; remaining 2950.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique-ID, and strict aggregate train-prefix alignment passed
+repair: not required
+final schema check: PASS; reran validation after artifact creation with exact source-field matching and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten speculative-decoding diagnosis prompts with variant-specific interventions for bounded draft admission, verification microbatch packing, position-wise confidence gating, queue-aware lookahead, dependency-safe overlap, tokenizer/cache admission, workload-conditioned routing, draft resource quotas, verification-priority scheduling, and speculative KV-cache admission budgeting. Each covers assumptions, falsifiable criteria, controlled target-only/current/intervention comparisons, unit-labeled stage and request measurements, workload stratification, confounders, boundary conditions, resource and quality safeguards, fail-closed rollback, and evidence requirements. Results require domain-expert review.
+
 # Latest run: Batch 0304
 
 Input: train records 3031-3040 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03348, corpus-03350 through corpus-03354, corpus-03356 through corpus-03360, preserving corpus order and source-ID gaps at corpus-03349 and corpus-03355).
