@@ -1,3 +1,24 @@
+# Latest run: Batch 0249
+
+Input: train records 2481-2490 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02735, corpus-02736, corpus-02738 through corpus-02740, corpus-02743 through corpus-02747, preserving corpus order and source-ID gaps at corpus-02737 and corpus-02741 through corpus-02742).
+
+Progress: train 2490/5399; validation 0/601; total 2490/6000; remaining 3510.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (aggregate comparison initially used filesystem glob enumeration order rather than corpus order)
+repair: corrected aggregate validation to compare the strict train-prefix ID set while separately enforcing batch corpus order, uniqueness, and exact source-field alignment
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten calculator-overuse interventions with explicit assumptions, a conservative unnecessary-call definition, typed answer/stop/calculator-needed/clarify gating, expression/unit/precision/authorization checks, bounded retries, result/type/range/consistency/provenance validation, fail-closed timeout/malformed/wrong/duplicate/unavailable/unauthorized/adversarial handling, stop/no-tool evaluation, correctness/call-rate/trajectory/latency/cost/recovery/preference measurement, a held-out non-inferiority hypothesis, randomized paired evaluation with disjoint tuning, confounder logging, minimized telemetry, reward safeguards, canary monitoring, and rollback thresholds. Results require domain-expert review.
+
 # Latest run: Batch 0248
 
 Input: train records 2471-2480 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02724 through corpus-02731, corpus-02733 through corpus-02734, preserving corpus order and source-ID gap at corpus-02732).
