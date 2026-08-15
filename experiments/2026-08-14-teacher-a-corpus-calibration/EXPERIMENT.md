@@ -1,8 +1,8 @@
-# Latest run: Batch 0454
+# Latest run: Batch 0455
 
-Input: train records 4531-4540 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05026 through corpus-05032, then corpus-05034 through corpus-05036, preserving corpus order and the corpus-ID gap at corpus-05033).
+Input: train records 4541-4550 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05038 through corpus-05047, preserving corpus order).
 
-Progress: train 4540/5399; validation 0/601; total 4540/6000; remaining 1460.
+Progress: train 4550/5399; validation 0/601; total 4550/6000; remaining 1450.
 
 Result:
 ```text
@@ -13,11 +13,11 @@ rewrite: 10
 reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, exact source-field matching, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, and strict aggregate train-prefix alignment
 repair: none required
-final schema check: PASS; validator confirmed 454 numeric train batch files, 4540 records, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
+final schema check: PASS; validator confirmed 455 numeric train batch files, 4550 records, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix alignment
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten RDMA multi-node GPU training/inference prompts. Corrections trace verbs, queues, work requests/completions, registration and permissions, transport and fallback, GPU-direct versus host staging, topology and workload variables, application timing versus device counters, distributions, confounders, link-failure detection and bounded recovery, correctness, rollback, evidence requirements, and telemetry privacy limits. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated ten RDMA multi-node GPU training/inference prompts across performance, troubleshooting, tool-use, and design variants. Corrections trace verbs, queues, work requests/completions, registration and permissions, transport and fallback, GPU-direct versus host staging, topology and workload variables, application timing versus device counters, distributions, confounders, link-failure diagnostics, controlled fault injection, bounded recovery, correctness, rollback, evidence requirements, and telemetry privacy limits. Results remain provisional and are not expert gold or authoritative domain capability.
 
 
 # Latest run: Batch 0452
