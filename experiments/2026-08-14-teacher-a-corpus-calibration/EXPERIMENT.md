@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0033
+
+Input: validation records 321-330 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03385, corpus-03386, corpus-03387, corpus-03388, corpus-03392, corpus-03396, corpus-03405, corpus-03415, corpus-03436, and corpus-03439, preserving validation order).
+
+Progress: train 5399/5399; validation 330/601; total 5729/6000; remaining 271.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 330 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated six speculative-decoding diagnosis/design plans and four decode memory-bandwidth diagnosis plans. Corrections make the speculation overhead hypothesis, paired randomized controls, acceptance/token accounting, synchronized component traces, workload strata, and fallback explicit; for memory-bound decode they separate weight/KV traffic from launch and occupancy effects and require units, counter/timeline validation, controlled sweeps, correctness checks, canaries, rollback gates, and evidence requirements. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0032
 
 Input: validation records 311-320 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03301, corpus-03302, corpus-03323, corpus-03333, corpus-03342, corpus-03345, corpus-03347, corpus-03349, corpus-03355, corpus-03358, preserving validation order).
