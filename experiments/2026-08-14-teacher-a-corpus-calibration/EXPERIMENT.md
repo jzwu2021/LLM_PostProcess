@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0037
+
+Input: validation records 361-370 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03742, corpus-03758, corpus-03760, corpus-03766, corpus-03779, corpus-03790, corpus-03814, corpus-03824, corpus-03835, and corpus-03845, preserving validation order).
+
+Progress: train 5399/5399; validation 370/601; total 5769/6000; remaining 231.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 370 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten serving-system throughput comparison plans. Corrections define token and timing denominators, freeze model/runtime/hardware/topology/workload variables, state a falsifiable mechanism hypothesis, require randomized paired workload-stratified trials with synchronized latency, token, queue, batch, kernel, communication, error, correctness, and cost measurements, publish redacted raw traces and analysis metadata, control thermal/clock/cache/background/retry/quality confounders, and require bounded canaries, fallback, rollback gates, and evidence before generalization. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0036
 
 Input: validation records 351-360 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-03686, corpus-03689, corpus-03697, corpus-03706, corpus-03707, corpus-03712, corpus-03722, corpus-03728, corpus-03732, and corpus-03734, preserving validation order).
