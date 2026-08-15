@@ -1,8 +1,8 @@
-# Latest run: Batch 0231
+# Latest run: Batch 0232
 
-Input: train records 2301-2310 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02534 through corpus-02543, preserving corpus order).
+Input: train records 2311-2320 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02544, corpus-02546 through corpus-02549, and corpus-02551 through corpus-02554 plus corpus-02557, preserving corpus order and source-ID gaps).
 
-Progress: train 2310/5399; validation 0/601; total 2310/6000; remaining 3690.
+Progress: train 2320/5399; validation 0/601; total 2320/6000; remaining 3680.
 
 Result:
 ```text
@@ -11,13 +11,15 @@ source ID alignment: PASS
 keep: 0
 rewrite: 10
 reject: 0
-initial schema check: FAIL (aggregate check initially compared filesystem glob order rather than the corpus-prefix ID set; batch artifact was not rewritten)
-repair: corrected validator to compare the aggregate result ID set with the strict train prefix while separately enforcing uniqueness, exact batch alignment, JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, and confidence range
-final schema check: PASS
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten calculator-overuse interventions with explicit unnecessary-call and tool-needed definitions, millisecond telemetry, correctness and recovery measures, a falsifiable held-out call-rate/latency and non-inferiority hypothesis, randomized paired evaluation, no-tool and failure boundary suites, preference/reward safeguards, confounder controls, privacy-minimized traces, safety gates, and reversible canary rollback criteria. Results require domain-expert review.
+This provisional batch independently recalibrated ten calculator-overuse interventions with explicit unnecessary-call and tool-needed definitions, millisecond telemetry, correctness and recovery measures, a falsifiable held-out call-rate/latency and non-inferiority hypothesis, randomized paired evaluation, no-tool, malformed, adversarial, and calculator-failure boundary suites, preference/reward safeguards, confounder controls, privacy-minimized traces, safety gates, and reversible canary rollback criteria. Results require domain-expert review.
+
+# Latest run: Batch 0231
 
 # Latest run: Batch 0230
 
