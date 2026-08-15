@@ -1,3 +1,24 @@
+# Latest run: Batch 0294
+
+Input: train records 2931-2940 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03236 through corpus-03245, preserving corpus order and the source-ID gap at corpus-03235).
+
+Progress: train 2940/5399; validation 0/601; total 2940/6000; remaining 3060.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: initial combined validation command was blocked before artifact generation; reran generation and validation separately; artifact passed on rerun
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten speculative-decoding analyses with variant-specific hypotheses for bounded launch lookahead, verification microbatch shaping, confidence gating, adaptive lookahead, tokenizer-boundary validation, draft/target resource isolation, verification-first scheduling, speculative cache budgeting, workload-aware routing, and dependency-scoped synchronization. Each includes assumptions, randomized target-only/current/intervention controls, held-out replay, unchanged-load canarying, draft/verification/acceptance/queue/resource/cache telemetry, workload stratification, confounder controls, quality/goodput/SLO/error/fairness/memory/cost safeguards, fail-closed rollback, and evidence requirements. Results require domain-expert review.
+
 # Latest run: Batch 0293
 
 Input: train records 2921-2930 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03225 through corpus-03234, preserving corpus order).
