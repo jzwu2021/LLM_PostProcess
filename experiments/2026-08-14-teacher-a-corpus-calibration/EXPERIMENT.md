@@ -1,8 +1,8 @@
-# Latest run: Batch 0240
+# Latest run: Batch 0241
 
-Input: train records 2391-2400 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02638 through corpus-02644, corpus-02646 through corpus-02648, preserving corpus order and source-ID gaps).
+Input: train records 2401-2410 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02649 through corpus-02658, preserving corpus order).
 
-Progress: train 2400/5399; validation 0/601; total 2400/6000; remaining 3600.
+Progress: train 2410/5399; validation 0/601; total 2410/6000; remaining 3590.
 
 Result:
 ```text
@@ -12,12 +12,12 @@ keep: 0
 rewrite: 10
 reject: 0
 initial schema check: PASS
-repair: not required
+repair: not required; validator script was corrected after an extraneous marker caused a non-zero exit, then rerun successfully
 final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten calculator-overuse interventions with explicit unnecessary-call and justified-use definitions, precision-aware abstention, typed stop/no-tool gating, bounded retries, response validation, millisecond telemetry, correctness/cost/trajectory/recovery measures, a falsifiable held-out non-inferiority hypothesis, randomized paired evaluation, no-tool/tool-required and malformed/adversarial/timeout/wrong-result/duplicate/retry-loop/unavailable-tool/precision-boundary tests, reward safeguards, confounder controls, privacy and authorization limits, safety gates, and reversible canary rollback criteria. Results require domain-expert review.
+This provisional batch independently recalibrated ten calculator-overuse interventions with explicit stop/no-tool versus calculator-needed states, parseable-expression and unit/precision checks, bounded retries, output validation, timeout/malformed/wrong-result/duplicate/retry-loop and adversarial tests, millisecond tool latency, correctness/call-rate/cost/trajectory/recovery/calibration measures, a held-out correctness non-inferiority hypothesis, randomized paired evaluation, confounder logging, privacy and authorization limits, capped reward shaping, canary monitoring, and rollback criteria. Results require domain-expert review.
 
 # Latest run: Batch 0239
 
