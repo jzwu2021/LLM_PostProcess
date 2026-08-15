@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0055
+
+Input: validation records 541-550 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05402, corpus-05413, corpus-05421, corpus-05422, corpus-05428, corpus-05432, corpus-05433, corpus-05436, corpus-05438, and corpus-05508, preserving validation order).
+
+Progress: train 5399/5399; validation 550/601; total 5949/6000; remaining 51.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 550 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated nine GPUDirect Storage evaluation plans and one Mooncake disaggregated KV-cache serving plan. Corrections make direct-path validation, storage-versus-DMA attribution, queue depth, cache and durability controls, interruption/restart integrity, prefill/decode ownership, KV consistency and eviction, RDMA cost, matched baselines, SLO metrics, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0054
 
 Input: validation records 531-540 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05290, corpus-05297, corpus-05309, corpus-05320, corpus-05321, corpus-05337, corpus-05368, corpus-05373, corpus-05381, and corpus-05385, preserving validation order).
