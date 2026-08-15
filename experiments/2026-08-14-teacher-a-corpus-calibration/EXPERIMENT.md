@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0028
+
+Input: validation records 271-280 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02878, corpus-02880, corpus-02893, corpus-02915, corpus-02918, corpus-02919, corpus-02938, corpus-02944, corpus-02958, and corpus-02965, preserving validation order).
+
+Progress: train 5399/5399; validation 280/601; total 5679/6000; remaining 321.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 280 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten sparse-MoE uneven-load and tail-latency diagnosis plans. Corrections distinguish routing skew, capacity overflow, expert queueing, compute imbalance, all-to-all congestion, placement/locality, batching, and admission effects; require per-expert token accounting, synchronized queue/compute/communication traces with units, matched randomized routing/capacity/placement/batching experiments, correctness and token-loss checks, confounder controls, bounded canaries, rollback gates, and evidence requirements. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0027
 
 Input: validation records 261-270 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02792, corpus-02797, corpus-02804, corpus-02806, corpus-02821, corpus-02830, corpus-02836, corpus-02838, corpus-02864, and corpus-02868, preserving validation order).
