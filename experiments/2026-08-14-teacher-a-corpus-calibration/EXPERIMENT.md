@@ -1,3 +1,24 @@
+# Latest run: Batch 0509
+
+Input: train records 5081-5090 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05642, corpus-05644 through corpus-05648, corpus-05650 through corpus-05651, and corpus-05653 through corpus-05654, preserving corpus order and corpus-ID gaps).
+
+Progress: train 5090/5399; validation 0/601; total 5090/6000; remaining 910.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+repair: none required
+final schema check: PASS; aggregate validation confirmed 5090 train records and exact new train range
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten NVIDIA Dynamo disaggregated-inference evaluation prompts spanning system design, troubleshooting, tool use, and performance analysis. Corrections make assumptions and capability verification explicit; separate frontend/prefill/decode ownership; define KV schema, authorization, tenant isolation, transport, scheduling, queueing, and observability; require units, matched baselines, strata, confounder controls, failure injection, bounded fallback, rollback gates, and evidence before claims. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0508
 
 Input: train records 5071-5080 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05632 through corpus-05641, preserving corpus order).
