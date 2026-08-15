@@ -1,8 +1,8 @@
-# Latest run: Batch 0370
+# Latest run: Batch 0371
 
-Input: train records 3691-3700 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04077 through corpus-04086, preserving corpus order).
+Input: train records 3701-3710 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04087 through corpus-04096, preserving corpus order).
 
-Progress: train 3700/5399; validation 0/601; total 3700/6000; remaining 2300.
+Progress: train 3710/5399; validation 0/601; total 3710/6000; remaining 2290.
 
 Result:
 ```text
@@ -17,7 +17,8 @@ final schema check: PASS; standalone validator confirmed JSONL parsing, exact co
 manifest verification: pending until commit preparation
 ```
 
-This provisional batch independently recalibrated ten KV-cache estimator implementation prompts. Corrected answers account for both K and V tensors, define logical dense byte assumptions, reject non-positive/non-integral/boolean inputs, include deterministic boundary and failure tests, state fixed-width and Python integer complexity, and conservatively separate physical runtime overhead and resource limits. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated ten KV-cache estimator implementation prompts. Corrected answers account for both K and V tensors, define logical dense byte assumptions and units, reject non-positive/non-integral/boolean inputs, include deterministic boundary and failure tests, state fixed-width overflow and complexity limits, and conservatively separate physical runtime overhead and resource limits. Results remain provisional and are not expert gold or authoritative domain capability.
+
 
 
 
