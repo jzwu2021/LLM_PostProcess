@@ -1,8 +1,8 @@
-# Latest run: Batch 0389
+# Latest run: Batch 0390
 
-Input: train records 3881-3890 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04283 through corpus-04292, preserving corpus order).
+Input: train records 3891-3900 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04293 through corpus-04306, preserving corpus order and corpus-ID gaps).
 
-Progress: train 3890/5399; validation 0/601; total 3890/6000; remaining 2110.
+Progress: train 3900/5399; validation 0/601; total 3900/6000; remaining 2100.
 
 Result:
 ```text
@@ -12,12 +12,12 @@ keep: 0
 rewrite: 10
 reject: 0
 initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
-repair: one serialization repair; initial writer emitted literal backslash-n separators, which were converted to JSONL line terminators before validation
+repair: none required
 final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
-manifest verification: pending until commit preparation
+manifest verification: PASS; regenerated and rechecked after commit preparation
 ```
 
-This provisional batch independently recalibrated ten tool-call parser implementation prompts. Corrections require duplicate-key rejection before dictionary construction, an exact top-level schema, strict string/object type checks, deterministic valid and malformed/duplicate/unknown/missing/root/type tests, explicit complexity and resource-limit assumptions, and a non-execution boundary. Downstream schemas, authorization, and runtime isolation require separate evidence. Results remain provisional and are not expert gold or authoritative domain capability.
+This provisional batch independently recalibrated six tool-call parser and four bounded-retry implementation prompts. Corrections specify duplicate-key rejection, exact JSON schema, strict types, deterministic parser tests, attempt-count and exception-classification semantics, capped exponential backoff without final sleep, injectable timing, validation, idempotency/cancellation risks, complexity, and evidence boundaries. Results remain provisional and are not expert gold or authoritative domain capability.
 
 # Latest run: Batch 0388
 
