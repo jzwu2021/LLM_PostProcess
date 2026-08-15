@@ -1,3 +1,24 @@
+# Latest run: Batch 0539
+
+Input: train records 5381-5390 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05978, corpus-05979, corpus-05980, corpus-05981, corpus-05982, corpus-05983, corpus-05986, corpus-05987, corpus-05989, corpus-05990, preserving corpus order and corpus-ID gaps).
+
+Progress: train 5390/5399; validation 0/601; total 5390/6000; remaining 610.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL; the first aggregate validator had a reporting-variable typo after all JSONL, field, count, and alignment assertions had passed
+repair: corrected the validator expression and reran it; the batch file was not changed
+final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten cluster scheduling and recovery prompts across troubleshooting, code/tool use, system design, and performance analysis. Corrections make assumptions, falsifiable scheduler and recovery hypotheses, topology-aware gang admission, fragmentation-aware packing, GPU/NIC/NUMA placement, checkpoint-safe preemption, node fencing and drain, bounded elastic restart, readiness-gated replica routing, SLOs, resource accounting, synchronized metrics with units, matched baselines, confounders, least-privilege rollout, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0538
 
 Input: train records 5371-5380 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-05964, corpus-05967, corpus-05969, corpus-05971 through corpus-05977, preserving corpus order and corpus-ID gaps).
