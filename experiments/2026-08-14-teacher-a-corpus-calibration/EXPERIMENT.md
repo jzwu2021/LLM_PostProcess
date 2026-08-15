@@ -1,3 +1,24 @@
+# Latest run: Batch 0362
+
+Input: train records 3611-3620 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03993 through corpus-04002, preserving corpus order and the corpus-ID gap at corpus-03992).
+
+Progress: train 3620/5399; validation 0/601; total 3620/6000; remaining 2380.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required
+final schema check: PASS; standalone validator confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: PASS; regenerated with experiment-relative paths and rechecked all 364 hashes
+```
+
+This provisional batch independently recalibrated eight serving-system comparison prompts and two KV-cache estimator implementation prompts. Serving corrections define token numerators/denominators and timing boundaries, freeze model/runtime/hardware/topology/workload/cache/admission variables, test a falsifiable named mechanism with randomized paired crossovers and control intervention, measure unit-labeled throughput/latency/traces/resources/errors/correctness/quality with uncertainty, identify confounders and telemetry limits, and require canary SLO gates with fail-closed rollback. The code corrections provide integer validation, deterministic boundary tests, complexity and memory-layout assumptions. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0361
 
 Input: train records 3601-3610 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-03982 through corpus-03991, preserving corpus order).
