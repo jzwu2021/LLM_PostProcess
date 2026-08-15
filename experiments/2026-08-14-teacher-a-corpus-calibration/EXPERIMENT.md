@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0053
+
+Input: validation records 521-530 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05243, corpus-05246, corpus-05248, corpus-05249, corpus-05251, corpus-05263, corpus-05266, corpus-05280, corpus-05285, and corpus-05289, preserving validation order).
+
+Progress: train 5399/5399; validation 530/601; total 5929/6000; remaining 71.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 530 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated four RoCE collective diagnostics and six GPUDirect RDMA validation plans. Corrections make verbs/queue pairs, priority and congestion paths, direct-versus-staged GPU memory movement, topology and permission assumptions, falsifiable hypotheses, units, matched controls, application/device metrics, confounders, canary limits, rollback gates, and evidence requirements explicit. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0052
 
 Input: validation records 511-520 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-05172, corpus-05184, corpus-05203, corpus-05204, corpus-05205, corpus-05210, corpus-05215, corpus-05226, corpus-05229, and corpus-05241, preserving validation order).
