@@ -14,7 +14,7 @@ reject: 0
 initial schema check: FAIL; the first aggregate validator used the post-loop validation expectation when checking the new train range, producing a validator-only assertion; no experiment file was modified
 repair: corrected the validator expectation scope and reran it; the batch file was not changed
 final schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, strict aggregate train-prefix alignment, and exact new train range
-manifest verification: pending until this experiment-log update and commit preparation
+manifest verification: PASS; all experiment hashes regenerated and rechecked before commit and push
 ```
 
 This provisional batch independently recalibrated ten larger-world-size multi-node NCCL prompts across troubleshooting, tool use, system design, and performance analysis. Corrections make rank mapping, interface and NIC affinity, topology and transport, rendezvous and authorized port reachability, communicator formation, reduced-world controls, synchronized metrics with units, confounders, rollback gates, cleanup, redaction, and evidence limits explicit. Results remain provisional and are not expert gold or authoritative domain capability.
