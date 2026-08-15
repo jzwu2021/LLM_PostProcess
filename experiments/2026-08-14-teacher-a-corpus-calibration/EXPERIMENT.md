@@ -1,3 +1,24 @@
+# Latest run: Validation Batch 0026
+
+Input: validation records 251-260 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02672, corpus-02682, corpus-02714, corpus-02732, corpus-02737, corpus-02741, corpus-02742, corpus-02751, corpus-02758, and corpus-02766, preserving validation order).
+
+Progress: train 5399/5399; validation 260/601; total 5659/6000; remaining 341.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact batch count, required fields, exact source-field equality, unique IDs, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict train-prefix and validation-prefix alignment
+repair: none required; raw corpus, benchmark generations, and prior results were not modified
+final schema check: PASS; aggregate validation confirmed 5399 unique train records plus the exact first 260 validation records, with no duplicates or corpus modifications
+manifest verification: pending until this experiment-log update and commit preparation
+```
+
+This provisional batch independently recalibrated ten calculator-overuse intervention plans. Corrections define conservative counterfactual necessity at requested precision, distinguish necessary/failed/indeterminate cases, specify correctness, calibration, trajectory, latency, recovery, token, and cost measures, retain no-tool and required-call controls, test a falsifiable 30% reduction hypothesis with a <=1-point correctness-loss bound, control workload and runtime confounders, treat preference signals as auxiliary, and require shadowing, bounded canaries, fallback, privacy-preserving telemetry, and rollback gates. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Validation Batch 0025
 
 Input: validation records 241-250 of `research/ai-infra-expert/corpus/validation.jsonl` (source IDs corpus-02599, corpus-02613, corpus-02615, corpus-02627, corpus-02628, corpus-02630, corpus-02633, corpus-02645, corpus-02659, and corpus-02661, preserving validation order).
