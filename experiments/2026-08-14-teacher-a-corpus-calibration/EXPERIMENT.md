@@ -1,3 +1,24 @@
+# Latest run: Batch 0234
+
+Input: train records 2331-2340 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02571 through corpus-02580, preserving corpus order).
+
+Progress: train 2340/5399; validation 0/601; total 2340/6000; remaining 3660.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS
+repair: not required
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten calculator-overuse interventions with explicit definitions for unnecessary and justified calls, ambiguity abstention, millisecond telemetry, correctness/cost/trajectory/recovery measures, a falsifiable held-out call-rate and latency hypothesis with a correctness margin, randomized paired evaluation, no-tool, tool-required, malformed, adversarial, timeout, wrong-result, retry-loop, and precision-boundary suites, reward safeguards, confounder controls, privacy limits, safety gates, and reversible canary rollback criteria. Results require domain-expert review.
+
 # Latest run: Batch 0233
 
 Input: train records 2321-2330 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02558, corpus-02559, corpus-02561 through corpus-02563, corpus-02565 through corpus-02568, and corpus-02570, preserving corpus order and source-ID gaps).
