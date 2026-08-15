@@ -1,3 +1,24 @@
+# Latest run: Batch 0380
+
+Input: train records 3791-3800 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04182, corpus-04184 through corpus-04187, and corpus-04190 through corpus-04194, preserving corpus order and corpus-ID gaps).
+
+Progress: train 3800/5399; validation 0/601; total 3800/6000; remaining 2200.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: PASS; JSONL parsing, exact count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, unique IDs, exact source-field matching, and strict aggregate train-prefix alignment
+repair: none required; an initial diagnostic assertion incorrectly assumed filesystem batch order, then validation was rerun using raw-corpus order
+final schema check: PASS; standalone validation confirmed JSONL parsing, exact count, exact source-field matching, unique IDs, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, and strict aggregate train-prefix alignment
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten tensor-parallel validator implementation prompts. Corrected answers specify strict positive non-boolean integer validation without coercion, deterministic valid/non-divisible/boundary/type tests, the modulo divisibility mechanism, constant complexity, and conservative separation of arithmetic validity from device inventory, topology, collective/backend support, model-shape, memory, and runtime evidence. Results remain provisional and are not expert gold or authoritative domain capability.
+
 # Latest run: Batch 0379
 
 Input: train records 3781-3790 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-04172 through corpus-04181, preserving corpus order).
