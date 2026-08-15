@@ -1,3 +1,24 @@
+# Latest run: Batch 0255
+
+Input: train records 2541-2550 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02803, corpus-02805, corpus-02807 through corpus-02814, preserving corpus order and source-ID gaps at corpus-02804 and corpus-02806).
+
+Progress: train 2550/5399; validation 0/601; total 2550/6000; remaining 3450.
+
+Result:
+```text
+records processed: 10
+source ID alignment: PASS
+keep: 0
+rewrite: 10
+reject: 0
+initial schema check: FAIL (aggregate validator incorrectly required pre-existing risks/evidence field container types and contained an unreachable corpus iterator)
+repair: removed those overstrict/unreachable validator assertions; retained required-field, JSONL, lane/status/model/decision, non-empty corrected_answer, confidence-range, unique-ID, strict train-prefix ID-set, batch-order, and exact source-field checks
+final schema check: PASS; JSONL parsing, count, required fields, lane/status/model/decision, non-empty corrected_answer, confidence range, exact source-field matching, unique-ID, and strict aggregate train-prefix ID-set alignment passed
+manifest verification: pending until commit preparation
+```
+
+This provisional batch independently recalibrated ten sparse-MoE load and tail-latency analyses with explicit assumptions, a falsifiable routing/capacity hypothesis, per-expert routing and overflow/drop/padding telemetry, all-to-all/compute/queue/network/placement/batch measurements, matched randomized replay, workload stratification, quality and goodput safeguards, confounder controls, canarying, and rollback criteria. Results require domain-expert review.
+
 # Latest run: Batch 0254
 
 Input: train records 2531-2540 of `research/ai-infra-expert/corpus/train.jsonl` (source IDs corpus-02791, corpus-02793 through corpus-02796, corpus-02798 through corpus-02802, preserving corpus order and source-ID gaps at corpus-02792 and corpus-02797).
