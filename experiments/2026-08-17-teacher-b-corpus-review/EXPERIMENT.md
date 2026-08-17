@@ -1,0 +1,109 @@
+# Experiment: teacher-B corpus review (blind, independent second opinion)
+
+Started: 2026-08-17
+Lane: teacher-B
+Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
+is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
+
+## Purpose
+
+Produce a second, INDEPENDENT provisional calibration of the same 6000 corpus
+records that teacher-A calibrated, so that inter-teacher agreement can be measured
+afterwards. This is a review lane, not gold labels, and not evidence of model
+domain capability.
+
+## Mode: BLIND
+
+For each record the reviewer sees ONLY:
+  - source_user   (from research/ai-infra-expert/corpus/*.jsonl)
+  - source_assistant (from the same raw corpus)
+
+The reviewer MUST NOT read, open, or consult any file under
+experiments/2026-08-14-teacher-a-corpus-calibration/ while producing a batch.
+teacher-A's corrected_answer is deliberately withheld to avoid anchoring.
+Agreement against teacher-A is computed only in a separate later analysis step.
+
+## Isolation guarantees
+
+- Outputs live ONLY under this directory's results/.
+- teacher-A results are read-only for this lane and are never modified.
+- Raw corpus (research/ai-infra-expert/corpus/) is never modified.
+- Benchmark raw generations are never modified.
+- teacher_lane is always "teacher-B"; teacher-A files are never overwritten.
+
+## Scope
+
+- train: 5399 records, in corpus order (prefix-aligned)
+- validation: 601 records, in corpus order (prefix-aligned)
+- total: 6000
+
+## Output schema (per JSONL record)
+
+Same 12 required fields as teacher-A so the two lanes are directly comparable:
+
+  source_id           str, exact id from raw corpus, corpus order preserved
+  teacher_lane        "teacher-B"
+  teacher_model       "claude-opus-5-current"
+  calibration_status  "provisional"
+  decision            one of keep | rewrite | reject
+  source_user         exact copy of raw corpus user content
+  source_assistant    exact copy of raw corpus assistant content
+  corrected_answer    non-empty str, teacher-B's independent answer
+  quality_dimensions  {technical_correctness, instruction_coverage, operational_safety} ints 1-5
+  risks               list[str]
+  evidence_required   list[str]
+  confidence          float in [0,1]
+
+## Status
+
+Progress: train 10/5399; validation 0/601; total 10/6000; remaining 5990.
+
+Runs are appended below, newest first.
+
+## Run log (newest first)
+
+### 2026-08-17 10:58 UTC — train-batch-0001.jsonl
+
+- Batch file: results/train-batch-0001.jsonl
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 1-10
+- Source IDs: corpus-00001, corpus-00003, corpus-00004, corpus-00005, corpus-00006,
+  corpus-00007, corpus-00008, corpus-00009, corpus-00010, corpus-00012
+  (note: corpus ids are non-contiguous in the raw file; line order was preserved verbatim,
+  nothing skipped or reordered)
+- Progress after this run: train 10/5399; validation 0/601; total 10/6000; remaining 5990
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run (scripts/verify_batches.py)
+- Repairs performed: none required
+- Final schema/ad-hoc check: PASS (train=10/5399 validation=0/601 total=10/6000, VERIFY_PASS)
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself;
+  `sha256sum -c` reported all files OK
+- Blind-mode compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, or grepped while producing this batch. Only source_user and
+  source_assistant from the raw corpus were consulted.
+
+Technical topics covered by this batch: all ten records sit in the KV cache cluster of the
+Knowledge/Concept category (concepts=["kv_cache"], task_type=explanation, difficulty=easy),
+split across three prompt intents — (a) define KV cache and why it matters, (b) contrast KV
+cache against a naive no-cache decode path, (c) name two failure modes / trade-offs. The
+rewrites cover the autoregressive caching mechanism itself, the per-sequence size model
+bytes = 2 * layers * seq_len * num_kv_heads * head_dim * dtype_bytes (explicitly num_kv_heads,
+so GQA/MQA reduces it), the shift of the decode bottleneck from GEMM FLOPs to HBM capacity and
+bandwidth, paged/block KV allocation and fragmentation, capacity exhaustion under concurrency
+with preemption / evict-and-recompute / host-memory swap over PCIe, and the mitigation
+trade-space (GQA/MQA, fp8-int8 KV quantization, offload, sliding-window/eviction) with its
+quality cost.
+
+Why every record was marked rewrite: the raw corpus reuses one identical single-sentence
+assistant answer across all three distinct prompt intents. That sentence is technically
+non-false about caching and memory scaling factors, but it does not answer the contrast or
+failure-mode variants at all, carries no units, no quantitative size model, no explicit
+boundary condition tied to an HBM budget or concurrency level, no falsifiable claim, no
+required evidence and no rollback gate. Instruction coverage was therefore scored 2/5 for the
+definitional variants and 1/5 for the contrast and failure-mode variants.
+
+Provisional status disclaimer: these teacher-B outputs are PROVISIONAL model-authored review
+notes. They are NOT expert gold labels, have NOT been validated by a human domain expert or by
+execution against real hardware, and they are NOT evidence of any model's domain capability.
+Numeric examples in corrected answers are order-of-magnitude illustrations and must be
+re-derived from the actual model config before use. Inter-teacher agreement against teacher-A
+is deliberately NOT computed here; it is a separate, later, independent analysis step.
