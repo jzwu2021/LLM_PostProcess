@@ -5,6 +5,38 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0056
+
+- Batch file: results/train-batch-0056.jsonl
+- Corpus range: train.jsonl 0-indexed lines 550-559, source IDs corpus-00612, corpus-00613, corpus-00614, corpus-00615, corpus-00616, corpus-00617, corpus-00618, corpus-00620, corpus-00621, corpus-00622 (strict corpus order preserved; the ID gap at corpus-00619 is a gap in the corpus itself, nothing was skipped or reordered).
+- Progress: train 560/5399, validation 0/601, total 560/6000, remaining 5440
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (10/10 rows parsed as physical-newline JSONL, all 12 required fields present, teacher_lane=teacher-B / teacher_model=claude-opus-5-current / calibration_status=provisional / decision in {keep,rewrite,reject}, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, 560 globally unique source_ids, aggregated train sequence an exact prefix of train.jsonl, validation still empty).
+- Repairs: none required. Original corpus, earlier batches, benchmark raw generations and all teacher-A artifacts untouched; the teacher-A directory was not opened, read or grepped during this run (blind review).
+- Final schema check: PASS (train=560 validation=0 total=560).
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except the manifest itself; `sha256sum -c` reported 106 entries OK, zero failures.
+
+Technical topics covered by this batch: single-request KV-cache memory sizing for
+transformer inference (Calculation cases 112-122). Parameter sweep: layers 24-56,
+KV heads 2-8, head_dim 64/96/128, seq_len 1024-4096, INT8 vs BF16/FP16 KV dtype.
+Independent recomputation of 2 x L x S x H x D x bytes confirmed all ten source
+arithmetic results and GiB conversions are exact, so every rewrite is a coverage
+rewrite rather than a numerical correction: the source answers stop at a raw byte
+count. The teacher-B answers add the per-token planning constant, paged-attention
+block rounding at block_size=16, INT8/FP8 scale metadata, the GQA-vs-query-head
+trap, the MLA and sliding-window regimes where the closed form silently breaks,
+static KV-pool sizing at engine startup, and the disaggregated prefill/decode
+(Mooncake, NVIDIA Dynamo) case where the same KV bytes exist on both sides during
+handoff and transfer time depends on measured RDMA/RoCE GPUDirect goodput rather
+than line rate. Each record carries falsifiable predictions, the config/log/metric
+evidence needed to check them, and a rollback gate at >15 percent measured-vs-
+estimated divergence or non-zero preemption counters.
+
+These results are PROVISIONAL teacher-B model output. They are not expert gold
+labels, have not been validated by a human infrastructure engineer, and say
+nothing about the domain capability of any trained model. Agreement analysis
+against teacher-A is a separate later step and was deliberately not performed here.
+
 ## Run 2026-08-17 batch 0055
 
 - Batch file: results/train-batch-0055.jsonl
