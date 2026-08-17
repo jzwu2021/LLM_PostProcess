@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0040
+
+- Batch file: results/train-batch-0040.jsonl
+- Corpus range: train.jsonl lines 391-400 (0-indexed 390-399), source IDs corpus-00437 through corpus-00446 — strict corpus order, nothing skipped or reordered.
+- Progress: train 400/5399, validation 0/601, total 400/6000, remaining 5600
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (ad-hoc verifier reported train=400, validation=0, total=400, VERIFY_PASS).
+- Repairs performed: none required.
+- Final schema check: PASS — line-by-line JSONL parse, batch count 10, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, risks/evidence_required string arrays, source_id globally unique across all 40 batches, aggregated train sequence a strict prefix of train.jsonl.
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself (79 entries); `sha256sum -c` passed with zero failures.
+- Technical topics covered: another all-NCCL block, all ten source answers being the same one-line taxonomy stub, hence rewrite across the board. (a) Misleading-intuition correction — the claim that allreduce bandwidth scales with rank count, corrected with the ring cost model (2*(N-1)/N*S bytes per rank, 2*(N-1) steps, per-step payload S/N), the consequence that added ranks buy latency and not throughput at fixed S, the latency-bound crossover where NCCL switches to Tree/CollNet/NVLS and scaling turns logarithmic, and a falsifiable busbw-flatness prediction testable with all_reduce_perf at N=2/4/8. (b) Controlled-experiment design separating transport/topology causes from workload causes — arms over default vs NCCL_P2P_DISABLE vs NCCL_IB_DISABLE vs NCCL_ALGO=Tree, 5 repeats with warm-up discard, the silent-downgrade mechanism (per-peer transport chosen at communicator init, visible in NCCL_DEBUG=INFO NET/IB vs NET/Socket lines), the boundary condition that sweep sizes must overlap the real DDP bucket size or results do not transfer, and a >=3% end-to-end step-time rollback threshold. (c) Runbook for collective hang/timeout — lock-step semantics meaning the watchdog reports victims rather than the culprit rank, evidence capture before mutation (py-spy dumps per rank, collective name and sequence number, NCCL_DEBUG_SUBSYS=INIT,NET,GRAPH), the topology/transport/process-group/rank/timeout/workload taxonomy, dmesg Xid and ECC checks, out-of-band nccl-tests reproduction, and the explicit rule that raising the timeout is not a fix unless a measured step-time distribution justifies it.
+- Status: these outputs are PROVISIONAL teacher-B judgements from a single blind model pass. They are not expert gold labels, were produced without any access to teacher-A artifacts, have not been validated against ground truth, and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0039
 
 - Batch file: results/train-batch-0039.jsonl
