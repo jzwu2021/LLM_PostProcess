@@ -5,6 +5,41 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0112
+
+- Batch file: results/train-batch-0112.jsonl
+- Corpus range: train.jsonl lines 1111-1120 (0-indexed 1110..1119)
+- Source IDs: corpus-01224, corpus-01226, corpus-01227, corpus-01228, corpus-01229,
+  corpus-01230, corpus-01231, corpus-01232, corpus-01233, corpus-01234
+- Progress: train 1120/5399, validation 0/601, total 1120/6000, remaining 4880
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (10/10 records, 12 required fields present, lane/model/
+  status/decision values correct, source_user and source_assistant byte-identical to
+  corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique,
+  aggregate train sequence is a strict prefix of train.jsonl)
+- Repairs: none required this run
+- Final schema check: PASS (train 1120, validation 0, total 1120, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 193 files; `sha256sum -c` all OK
+- Topics covered: LLM serving evaluation methodology for a mixed short-prompt /
+  long-generation workload. All ten items are the same scenario template with different
+  variant numbers (224, 226-234) spread across Troubleshooting, System Design and
+  Performance Analysis framings. The rewrites cover: prefill being compute-bound versus
+  decode being HBM-bandwidth-bound; decomposing TTFT into queue wait plus prefill time
+  and computing TPOT over the decode phase only; the throughput-versus-offered-load
+  saturation knee driven by KV-cache block exhaustion and preemption/recompute; a
+  falsifiable hypothesis on chunked prefill (>=30% P99 TTFT reduction with <=10% TPOT
+  regression and <5% throughput change) with explicit falsification thresholds; open-loop
+  load generation, coordinated omission, seeded identical request traces, clock locking,
+  warmup discard and >=5 repetitions with bootstrap CIs; confounders including prefix
+  caching, differing realized output lengths, thermal throttling and CUDA graph warmup;
+  and canary-based rollback gates on P99 end-to-end, timeout/5xx rate and KV preemption
+  counts.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened or searched while producing this batch.
+- Status: these results are PROVISIONAL teacher-B second opinions. They are NOT expert
+  gold labels, they have not been validated against ground truth, and they say nothing
+  about any model's domain capability.
+
 ## Run 2026-08-17 batch 0111
 
 - Batch file: results/train-batch-0111.jsonl
