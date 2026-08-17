@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0077
+
+- Batch file: results/train-batch-0077.jsonl
+- Corpus range: train.jsonl lines 761-770 (source IDs corpus-00839, corpus-00840, corpus-00841, corpus-00842, corpus-00843, corpus-00844, corpus-00845, corpus-00846, corpus-00847, corpus-00848 — corpus file order preserved exactly, no skips or reordering)
+- Progress: train 770/5399, validation 0/601, total 770/6000, remaining 5230
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py — JSONL line-parse, batch count, 12 required fields, teacher_lane/teacher_model/calibration_status/decision enums, source_user/source_assistant byte-exact vs corpus, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness, train/validation aggregate is a strict prefix of each corpus)
+- Repairs performed: none required
+- Final schema check: PASS (train_processed=770, validation_processed=0, total=770, ERRORS 0)
+- Manifest: MANIFEST.sha256 regenerated over all 138 files in this directory except itself; `sha256sum -c --quiet` all-pass, 0 failures
+- Technical topics covered: per-request KV cache sizing for GQA/MQA decoder stacks, spanning BF16/FP16 (2 bytes/value) and INT8 (1 byte/value) KV dtypes, layer counts 24-56, KV head counts 2-8, head dims 64-128, and context lengths 1024-4096. Each source byte figure was independently recomputed from 2 x layers x seq_len x KV_heads x head_dim x bytes_per_value and all 10 matched exactly, so technical_correctness was scored 4. All 10 were still marked `rewrite` for insufficient instruction coverage and operational safety: the source omits that KV_heads must be the post-GQA key-value head count (not query heads, a 4-8x error mode), omits paged-allocator block-granularity round-up in vLLM/SGLang PagedAttention, omits INT8 per-block scale/zero-point metadata (~1-4%), omits the concurrency multiplier that turns a per-request figure into an HBM capacity constraint, omits tensor-parallel KV sharding vs replication when KV_heads is not divisible by TP, and omits architectures that break linear scaling (sliding-window, cross-layer KV sharing, MLA latent KV). Rewrites state these as explicit falsifiable assumptions, report both GiB and GB, list the evidence needed (config.json num_hidden_layers/num_key_value_heads/head_dim, engine kv_cache_dtype and block_size, startup KV-blocks log line, nvidia-smi / torch.cuda.memory_summary at steady state), and set a rollback threshold at >15% measured-vs-predicted KV divergence before any max_num_seqs/max_model_len rollout proceeds.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, or searched during this batch. Only research/ai-infra-expert/corpus/train.jsonl source_user/source_assistant were consulted.
+- Status caveat: these results are PROVISIONAL teacher-B model output. They are not expert gold labels, have not been validated by a human domain expert, and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0076
 
 - Batch file: results/train-batch-0076.jsonl
