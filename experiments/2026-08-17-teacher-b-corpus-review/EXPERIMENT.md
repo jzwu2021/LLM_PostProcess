@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0046
+
+- Batch file: results/train-batch-0046.jsonl
+- Corpus range: train.jsonl lines 451-460 (0-indexed 450-459), source IDs corpus-00500, corpus-00501 … corpus-00508, corpus-00510 — contiguous in corpus order (the corpus itself has no corpus-00509 at this position), nothing skipped or reordered by this worker.
+- Progress: train 460/5399, validation 0/601, total 460/6000, remaining 5540
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (verify_batches.py — JSONL line-parse, 10 records, all 12 required fields, lane/model/status/decision enums, byte-exact source_user/source_assistant equality against corpus, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness across all 46 batches, and strict train-prefix ordering).
+- Repairs: none required this run.
+- Final schema check: PASS (train 460, validation 0, total 460).
+- Manifest: MANIFEST.sha256 regenerated over all 89 files in the experiment directory (excluding the manifest itself); `sha256sum -c` returned OK for every entry.
+- Technical topics covered: one speculative-decoding runbook entry (draft/target proposal + batched verification, modified rejection sampling and its distribution-preserving guarantee, expected-accepted-tokens (1-a^(k+1))/(1-a), and the break-even boundary where speculation loses at high batch size because the target step becomes compute-bound); and nine per-request KV-cache sizing calculations spanning INT8 and BF16/FP16 across 24–56 layers, 2–8 KV heads, head_dim 64–128 and seq_len 1024–4096. Source arithmetic was independently recomputed and found correct in all nine cases; rewrites add the GQA/MQA caveat that kv_heads (not query heads) is the driving factor, PagedAttention block-rounding and per-sequence internal fragmentation, INT8 scale/zero-point metadata overhead, the GiB vs GB unit ambiguity (~7% planning error), and explicit measurement evidence plus a >15% over-estimate rollback gate.
+- Status: PROVISIONAL. These are blind, single-pass teacher-B judgements, not expert gold labels, and they say nothing about any model's domain capability. teacher-A outputs were not read at any point during this batch.
+
 ## Run 2026-08-17 batch 0045
 
 - Batch file: results/train-batch-0045.jsonl
