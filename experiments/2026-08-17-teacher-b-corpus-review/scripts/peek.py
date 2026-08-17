@@ -1,13 +1,9 @@
-import json, glob, sys
-src=[json.loads(l) for l in open('research/ai-infra-expert/corpus/train.jsonl')]
-print('corpus_len',len(src))
-fs=sorted(glob.glob('experiments/2026-08-17-teacher-b-corpus-review/results/train-batch-*.jsonl'))
-done=sum(1 for f in fs for l in open(f) if l.strip())
-print('done',done)
-last=[json.loads(l) for l in open(fs[-1])][-1]
-print('last_done_id',last['source_id'])
-print('keys',list(src[0].keys()))
-for i in range(done,done+10):
-    r=src[i]
-    print('=====',i+1,r.get('id'))
-    print(json.dumps(r,ensure_ascii=False)[:2600])
+import json, sys
+start = int(sys.argv[1]); n = int(sys.argv[2])
+rows = [json.loads(l) for l in open('research/ai-infra-expert/corpus/train.jsonl')][start:start+n]
+for r in rows:
+    print('=== KEYS:', list(r.keys()))
+    print('ID:', r.get('id'))
+    print('USER:', r.get('user', '')[:1500])
+    print('ASSISTANT:', r.get('assistant', '')[:2200])
+    print()

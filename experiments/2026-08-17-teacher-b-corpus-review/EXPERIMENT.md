@@ -5,6 +5,48 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0116
+
+- Batch file: results/train-batch-0116.jsonl
+- Corpus range: train.jsonl lines 1151-1160 (0-indexed 1150..1159)
+- Source IDs: corpus-01273, corpus-01274, corpus-01275, corpus-01276, corpus-01277,
+  corpus-01278, corpus-01279, corpus-01280, corpus-01281, corpus-01282
+- Progress: train 1160/5399, validation 0/601, total 1160/6000, remaining 4840
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1160 aggregate records, 12 required fields present,
+  lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1],
+  source_id globally unique, aggregate train sequence is a strict prefix of
+  train.jsonl)
+- Repairs: none required this run.
+- Final schema check: PASS (identical run, no intervening edits)
+- Manifest: MANIFEST.sha256 regenerated over all 196 files in this experiment
+  directory except the manifest itself; `sha256sum -c` reports all OK.
+- Topics covered: this block is a homogeneous run of "serving capacity" scenario
+  variants 273-282, spread across Performance Analysis, System Design and
+  Troubleshooting categories. Every item asks for an evaluation plan on a mixed
+  short-prompt / long-generation LLM serving endpoint reporting TTFT, TPOT,
+  throughput, queueing delay and P99 latency, with an explicit falsifiable
+  hypothesis and a controlled experiment. The rewrites give operational metric
+  definitions (client-side vs server-side TTFT; per-request TPOT rather than a
+  global token/s counter; prefill and decode throughput reported separately;
+  per-class rather than pooled P99), a falsifiable hypothesis attributing P99 TTFT
+  degradation to chunked-prefill budget contention under KV-cache pressure rather
+  than raw compute saturation, with both confirming and refuting predictions; a
+  factorial design over chunked-prefill budget, KV-cache/concurrency cap and
+  long-generation mixture ratio with warmup discard, repeated independent runs and
+  randomized run order; explicit confounders (prefix caching / KV reuse, forced
+  max_tokens vs EOS, client-side tokenizer and connection limits, clock and thermal
+  drift, shared-GPU interference, autoscaler churn); required evidence (per-request
+  traces, engine scheduler and preemption counters, GPU memory/occupancy telemetry,
+  pinned versions and frozen workload manifest); and rollback gates tied to the
+  measured repeat-to-repeat spread, a bounded canary, and automatic revert on
+  preemption or KV-eviction regressions. The source assistant texts are grading
+  rubrics rather than answers, which is why all ten are marked rewrite.
+- Status: PROVISIONAL teacher-B output. It is NOT expert gold, has not been
+  adjudicated against teacher-A, and says nothing about any model's domain
+  capability. Blind-review discipline held: no teacher-A artifact was read.
+
 ## Run 2026-08-17 batch 0115
 
 - Batch file: results/train-batch-0115.jsonl
