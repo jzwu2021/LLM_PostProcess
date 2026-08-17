@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0037
+
+- Batch file: results/train-batch-0037.jsonl
+- Corpus range: train.jsonl lines 361-370 (0-indexed 360-369), source IDs corpus-00399, corpus-00401, corpus-00402, corpus-00403, corpus-00405, corpus-00406, corpus-00407, corpus-00409, corpus-00410, corpus-00411 — strict corpus order, nothing skipped or reordered.
+- Progress: train 370/5399, validation 0/601, total 370/6000, remaining 5630
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (train=370, validation=0, total=370, ERRORS 0) on first run.
+- Repairs performed: none required.
+- Final schema check: PASS — JSONL line-by-line parse, batch count 10, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence within [0,1], source_id globally unique, aggregated train sequence is a strict prefix of train.jsonl.
+- Manifest: MANIFEST.sha256 regenerated over all files except itself; `sha256sum -c` reported 75/75 OK, zero failures.
+- Technical topics covered: quantization diagnosis on a serving deployment (weight-only INT4 as a memory-traffic rather than FLOP optimization, the memory-bound-to-compute-bound crossover, absence of FP8 tensor cores on A30, outlier-driven accuracy loss); and a dense NCCL block — definition and role as the transport under DP/FSDP/TP/EP, ring all-reduce cost model 2*(R-1)/R*N versus O(R*N) coordinator funnels, ring vs tree vs NVLS algorithm and LL/LL128 protocol selection, per-peer transport selection (NVLink P2P > PCIe P2P > SHM > net), GPUDirect RDMA preconditions and silent host-staging fallback, NCCL_NET_GDR_LEVEL topology dependence, compute/communication overlap limits and SM contention, and collective-schedule-mismatch hangs presenting as 100% GPU utilization until watchdog abort.
+- Status: these outputs are PROVISIONAL teacher-B judgements from a single model pass. They are not expert gold labels, have not been validated against ground truth or against teacher-A (this lane is blind), and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0036
 
 - Batch file: results/train-batch-0036.jsonl
