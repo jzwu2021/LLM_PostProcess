@@ -1,6 +1,6 @@
 ed6937c77afafe5c35d0fa19ec067c1fdf6a3ea42f328a2d9364315ab07a7224  ./agreement_report.json
 e110647a4e70206046794d2ebcc19160f52de6a4e3d99b6d97f9252685f8846a  ./environment.txt
-cbcb6c040cd045cd2ea62b42d51ac7e7a62a3301e6e0ee13d8d0760daed863e6  ./EXPERIMENT.md
+ea9b4d15b82f8e48d2101d454b0ed361f2aa03af0bea46740bb10f702212cfe2  ./EXPERIMENT.md
 2ac2635879e006ce78db2d7b8843f5400f28c8262cc6f42199325535b818fba0  ./results/train-batch-0001.jsonl
 baa4d2adc39351168681db1e8725c476643d78384f9da616f7c435637cb88d64  ./results/train-batch-0002.jsonl
 c89c19d7b6f05f219792edcebe18fb935a17fb9644ebc1c76725465f7b3c2758  ./results/train-batch-0003.jsonl
@@ -63,6 +63,7 @@ d25730b90c0b092cc9891c0aafcdbca51d6e44c4b0b1a17fabc8255179859e3c  ./results/trai
 2236206f0db94d9708c602863d4d03cc90bd345c6cb5c79f4a3f8dff6ca7902c  ./results/train-batch-0060.jsonl
 845e16e50d7464ffd2f1268898288ec60027a2dbd955ad036a1f570ab85f26b3  ./results/train-batch-0061.jsonl
 91514e1d8dd73b4cac869708bdc92886c89e85e42d4649c68b0709737c2ec9b8  ./results/train-batch-0062.jsonl
+eed87d503e293841e859bf881c329fcbfe45529c55e8c4ca787dc30798ddf113  ./results/train-batch-0063.jsonl
 303f94e5b0f65038e2a49e67f4c73aabce7de86aa991b33ab41f0b9dcdd35226  ./scripts/agreement_analysis.py
 827ffceee3e968eb1bc79b29522b93bbcc1e9360e05738b5e65359da60e58b01  ./scripts/build_batch_0020.py
 51dd29a33668c27c93baf86233a1171fe06b458aa74d81a3bf984b7c150cf36d  ./scripts/build_batch_0029.py
@@ -108,8 +109,9 @@ e39fe3898d76095e7a709e1fe3f8b7ca63fc8e8528cd5765dccaf4db9cfa5fcd  ./scripts/peek
 8b63c31de35bcb2c79626a2580834f77d99d9ef95167794c7e9a97d3c6fc31f1  ./scripts/__pycache__/agreement_analysis.cpython-312.pyc
 0babdad036de5e8e79b4177ff76f3d1a54ca2381c312a67132dae3c61d7173c0  ./scripts/__pycache__/gen_batch_0044.cpython-311.pyc
 6dcbc6cb8d5ee5c37f1ea1c7b62288dd86bfc03eba08589d958dca93ad3b75e3  ./scripts/__pycache__/gen_train_batch_0041.cpython-311.pyc
+b8fd5982a5ffe6a9b276ad8feec524db70f69499e84181a03fe79533dd5d44ac  ./scripts/__pycache__/gen_train_batch_0062.cpython-311.pyc
 b396dd9a00661ce6fab84bd3dc0783aec7903df6cde524b3202ad158692d224b  ./scripts/__pycache__/peek.cpython-311.pyc
 76bdb2231eb68bea4f704480bf82410d82b5252084f0cccbe10f077441f83b87  ./scripts/state.py
-6ab402e43c06ee27cdc771b96a62842f2b2cd8b45014308710a739908df2542b  ./scripts/verify_batches.py
+b264a95d10f44149994a8ca2a36075b98c0a0535f8b31c37e39ab1fe7591ee2d  ./scripts/verify_batches.py
 c43fdc36fd86175132e7be226476da3028a91c605f34c83f76fdf3858236c975  ./verify_batches.py
 e2a47a66bdc01d1431f9217a4a907393bcc11c77636f6a1e717d95d49cb1709d  ./verify.py

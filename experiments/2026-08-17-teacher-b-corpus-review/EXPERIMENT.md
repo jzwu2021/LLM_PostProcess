@@ -5,6 +5,39 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0063
+
+- Batch file: results/train-batch-0063.jsonl
+- Corpus range: train.jsonl lines 621-630 (source IDs corpus-00689 through corpus-00698, contiguous)
+- Progress: train 630/5399, validation 0/601, total 630/6000, remaining 5370
+- Decisions: keep=10, rewrite=0, reject=0
+- Initial schema check: pass (scripts/verify_batches.py reported `train=630/5399 validation=0/601 total=630/6000` then `VERIFY_PASS`; all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers in 1-5, source_id globally unique across all 630 records, train sequence an exact prefix of train.jsonl, validation still empty)
+- Repairs performed: none required (verification passed on first execution)
+- Final schema check: pass (630 records validated, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 117 files; `sha256sum -c` reported 117 OK and 0 failures
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, or grepped during this run; only research/ai-infra-expert/corpus/train.jsonl was consulted.
+
+Technical topics covered: single-request KV cache byte sizing for GQA/MQA models
+across BF16/FP16 and INT8 KV dtypes (Calculation cases 189-198). Every source
+arithmetic result was recomputed independently and all ten were exact, so the
+decision is keep in each case; the corrected_answer adds what the terse source
+answers omit — explicit assumptions (standard non-MLA attention, KV size driven
+by KV heads not query heads, 1 GiB = 2^30 B), the linear-in-tokens and
+linear-in-batch growth mechanism that makes KV rather than weights the
+concurrency cap, boundary conditions the closed form does not model
+(PagedAttention block padding rounding each sequence up to a whole block,
+allocator fragmentation, CUDA graph/workspace reservations, prefix-cache sharing
+that makes aggregate usage sublinear in N, MLA/latent-KV and sliding-window/SSM
+layers where the formula does not apply, and INT8/FP8 scale+zero-point metadata),
+a falsifiable doubling prediction on sequence length, the evidence needed to
+confirm on real hardware (config.json fields, engine startup KV-block log,
+measured HBM delta), and a rollback gate at ~20 percent measured-over-estimated
+overshoot before admitting production traffic.
+
+These results are PROVISIONAL model-generated second-opinion review output. They
+are NOT expert gold labels, have not been validated by a human domain expert, and
+say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0062
 
 - Batch file: results/train-batch-0062.jsonl
