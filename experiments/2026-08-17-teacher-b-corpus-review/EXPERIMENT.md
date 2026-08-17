@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0094
+
+- Batch file: results/train-batch-0094.jsonl
+- Corpus range: train.jsonl lines 931-940 (source IDs corpus-01023, corpus-01024, corpus-01025, corpus-01026, corpus-01027, corpus-01029, corpus-01030, corpus-01031, corpus-01032, corpus-01033 — corpus file order preserved exactly, no skips, no reordering; the gaps at corpus-01022 and corpus-01028 are pre-existing in the corpus and were NOT introduced by this lane)
+- Progress: train 940/5399, validation 0/601, total 940/6000, remaining 5060
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema/ad-hoc verification: PASS on first run (940 aggregate rows checked: JSONL line-parseable, 10 rows in this batch, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values valid, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers in 1-5, source_id globally unique, train sequence is a strict prefix of train.jsonl)
+- Repairs performed: none required
+- Final schema/ad-hoc verification: PASS (0 errors)
+- Manifest: MANIFEST.sha256 regenerated over all 168 files in this directory except itself; `sha256sum -c` verified all entries OK
+- Technical topics covered: serving-side evaluation methodology for mixed short-prompt / long-generation traffic. All ten items ask for an evaluation plan reporting TTFT, TPOT, throughput, queueing delay and P99 latency with an explicit falsifiable hypothesis and a controlled experiment. The rewritten answers separate prefill (compute-bound) from decode (memory-bandwidth and KV-cache-capacity bound) regimes; define each metric operationally including separating queueing delay from TTFT; state a falsifiable hypothesis about head-of-line blocking from long-request prefill and a chunked-prefill intervention with quantified accept/reject thresholds; specify an open-loop Poisson load generator with a seeded replayed trace and a load ladder to capture the latency knee; require warmup exclusion, >=3 repeated trials and bootstrap 95% CIs; enumerate confounders (KV preemption, output-length drift under sampling, prefix caching, client-side saturation, GPU power/thermal capping, co-tenancy) with a control for each; and define canary blast radius plus concrete rollback triggers (P99 regression >10%, error rate >0.5%, preemption rate >2x baseline, any OOM) with the requirement that the scheduler flag be runtime-togglable.
+- Why all ten were marked `rewrite`: each source_assistant is a grading rubric ("Answer should state assumptions...") rather than an answer. Training on rubric text teaches meta-commentary about answers instead of the engineering reasoning itself, and it omits the falsifiable hypothesis, the rollback gates and the per-request-class percentile discipline that the prompts explicitly demand.
+- Status: these corrected_answer records are PROVISIONAL teacher-B output from a blind review. They are NOT expert gold labels, have NOT been validated against a running system, and say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0093
 
 - Batch file: results/train-batch-0093.jsonl
