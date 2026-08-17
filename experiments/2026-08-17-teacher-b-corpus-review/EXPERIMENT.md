@@ -5,6 +5,48 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0065
+
+- Batch file: results/train-batch-0065.jsonl
+- Corpus range: train.jsonl lines 641-650 (source IDs corpus-00709, corpus-00710, corpus-00713, corpus-00714, corpus-00715, corpus-00716, corpus-00717, corpus-00719, corpus-00720, corpus-00721 — corpus order preserved exactly, no skips or reordering; the ID gaps are gaps in the corpus itself)
+- Progress: train 650/5399, validation 0/601, total 650/6000, remaining 5350
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (ad-hoc verifier reported `train 650 validation 0 total 650` then `SCHEMA_CHECK_PASS`; all 12 required fields present, teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional, decision in {keep,rewrite,reject}, source_user/source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, source_id globally unique across all 650 records, aggregated train sequence an exact prefix of train.jsonl, validation still empty)
+- Repairs performed: none required (verification passed on first execution; the generator asserted each recomputed byte total and GiB string against the source text before writing, so any arithmetic divergence would have aborted the write rather than produced a bad batch)
+- Final schema check: pass (650 records validated, 0 errors)
+- Independent arithmetic re-derivation: all ten source byte totals were recomputed from (layers, kv_heads, head_dim, seq_len, dtype) parsed from the prompt and all ten matched the source exactly (132120576 / 469762048 / 83886080 / 62914560 / 396361728 / 352321536 / 33554432 / 226492416 / 117440512 / 47185920 B). The rewrite decision is about insufficiency, not arithmetic error.
+- Manifest: MANIFEST.sha256 regenerated over all 115 files in the experiment directory except MANIFEST.sha256 itself; `sha256sum -c --quiet` returned clean (0 failures)
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, listed, or grepped during this run; only research/ai-infra-expert/corpus/train.jsonl was consulted.
+
+Technical topics covered: single-request KV cache byte sizing for GQA/MQA serving
+across BF16/FP16 and INT8 KV dtypes (Calculation cases 209-221). The source
+answers state the correct closed form and the correct number, then stop, so each
+was rewritten rather than kept. Each corrected answer adds explicit falsifiable
+assumptions (standard non-MLA attention with one K and one V tensor per layer, KV
+cost scaling with KV heads rather than query heads under GQA/MQA, 1 GiB = 2^30 B,
+no prefix sharing), a derived per-token byte rate — the quantity actually used to
+size max_num_seqs x max_model_len against free HBM — the mechanism by which KV and
+not weights is the elastic term that caps concurrency (linear growth in generated
+tokens and in batch, with pool exhaustion surfacing as preemption/recompute
+throughput cliffs and TTFT/ITL tail spikes rather than a clean OOM), and the
+boundary conditions the closed form omits: PagedAttention block padding with an
+explicit block count at block_size 16, the preallocated KV pool under
+gpu_memory_utilization masking per-request HBM movement, attention/CUDA-graph/NCCL
+scratch, tensor-parallel KV-head sharding with replication once TP exceeds the KV
+head count, and speculative-decoding/beam multipliers on live KV. INT8 cases
+additionally flag the uncounted per-tensor scale/zero-point bytes and that INT8 KV
+is a lossy accuracy/capacity trade rather than a free 2x; 16-bit cases state the
+symmetric point. Every record closes with an evidence set (config.json shape
+fields, engine KV dtype and block_size, runtime GPU KV cache usage and preemption
+counters, steady-state nvidia-smi / torch.cuda.memory_summary()) and a rollback
+gate (>~20% measured-over-estimate divergence or >~1% preemption rate means reduce
+max_num_seqs / max_model_len or enable prefix caching, never raise
+gpu_memory_utilization to absorb the gap).
+
+These results are PROVISIONAL teacher-B model output. They are not expert gold
+labels, they have not been validated by a human domain expert, and they say
+nothing about the domain capability of any trained model.
+
 ## Run 2026-08-17 batch 0064
 
 - Batch file: results/train-batch-0064.jsonl
