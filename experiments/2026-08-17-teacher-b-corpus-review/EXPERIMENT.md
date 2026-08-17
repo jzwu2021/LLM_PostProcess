@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0080
+
+- Batch file: results/train-batch-0080.jsonl
+- Corpus range: train.jsonl lines 791-800 (source IDs corpus-00870 … corpus-00879 — corpus file order preserved exactly, no skips or reordering)
+- Progress: train 800/5399, validation 0/601, total 800/6000, remaining 5200
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py — per-line JSONL parse, batch count 10, 12 required fields, enum values for teacher_lane/teacher_model/calibration_status/decision, quality_dimensions 1-5 integers, risks/evidence_required string arrays, character-exact source_user/source_assistant vs corpus, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness, train/validation aggregates strict corpus prefixes)
+- Repairs performed: none required; the batch verified clean on the first run. No corpus file, no earlier batch, and no teacher-A artifact was modified.
+- Final schema check: PASS (train_processed=800, validation_processed=0, total=800, ERRORS 0)
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except itself; `sha256sum -c` reported 139/139 OK, 0 failures
+- Technical topics covered: single-request KV cache sizing for GQA/MQA decoder stacks — layer depths 24-56, KV head counts 2-8, head dims 64/96/128, contexts 1024-4096 tokens, BF16/FP16 (2 B/value) and INT8 (1 B/value) KV dtypes. Every source byte total was independently recomputed from 2 x layers x seq_len x kv_heads x head_dim x bytes_per_value; all ten matched, so technical_correctness is 4. All ten were still marked `rewrite` because the source answers state only formula-plus-number: they never require the head count to be post-GQA num_key_value_heads, never mention paged-allocator block round-up (PagedAttention block_size 16/32 makes measured usage a strict upper bound on the logical figure), never account for INT8 per-block scale/zero-point metadata or the accuracy regression that must be measured before adopting low-precision KV, never separate a per-request logical byte count from the HBM budget that must simultaneously hold weights, activations, CUDA graph pools and NCCL buffers, and never flag the architectures that break the linear formula (sliding-window attention, cross-layer KV sharing, MLA latent KV). The rewrites restate all of these as explicit falsifiable assumptions, add per-token byte cost as the quantity that actually composes to concurrency planning, enumerate required evidence (config.json num_hidden_layers / num_key_value_heads / head_dim / window settings, engine startup KV block report, steady-state nvidia-smi or torch.cuda.memory_summary), and set a rollback gate at a >15% analytic-vs-measured gap with preemption/recompute events held at zero.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, listed, grepped or searched at any point in this run. Inputs were only source_user and source_assistant from research/ai-infra-expert/corpus/train.jsonl.
+- Status caveat: PROVISIONAL teacher-B model output. Not expert gold labels, not human-validated, and not evidence of any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0079
 
 - Batch file: results/train-batch-0079.jsonl
