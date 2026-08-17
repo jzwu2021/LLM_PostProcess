@@ -56,11 +56,45 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 40/5399; validation 0/601; total 40/6000; remaining 5960.
+Progress: train 50/5399; validation 0/601; total 50/6000; remaining 5950.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 — train-batch-0005.jsonl
+
+- Batch file: results/train-batch-0005.jsonl
+- Builder: scripts/build_train_batch_0005.py
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 41-50 (0-indexed 40-49)
+- Source IDs: corpus-00044, corpus-00045, corpus-00046, corpus-00047, corpus-00048,
+  corpus-00049, corpus-00050, corpus-00052, corpus-00053, corpus-00054
+  (corpus order preserved verbatim; nothing skipped or reordered — the corpus itself
+  has no corpus-00051 in this span)
+- Progress after this run: train 50/5399; validation 0/601; total 50/6000; remaining 5950
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run (scripts/verify_batches.py →
+  train=50/5399 validation=0/601 total=50/6000, VERIFY_PASS)
+- Repairs performed: none required
+- Final schema/ad-hoc check: PASS (identical output)
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself;
+  `sha256sum -c` reported all files OK
+- Technical topics covered by this batch: KV cache sizing and growth
+  (bytes = 2 * layers * kv_heads * head_dim * seq_len * batch * dtype_bytes, GQA/MQA
+  effects, fp8 KV quantization trade-off), prefix-cache reuse and its invalidation
+  boundaries, KV leak vs. legitimate growth triage, KV transfer under disaggregated
+  prefill/decode (Mooncake- / NVIDIA Dynamo-style splits) over RDMA/RoCE with
+  GPUDirect, and prefill semantics — compute-bound vs. bandwidth-bound regimes,
+  quadratic attention scaling, chunked prefill interference with decode SLOs, and
+  TTFT budgeting.
+- Review rationale: all ten source assistant answers were one-sentence generic
+  definitions that ignored the explicit instruction to give one concrete mechanism and
+  one boundary condition, hence uniformly `rewrite` with instruction_coverage=1.
+- Blind-mode compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, grepped, or otherwise consulted while producing this batch. Only
+  source_user / source_assistant from the raw corpus were visible.
+- These outputs are PROVISIONAL teacher-B review, not expert gold labels, and are not
+  evidence of any model's domain capability.
 
 ### 2026-08-17 — train-batch-0004.jsonl
 
