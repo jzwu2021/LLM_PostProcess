@@ -27,7 +27,9 @@ for split in ("train","validation"):
         raw = open(fp,encoding="utf-8").read()
         lines = raw.split("\n")
         if lines and lines[-1]=="": lines.pop()
-        if len(lines)!=10 and fp!=files[-1]:
+        # every batch is 10 records except a final short batch that exhausts the corpus
+        exhausts = fp==files[-1] and len(seq[split])+len(lines)==len(corpus[split])
+        if len(lines)!=10 and not exhausts:
             errs.append(f"{fp}: expected 10 lines, got {len(lines)}")
         for i,ln in enumerate(lines,1):
             try: r=json.loads(ln)
