@@ -5,6 +5,36 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0111
+
+- Batch file: results/train-batch-0111.jsonl
+- Corpus range: train.jsonl lines 1101-1110 (0-indexed 1100..1109)
+- Source IDs: corpus-01212, corpus-01213, corpus-01214, corpus-01215, corpus-01217,
+  corpus-01219, corpus-01220, corpus-01221, corpus-01222, corpus-01223
+  (原始 corpus 顺序，无跳过无重排；corpus-01216/01218 在原始 train.jsonl 中不存在)
+- Progress: train 1110/5399, validation 0/601, total 1110/6000, remaining 4890
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS（/tmp/tb_verify.py 首次运行即 ERRORS: 0）
+- Repairs: 无。本轮未修改原始 corpus、未修改既有批次、未触碰 teacher-A 产物
+- Final schema check: PASS — train=1110/5399 validation=0/601 total=1110/6000
+  覆盖项：逐行 JSONL 解析、批内条数=10、12 字段齐全、lane/model/status/decision 取值、
+  source_user/source_assistant 与原始 corpus 逐字符相等、corrected_answer 非空、
+  confidence ∈ [0,1]、source_id 全局唯一、train 序列严格为 corpus 前缀
+- Manifest: MANIFEST.sha256 重新生成（192 个文件），sha256sum -c 全部通过
+- 技术主题：本批 10 条全部是 mixed short-prompt / long-generation 在线推理服务的评测方案设计
+  （scenario variant 212-223），按 category 分为 Troubleshooting / Performance Analysis /
+  System Design 三种切入框架。重写答案显式给出：TTFT / queue-wait / TPOT / 双口径 throughput
+  （output tokens/s 与 requests/s）/ P99 的可操作定义；open-loop Poisson 到达与 closed-loop
+  客户端会掩盖排队的失效模式；prefill-decode 干扰、KV cache 压力与 preemption 导致的双峰 TPOT；
+  chunked prefill、disaggregated prefill/decode、TP 度数与 NVLink/PCIe 拓扑（nvidia-smi topo -m）
+  对 NCCL 每步延迟的影响；每条给出单变量、单阈值、自带证伪条件的假设；>=5 trials、>=3000 条
+  post-warmup 完成、bootstrap 95% CI、随机化执行顺序；以及 canary <=5% 流量 60 分钟、
+  次要 SLO 回退 <=5%、第二台同型节点复现、保留旧配置 artifact hash 以便免重建回滚的门槛。
+- 原始 source_assistant 是评分 rubric（"Answer should state ..."）而非答案，直接用于 SFT
+  会教出 meta-commentary，因此本批 10 条全部判 rewrite。
+- 结果性质：provisional teacher-B 盲审意见，非 expert gold，不代表任何模型领域能力；
+  与 teacher-A 的一致率分析是后续独立步骤，本轮全程未读取 teacher-A 目录。
+
 ## Run 2026-08-17 batch 0110
 
 - Batch file: results/train-batch-0110.jsonl
