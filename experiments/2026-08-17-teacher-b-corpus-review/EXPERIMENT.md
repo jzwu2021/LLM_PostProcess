@@ -56,11 +56,71 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 100/5399; validation 0/601; total 100/6000; remaining 5900.
+Progress: train 120/5399; validation 0/601; total 120/6000; remaining 5880.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 — train-batch-0012.jsonl
+
+- Batch file: results/train-batch-0012.jsonl
+- Generator: scripts/gen_batch_0012.py
+- Corpus range: train.jsonl lines 111–120
+- Source IDs: corpus-00126, corpus-00127, corpus-00128, corpus-00129, corpus-00130,
+  corpus-00131, corpus-00132, corpus-00133, corpus-00134, corpus-00135
+- Progress: train 120/5399, validation 0/601, total 120/6000, remaining 5880
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_batches.py → VERIFY_PASS, train=120 validation=0 total=120)
+- Repairs: none required
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over all 28 non-manifest files; `sha256sum -c`
+  reported 28 OK / 0 FAILED.
+
+Technical topics covered by this batch. All ten records are `Knowledge/Concept`,
+difficulty `medium`, concept `decode`, and all ten share the same one-sentence
+source_assistant ("Decode generates one or a few tokens per step ..."), which is
+directionally true but answers neither prompt's actual instruction and supplies no
+mechanism, no numbers and no boundary condition. Hence rewrite on all ten, with
+instruction_coverage scored 1.
+
+Records corpus-00126..00130 ask which assumptions must be stated before making a
+decode performance claim. The rewrites split this across five distinct angles so the
+variants are not near-duplicates: (1) throughput claims — workload shape, batching
+regime, output-only vs total tok/s, precision, sampling and speculative-decoding
+acceptance rate; (2) latency claims — TTFT vs ITL separation, offered load,
+prefill interference, tenancy/isolation, warmup window, plus the PCIe-only TP=2
+caveat; (3) memory and capacity claims — KV bytes/token arithmetic, fragmentation
+and preemption policy, prefix-cache hit rate as a benchmark artifact, quantization,
+steady state vs 60-second runs; (4) multi-GPU and disaggregated serving — TP/PP/EP
+layout, topology, GPUDirect RDMA actually active vs merely compiled in, KV transfer
+cost in Mooncake / NVIDIA Dynamo style prefill-decode split, KV-aware routing;
+(5) comparison hygiene — equal tuning budget on both sides, identical artifacts and
+clocks, multi-run statistics, and a mandatory correctness gate.
+
+Records corpus-00131..00135 ask how decode differs between training and inference.
+The rewrites cover: compute shape (GEMM→GEMV, ~1000x drop in weight reuse, why PP
+is unsuitable for decode); memory and state (optimizer state ~16 B/param vs weights
+plus a long-lived per-request KV cache, and KV as a transferable first-class object);
+collectives (large bandwidth-bound gradient all-reduce vs ~80 tiny latency-bound
+activation all-reduces per token, NVLink vs PCIe, why TP must not cross node
+boundaries and why RDMA/RoCE with GDR is the multi-node KV path); scheduling
+(static batching vs continuous/iteration-level batching, chunked prefill and
+head-of-line blocking); and numerics (decode as a sequential amplifier of tiny
+numerical differences, batch-dependent reduction order breaking bitwise
+reproducibility, and why perplexity is an inadequate acceptance test for
+decode-side quantization).
+
+Every rewrite carries an explicit assumptions frame (A30 24 GB, ~933 GB/s peak HBM,
+no NVLink on this host, PCIe Gen4, bf16 ~9B ≈ 18 GB weights, ~1.6 MB/token KV), at
+least one falsifiable prediction, an evidence list and a rollback gate.
+
+Status caveat: these outputs are PROVISIONAL teacher-B review labels produced blind
+from source_user/source_assistant only. They are not expert gold, have not been
+validated against teacher-A (that comparison is a separate later step), and say
+nothing about any model's domain capability. The quantitative figures in the
+rewrites are stated as assumption-framed estimates to be confirmed by the listed
+evidence, not as measured results.
 
 ### 2026-08-17 — train-batch-0011.jsonl
 
