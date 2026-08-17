@@ -5,6 +5,41 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0052
+
+- Batch file: results/train-batch-0052.jsonl
+- Corpus range: train.jsonl 0-indexed lines 510-519, source IDs corpus-00567 through corpus-00577 (corpus-00570 absent from train split; strict corpus order preserved, nothing skipped or reordered by this worker).
+- Progress: train 520/5399, validation 0/601, total 520/6000, remaining 5480
+- Decisions: keep 10, rewrite 0, reject 0
+- Initial schema check: PASS on first run (10/10 rows parsed as physical-newline JSONL, exactly the 12 required fields per record, teacher_lane=teacher-B / teacher_model=claude-opus-5-current / calibration_status=provisional / decision in {keep,rewrite,reject}, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, 520 globally unique source_ids, aggregated train sequence an exact prefix of train.jsonl, validation still empty).
+- Repairs: none required. Original corpus, earlier batches, benchmark raw generations and all teacher-A artifacts untouched; teacher-A directory not opened during this run (blind review).
+- Final schema check: PASS (train=520 validation=0 total=520).
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except the manifest itself; `sha256sum -c` reported 98/98 OK, zero failures.
+
+Technical topics covered by this batch: single-request KV-cache memory sizing for
+transformer inference (Calculation cases 67-77). Parameter sweep: layers 24-56,
+KV heads 2-8, head dimension 64-128, sequence length 1024-4096, KV dtype
+BF16/FP16 (2 B) and INT8 (1 B). Each byte count was recomputed independently as
+2 x layers x seq_len x kv_heads x head_dim x bytes_per_value and its GiB
+conversion checked against 2^30; all ten source values matched exactly, hence ten
+keeps. The teacher-B corrected answers make explicit what the source leaves
+implicit: the GQA/MQA assumption (kv_heads are key/value heads, not query heads),
+paged-attention block-size rounding (allocated >= computed, up to block_size-1
+tokens of waste per sequence per layer), uncounted INT8 scale/zero-point
+overhead, weight dtype vs kv_cache_dtype, per-GPU behaviour under TP (sharded
+when kv_heads % TP == 0, replicated when kv_heads < TP) and PP, the transfer-time
+floor this byte count imposes on Mooncake-style prefill/decode disaggregation and
+NVIDIA Dynamo KV routing over RDMA/RoCE or GDS, a falsifiable measurement check
+(memory delta within ~1.15x of prediction), the evidence required (config.json
+fields, kv_cache_dtype, block_size, measured KV-usage metric), and an explicit
+rollback threshold (>90% KV utilisation or preemption/recompute events => reduce
+max_num_seqs/max_model_len, do not raise gpu_memory_utilization on a live fleet).
+
+These results are PROVISIONAL teacher-B second-opinion labels. They are NOT
+expert gold, NOT verified ground truth, and they say nothing about any model's
+domain capability. Agreement analysis against teacher-A is a separate, later step
+and was deliberately not performed or consulted here.
+
 ## Run 2026-08-17 batch 0051
 
 - Batch file: results/train-batch-0051.jsonl
