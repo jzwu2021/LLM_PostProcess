@@ -5,6 +5,40 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0125
+
+- Batch file: results/train-batch-0125.jsonl
+- Corpus range: train.jsonl lines 1241-1250 (0-indexed 1240..1249)
+- Source IDs: corpus-01373, corpus-01374, corpus-01375, corpus-01376, corpus-01377,
+  corpus-01378, corpus-01379, corpus-01380, corpus-01381, corpus-01382
+- Progress: train 1250/5399, validation 0/601, total 1250/6000, remaining 4750
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_batches.py, first run, no fixes needed)
+- Repairs: none
+- Final schema check: PASS (train 1250 records, validation 0, TOTAL 1250, VERIFY=PASS)
+- Manifest: MANIFEST.sha256 regenerated over 211 files; `sha256sum -c` 211/211 OK
+- Topics covered: long-context serving OOM under concurrency. All ten items are
+  scenario variants 73-82 of the same base prompt, split across System Design,
+  Troubleshooting and Performance Analysis. Rewrites cover the KV-cache memory
+  model (2 * n_layers * n_kv_heads * head_dim * dtype_bytes * sum(seq_len)),
+  paged-KV block granularity, prefill transient workspace as an unbudgeted term,
+  admission overcommit (H1) vs allocator fragmentation (H2) as competing
+  falsifiable hypotheses discriminated by the reserved-minus-allocated gap, a
+  concurrency sweep 1-16 with repeats to locate first-OOM concurrency C*, and an
+  A/B arm design (concurrency cap vs expandable_segments). Mitigations are ordered
+  by reversibility: admission control, chunked prefill, prefix caching,
+  expandable_segments, gpu_memory_utilization headroom, KV fp8 quantization,
+  tensor parallelism. Explicit safety warning against raising
+  gpu_memory_utilization toward 1.0, and against multi-knob changes that destroy
+  attribution. Rollback gate: zero OOM over a 30-minute replay, p95 regression
+  <10%, throughput regression <15%, preemption/recompute <2x baseline.
+- Source answers in this range are rubric checklists rather than answers, so all
+  ten were marked `rewrite` with instruction_coverage=2.
+
+STATUS CAVEAT: these outputs are PROVISIONAL teacher-B model review. They are NOT
+expert gold labels, have not been validated by a human domain expert, and say
+nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0124
 
 - Batch file: results/train-batch-0124.jsonl
