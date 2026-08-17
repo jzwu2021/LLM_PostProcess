@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0068
+
+- Batch file: results/train-batch-0068.jsonl
+- Corpus range: train.jsonl lines 671-680 (source IDs corpus-00742, corpus-00743, corpus-00745, corpus-00746, corpus-00747, corpus-00748, corpus-00749, corpus-00750, corpus-00751, corpus-00752 — corpus-00744 is absent from the corpus itself; corpus file order preserved exactly, no skips or reordering introduced by this lane)
+- Progress: train 680/5399, validation 0/601, total 680/6000, remaining 5320
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (`verify_batches.py` reported `train: 680 records checked against corpus of 5399`, `validation: 0`, `unique source_ids: 680`, `VERIFY=PASS`). Checks covered line-by-line JSONL parse, 10 records in this batch, all 12 required fields, teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional, decision domain, character-exact source_user/source_assistant against corpus, non-empty corrected_answer, confidence in [0,1], quality_dimensions three integers 1-5, globally unique source_ids, and aggregated train sequence being an exact prefix of train.jsonl.
+- Repairs performed: none required; verification passed on first execution.
+- Final schema check: pass (680 records validated, 0 errors)
+- Independent arithmetic re-derivation: each byte total was recomputed in the generator from (layers, kv_heads, head_dim, seq_len, bytes_per_value) rather than copied from the source string; all ten matched the source values exactly (125829120 / 377487360 / 176160768 / 50331648 / 37748736 / 251658240 / 125829120 / 88080384 / 198180864 / 536870912 B). The rewrite decision therefore reflects insufficiency of the source answer, not arithmetic error.
+- Manifest: MANIFEST.sha256 regenerated over all files except itself; `sha256sum -c` returned 120 OK lines and 0 failures.
+- Technical topics covered by this batch: single-request KV cache sizing for GQA/MQA transformers spanning BF16/FP16 and INT8 KV dtypes, 24-56 layers, 2-8 KV heads, head_dim 64-128, context 1024-4096. Each rewrite states the mechanism (KV grows linearly in generated tokens and in concurrency while weights are a fixed cost), the derived per-token byte rate as the true capacity-planning quantity against max_num_seqs x max_model_len, the GQA/MQA kv-heads-not-query-heads trap, paged-attention block rounding as a lower-bound correction, exclusion of allocator fragmentation and CUDA-graph/activation/communication buffers, speculative decoding and beam/prefix-fork branch multiplication, MLA/latent-KV architectures as outside the formula, and the extra in-flight KV copy that disaggregated prefill/decode stacks (Mooncake, NVIDIA Dynamo) hold during transfer. INT8 cases additionally carry an explicit accuracy-A/B gate for quantized KV plus scale/zero-point overhead, and every record names the evidence to collect (config.json fields, engine-reported KV blocks/block_size, measured HBM, preemption counters) and a concrete rollback gate.
+- Status caveat: PROVISIONAL teacher-B model review, not expert gold labels, and no evidence about any trained model's domain capability. Blind: no teacher-A artifact was read while producing this batch. Agreement analysis remains a separate later step.
+
 ## Run 2026-08-17 batch 0067
 
 - Batch file: results/train-batch-0067.jsonl
