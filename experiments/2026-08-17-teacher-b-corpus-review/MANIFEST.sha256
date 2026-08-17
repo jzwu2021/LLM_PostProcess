@@ -50,5 +50,5 @@ e39fe3898d76095e7a709e1fe3f8b7ca63fc8e8528cd5765dccaf4db9cfa5fcd  ./scripts/peek
 4f83a9bc32836bcba81e3dd186343fc0ef25f0f6a322856054116fa575dceab4  ./scripts/peek_batch.py
 226a396eb2e02a2f6112abe0d412bf2996407e6f9faa171894eb954bdf3b55eb  ./scripts/peek.py
 76bdb2231eb68bea4f704480bf82410d82b5252084f0cccbe10f077441f83b87  ./scripts/state.py
-7d37f00ec5e9c40c6d431b44c5044d07447d7c868b03db347a9bca1d2210713d  ./scripts/verify_batches.py
+10016aef3690644bc679b4ce49885166d4475617d1bc29dab066eca83cf8be17  ./scripts/verify_batches.py
 642c8ef0cddb8095d5670d8ef3f7215f203dc84b483c1af2bc6ea8304f2200c3  ./verify_batches.py
