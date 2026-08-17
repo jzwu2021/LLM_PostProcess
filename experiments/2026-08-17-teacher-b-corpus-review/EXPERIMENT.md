@@ -5,6 +5,32 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0087
+
+- Batch file: results/train-batch-0087.jsonl
+- Corpus range: train.jsonl lines 861-870 (source IDs corpus-00945 … corpus-00954, contiguous; corpus file order preserved exactly, no skips, no reordering)
+- Progress: train 870/5399, validation 0/601, total 870/6000, remaining 5130
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify_batches.py — 870 train records, 870 unique source_ids, all 12 fields present, source_user/source_assistant byte-identical to corpus, prefix property holds)
+- Repairs applied: none required
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over 157 files; `sha256sum -c` PASS
+- Technical topics covered: per-request K/V cache sizing for grouped-query attention —
+  the 2 x layers x seq_len x kv_heads x head_dim x bytes_per_value formula, BF16/FP16 vs
+  INT8 KV element width, per-token KV cost as the concurrency planning unit, paged-allocator
+  block rounding and internal fragmentation, prefix/prompt-cache retention inflating
+  steady-state occupancy, tensor-parallel KV replication when kv_heads < TP degree, and
+  MLA / compressed-latent-KV as a case where the formula does not apply. Each rewrite adds a
+  falsifiable occupancy prediction (within ~5-10% of N x bytes), the evidence needed to test it
+  (KV utilisation gauge, torch/nvidia-smi memory summary, preemption/recompute counters,
+  model config fields), and a rollback threshold (>1.25x predicted occupancy or preemption at
+  target concurrency). All 10 source answers were arithmetically correct but were rewritten for
+  missing boundary conditions and operational safety, not for numerical error.
+- Blindness: this batch was produced without opening any file under
+  experiments/2026-08-14-teacher-a-corpus-calibration/. teacher-A corrected answers were not read.
+- Status: PROVISIONAL. This is a single-model second-opinion pass, not expert gold, and it is
+  not evidence of any model's domain capability.
+
 ## Run 2026-08-17 batch 0086
 
 - Batch file: results/train-batch-0086.jsonl
