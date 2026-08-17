@@ -5,6 +5,41 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0060
+
+- Batch file: results/train-batch-0060.jsonl
+- Corpus range: train.jsonl lines 591-600 (source IDs corpus-00655, corpus-00656, corpus-00657, corpus-00658, corpus-00659, corpus-00661, corpus-00662, corpus-00663, corpus-00664, corpus-00665)
+- Progress: train 600/5399, validation 0/601, total 600/6000, remaining 5400
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (10/10 new records; 12 required fields present, lane/model/status/decision values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique across all 600 records, train sequence is an exact prefix of train.jsonl, validation empty)
+- Repairs performed: none required (verification passed on first execution)
+- Final schema check: pass (total 600 records validated, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 112 files; `sha256sum -c` all OK
+
+Technical topics covered: per-request KV cache byte sizing for GQA transformers with layer
+counts 24-56, KV head counts 2-8, head dimensions 64-128, sequence lengths 1024-4096, and
+both BF16/FP16 and INT8 KV element widths. Every source arithmetic result was independently
+recomputed and matched, so all ten were marked rewrite for incompleteness rather than for a
+wrong number: the source answers give the formula and the correct byte total but state no
+assumptions and omit the operationally decisive caveats. Each corrected answer adds the
+explicit assumption set (dense non-MLA attention, separate K and V tensors, no allocator or
+paged padding), the growth mechanism (KV is linear in sequence length and is the dominant
+per-request term at long context while weights amortize across concurrency), and falsifiable
+boundary conditions: PagedAttention block rounding to 16/32-token blocks makes measured
+occupancy a strict upper bound on the analytic figure; tensor parallelism only divides
+per-GPU KV when kv_heads % TP == 0, otherwise KV heads are replicated and aggregate KV
+exceeds the estimate; MLA and cross-layer KV sharing invalidate the formula entirely;
+speculative decoding and beam search multiply live KV by the branch count; INT8 KV adds
+uncounted scale and zero-point storage. Each record also names the concrete evidence needed
+(config.json attention fields, engine KV dtype and block_size, startup KV block count,
+measured memory delta for one request) and a rollback threshold (halt rollout if measured
+KV per request exceeds the estimate by more than 15% or free KV blocks drop below 10% at
+target concurrency).
+
+These results are PROVISIONAL model-generated second-opinion labels. They are not expert
+gold, have not been validated against hardware measurements, and say nothing about any
+trained model's domain capability.
+
 ## Run 2026-08-17 batch 0059
 
 - Batch file: results/train-batch-0059.jsonl
