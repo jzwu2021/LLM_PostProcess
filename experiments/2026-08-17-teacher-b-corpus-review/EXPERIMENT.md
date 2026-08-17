@@ -5,6 +5,69 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0119
+
+- Batch file: results/train-batch-0119.jsonl
+- Corpus range: train.jsonl lines 1181-1190 (0-indexed 1180..1189)
+- Source IDs: corpus-01305, corpus-01306, corpus-01307, corpus-01308, corpus-01309,
+  corpus-01310, corpus-01311, corpus-01312, corpus-01313, corpus-01314
+- Progress: train 1190/5399, validation 0/601, total 1190/6000, remaining 4810
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1190 aggregate records, exactly 12 fields per record,
+  lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1],
+  source_id globally unique, aggregate train sequence is a strict prefix of
+  train.jsonl, validation sequence empty)
+- Repairs performed: none. First verification pass succeeded; no original corpus,
+  no prior batch file, and no teacher-A artifact was read or modified.
+- Final schema check: PASS (identical to initial run)
+- Manifest: MANIFEST.sha256 regenerated over all 207 files in the experiment
+  directory except the manifest itself; `sha256sum -c` returned all-OK.
+
+### Technical topics covered by this batch
+
+All ten records are the same scenario family (long-context serving hits intermittent
+OOM after several concurrent requests, variants 5-14), split across three category
+lenses: Troubleshooting, Performance Analysis, and System Design. Every source
+assistant turn is a grading rubric rather than an answer, so all ten were rated
+technical_correctness=3 / instruction_coverage=2 / operational_safety=2 and marked
+`rewrite`.
+
+The rewritten answers make the mechanism explicit rather than listing knobs:
+memory is partitioned into weights / KV / prefill activation working set /
+allocator fragmentation / non-engine residents (NCCL buffers, CUDA graph pools),
+with the KV formula stated as 2 x layers x num_kv_heads x head_dim x dtype_bytes x
+cached_tokens and an explicit warning that using num_attention_heads instead of the
+GQA-corrected num_kv_heads overestimates KV by the GQA ratio. Six prioritized
+hypotheses are ranked (aggregate KV exhaustion, prefill spike, fragmentation,
+missing admission control, non-engine residents, genuine capacity shortfall), each
+with a distinguishing signature — notably reserved-minus-allocated as the
+fragmentation discriminator, and preemption count as the leading indicator that
+precedes OOM.
+
+The falsifiable hypothesis H1 (failure is driven by aggregate live KV crossing the
+analytically computed budget, not by fragmentation) carries quantitative
+predictions (+/-10% boundary prediction, <10% vs >20% reserved-allocated gap) and an
+order-permutation control arm A5 that holds total tokens fixed while shuffling
+arrival order — the cheapest single experiment that separates KV exhaustion from
+fragmentation. Six arms total (baseline, admission control, paged KV / prefix
+caching, chunked prefill, KV quantization or reduced max_model_len, order
+permutation), one variable each, >=3 repeats, frozen hashed trace, warmup discarded.
+Mitigations are ordered by risk, ending with prefill/decode disaggregation
+(Dynamo- / Mooncake-style) framed explicitly as an architecture change that moves KV
+over RDMA/RoCE and buys new tail-latency and failure modes rather than as a knob.
+Rollback gates are numeric and pre-registered: zero OOM/5xx, P99 TTFT regression
+<= 20%, output throughput drop <= 15%, accuracy within pre-registered tolerance for
+any quantization arm, canary first, two consecutive clean windows before fleet
+rollout. Each category lens adds its own emphasis: incident ordering
+(observe/bound/bisect, snapshot before restart) for Troubleshooting, the
+memory-headroom-versus-load curve and goodput-at-fixed-SLO scoring for Performance
+Analysis, and SLO-derived KV budgeting with pool isolation for System Design.
+
+These outputs are provisional teacher-B review artifacts. They are NOT expert gold
+labels, have NOT been validated by a human domain expert, and say nothing about any
+model's domain capability.
+
 ## Run 2026-08-17 batch 0118
 
 - Batch file: results/train-batch-0118.jsonl
