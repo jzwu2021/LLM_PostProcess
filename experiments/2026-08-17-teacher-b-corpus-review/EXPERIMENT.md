@@ -5,6 +5,74 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0118
+
+- Batch file: results/train-batch-0118.jsonl
+- Corpus range: train.jsonl lines 1171-1180 (0-indexed 1170..1179)
+- Source IDs: corpus-01294, corpus-01296, corpus-01297, corpus-01298, corpus-01299,
+  corpus-01300, corpus-01301, corpus-01302, corpus-01303, corpus-01304
+- Progress: train 1180/5399, validation 0/601, total 1180/6000, remaining 4820
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1180 aggregate records, exactly 12 fields per record,
+  lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1],
+  source_id globally unique, aggregate train sequence is a strict prefix of
+  train.jsonl, validation sequence empty, batch numbering contiguous)
+- Repairs performed: none. First verification pass succeeded; no batch was rewritten
+  and no original corpus or prior batch file was touched.
+- Final schema check: PASS (identical to initial run)
+- Manifest: MANIFEST.sha256 regenerated over all 206 files in the experiment
+  directory except the manifest itself; `sha256sum -c` returned all-OK.
+
+### Technical topics covered by this batch
+
+Two scenario families, both rated technical_correctness=3 / instruction_coverage=2 /
+operational_safety=2 because every source answer is a grading rubric ("answer should
+state...") rather than an answer, and is therefore unusable as a supervised target.
+
+1. Mixed short-prompt / long-generation serving evaluation (corpus-01294 through
+   corpus-01300). Rewrites supply explicit metric definitions where the rubric had
+   none: TTFT measured from client send rather than engine admission (the common way
+   queueing delay is hidden), TPOT normalised over output_tokens-1, queueing delay
+   exported separately, and throughput split into output tok/s, total tok/s and
+   completed req/s so arms with different length mixes stay comparable. Load
+   generation is specified open-loop with Poisson arrivals to avoid coordinated
+   omission, which structurally understates P99 under closed-loop clients. Each
+   rewrite carries a pre-registered falsifiable hypothesis on chunked prefill with a
+   decision rule fixed in advance (bootstrap CI on P99 TTFT reduction must exclude 0
+   while the P99 TPOT regression CI upper bound stays under 10%), interleaved arms to
+   de-alias thermal drift, and prefix-cache hit rate pinned or disabled since an
+   uncontrolled hit-rate delta can fabricate a 2x TTFT "win". Confounder checks span
+   DCGM clock-throttle reasons, allocator drift, tokenizer-induced token-count
+   mismatch, and for multi-node arms NCCL algorithm selection plus RoCE PFC/ECN state,
+   where a paused link masquerades as a decode-speed regression.
+
+2. Long-context intermittent OOM under concurrency (corpus-01301 through
+   corpus-01304). Rewrites start from KV arithmetic the rubric never performs:
+   per-token KV bytes = 2 x layers x num_kv_heads x head_dim x dtype_bytes, with the
+   GQA/TP caveat that KV heads divide by TP degree only when num_kv_heads is divisible
+   by TP -- otherwise heads are replicated and the per-GPU footprint is silently 2-4x
+   larger than assumed. The discriminating hypothesis pits prefill activation peak
+   against KV-pool exhaustion: capping max_num_batched_tokens to 4096 must eliminate
+   OOM and cut peak allocated memory by >=20% under H0, and must not help under H1.
+   Mitigations are ordered by reversibility -- budget arithmetic and chunked prefill
+   (config-only) before admission control (converts a crash into backpressure, the
+   correct operational behaviour) before expandable_segments fragmentation work
+   (meaningful only if the memory snapshot shows large inactive_split blocks) before
+   max_model_len / max_num_seqs reduction and fp8 KV quantization, which change
+   user-visible capability or output quality and require a separate accuracy gate.
+   Reproduction rate over >=5 replays with a binomial CI is mandated so an intermittent
+   fault cannot appear "fixed" by chance.
+
+All rewrites specify rollback gates: <=5% canary traffic, auto-rollback on >10-15%
+P99 regression or error-rate breach, config-only rollback path exercised in staging
+first.
+
+**Status: PROVISIONAL.** These are one model's blind, independent second-opinion
+reviews. They are not expert gold labels, have not been validated against teacher-A
+(deliberately unread during this batch to avoid anchoring), and say nothing about any
+trained model's domain capability. Agreement analysis is a separate, later step.
+
 ## Run 2026-08-17 batch 0117
 
 - Batch file: results/train-batch-0117.jsonl
