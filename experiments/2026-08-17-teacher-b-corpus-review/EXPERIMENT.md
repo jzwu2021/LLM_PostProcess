@@ -5,6 +5,43 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0117
+
+- Batch file: results/train-batch-0117.jsonl
+- Corpus range: train.jsonl lines 1161-1170 (0-indexed 1160..1169)
+- Source IDs: corpus-01283, corpus-01284, corpus-01285, corpus-01286, corpus-01287,
+  corpus-01289, corpus-01290, corpus-01291, corpus-01292, corpus-01293
+- Progress: train 1170/5399, validation 0/601, total 1170/6000, remaining 4830
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1170 aggregate records, 12 required fields present,
+  lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1],
+  source_id globally unique, aggregate train sequence is a strict prefix of
+  train.jsonl, validation sequence empty)
+- Repairs: none required this run.
+- Final schema check: PASS (identical run, no intervening edits)
+- Manifest: MANIFEST.sha256 regenerated over all 205 files in this experiment
+  directory except the manifest itself; `sha256sum -c` reports all OK.
+- Topics covered: serving-evaluation scenario variants 283-293 (note the corpus
+  itself skips 288), spread across System Design, Troubleshooting and Performance
+  Analysis. Each asks for an evaluation plan for a mixed short-prompt /
+  long-generation LLM endpoint reporting TTFT, TPOT, throughput, queueing and P99,
+  with a falsifiable hypothesis and a controlled experiment. The rewrites supply
+  the mechanism the source answers omit: KV-cache capacity as the binding
+  constraint on concurrency, TTFT measured from client arrival rather than engine
+  admission (the usual way queueing is hidden), open-loop Poisson arrivals instead
+  of a closed-loop client that suffers coordinated omission, a frozen hashed
+  request trace replayed identically across arms, interleaved repeated trials with
+  bootstrap CIs, chunked-prefill as a testable TTFT/TPOT tradeoff, and
+  fabric-side evidence (NVLink/PCIe intra-node; RoCE/IB port, PFC pause and ECN
+  counters inter-node) plus KV-transfer latency and GDR-actually-active checks for
+  disaggregated prefill/decode (Dynamo, Mooncake-style) deployments. Explicit
+  rollback gates and a canary window were added to every item.
+- Status: PROVISIONAL. These are one model's blind second-opinion rewrites. They
+  are NOT expert gold labels, have not been cross-checked against teacher-A (this
+  lane is blind by construction), and say nothing about any trained model's
+  domain capability.
+
 ## Run 2026-08-17 batch 0116
 
 - Batch file: results/train-batch-0116.jsonl
