@@ -5,6 +5,43 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0061
+
+- Batch file: results/train-batch-0061.jsonl
+- Corpus range: train.jsonl lines 601-610 (source IDs corpus-00666, corpus-00667, corpus-00668, corpus-00669, corpus-00670, corpus-00672, corpus-00673, corpus-00674, corpus-00676, corpus-00677)
+- Progress: train 610/5399, validation 0/601, total 610/6000, remaining 5390
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (10/10 new records; all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique across all 610 records, train sequence an exact prefix of train.jsonl, validation still empty)
+- Repairs performed: none required (verification passed on first execution)
+- Final schema check: pass (total 610 records validated, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 113 files; `sha256sum -c` all OK
+
+Technical topics covered: single-request KV cache byte sizing for grouped-query attention
+transformers, layer counts 24-56, KV head counts 2-8, head dimensions 64-128, sequence
+lengths 1024-4096, INT8 and BF16/FP16 KV element widths. All ten source byte totals were
+independently recomputed from the stated parameters and every one matched, so each record is
+marked rewrite for insufficiency rather than for a numeric error. The source answers give the
+formula and the correct total but stop there. Each corrected answer restates the mechanism
+(one K and one V vector per KV head per layer per token; the factor 2 is K plus V and is not
+tensor-parallel replication), reports the per-token marginal cost that actually drives
+admission control and max-num-seqs sizing, and then states the boundary conditions the
+arithmetic does not cover: PagedAttention/radix-cache block rounding to whole blocks, INT8 and
+FP8 scale and zero-point metadata, competition with weights, activation workspaces, CUDA graph
+pools, NCCL buffers and allocator fragmentation, and the fact that MLA or cross-layer KV
+sharing invalidates the per-layer independence assumption outright. Each record carries a
+falsifiable prediction (measured steady-state KV for one request of the stated length should
+land between the dense total and 1.10x that total), the evidence required to trust the figure
+for capacity planning (num_hidden_layers, num_key_value_heads, head_dim, kv_cache_dtype,
+engine block count and block_size, measured device-memory delta, TP degree), and a rollback
+gate (revert gpu_memory_utilization / max_num_seqs / max_model_len to last known-good if
+measured usage exceeds the upper bound by more than 10 percent or OOM occurs at target
+concurrency). INT8 records additionally flag that an arithmetic saving is not an accuracy
+result and needs a task-level evaluation.
+
+These results are PROVISIONAL model-generated second-opinion labels. They are not expert gold,
+have not been validated against hardware measurements, and say nothing about any model's
+domain capability.
+
 ## Run 2026-08-17 batch 0060
 
 - Batch file: results/train-batch-0060.jsonl
