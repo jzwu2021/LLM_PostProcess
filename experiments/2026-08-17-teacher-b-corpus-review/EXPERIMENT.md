@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0048
+
+- Batch file: results/train-batch-0048.jsonl
+- Corpus range: train.jsonl lines 471-480 (0-indexed 470-479), source IDs corpus-00521, corpus-00522, corpus-00523, corpus-00525, corpus-00526, corpus-00527, corpus-00528, corpus-00529, corpus-00530, corpus-00531 — contiguous in corpus order (corpus-00524 is absent from the corpus itself; nothing was skipped or reordered by this run).
+- Progress: train 480/5399, validation 0/601, total 480/6000, remaining 5520
+- Decisions: keep 10, rewrite 0, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py plus an inline per-record assertion pass — per-line JSONL parse, 10 records this batch, exactly the 12 required fields with no extras, lane/model/status/decision enum checks, quality_dimensions integer 1-5 on all three axes, risks/evidence_required string arrays, byte-exact source_user/source_assistant equality against research/ai-infra-expert/corpus/train.jsonl, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness across all 48 batches, and strict train-prefix ordering).
+- Repairs: none required this run.
+- Final schema check: PASS (train 480, validation 0, total 480 unique source IDs, prefix OK).
+- Manifest: MANIFEST.sha256 regenerated over all 91 files in the experiment directory (excluding the manifest itself and __pycache__); `sha256sum -c` returned OK for all 91 entries with zero failures.
+- Technical topics covered: ten more per-request KV-cache sizing calculations (Calculation / medium, concepts kv_cache + memory), spanning 24–56 layers, 2–8 KV heads, head_dim 64–128, seq_len 1024–4096, in BF16/FP16 (7 cases) and INT8 (3 cases: corpus-00522, corpus-00525, corpus-00528, corpus-00531 INT8 subset). Every source byte count and GiB conversion was recomputed independently as 2 x layers x seq_len x kv_heads x head_dim x bytes_per_value and matched exactly, so all ten were graded keep on technical_correctness. The corrected_answer for each still adds the material the source omits: the factor 2 is K and V rather than bidirectionality; kv_heads (GQA/MQA) not query heads drives the term; paged allocators round the tail block up to ceil(seq_len/block_size)*block_size so real allocation exceeds the analytic figure; INT8 KV carries per-group scale/zero-point metadata that is not free and must be gated on an accuracy comparison; weights, activation workspace, CUDA-graph pools and fragmentation live outside the KV pool; and aggregate capacity is per-request bytes x in-flight sequences, which is the quantity that actually sets max_num_seqs. Each record states a falsifiable prediction (KV bytes scale exactly linearly in in-flight requests until the block pool saturates, then admission stalls rather than OOMs), the evidence required (served config.json layer/kv-head/head-dim fields, engine-reported KV block size and total GPU blocks, measured torch.cuda.memory_reserved deltas under a controlled concurrency ramp), and a rollback gate (>~15% measured-versus-estimate gap at steady state ⇒ stop raising max_num_seqs / gpu_memory_utilization and re-measure, since the gap implies unaccounted padding, quantization metadata, or prefix-cache retention).
+- Status: PROVISIONAL. These are blind, single-pass teacher-B judgements, not expert gold labels, and they say nothing about any model's domain capability. No file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, or grepped at any point during this batch.
+
 ## Run 2026-08-17 batch 0047
 
 - Batch file: results/train-batch-0047.jsonl
