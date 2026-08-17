@@ -5,6 +5,36 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0088
+
+- Batch file: results/train-batch-0088.jsonl
+- Corpus range: train.jsonl lines 871-880 (source IDs corpus-00955 … corpus-00964, contiguous; corpus file order preserved exactly, no skips, no reordering)
+- Progress: train 880/5399, validation 0/601, total 880/6000, remaining 5120
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (ad-hoc verifier — 880 train records, 880 unique source_ids, all 12 fields present, enum values correct, corrected_answer non-empty, confidence in [0,1], source_user/source_assistant byte-identical to corpus, aggregate train sequence is a strict prefix of train.jsonl)
+- Repairs applied: none required (first-run pass)
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over 158 files; `sha256sum -c` PASS
+- Technical topics covered: per-request K/V cache sizing under grouped-query attention.
+  All ten items are the same generator family (Calculation cases 455-464) varying layers
+  (24/32/40/48/56), kv_heads (2/4/6/8), head_dim (64/96/128), sequence length
+  (1024-4096) and KV element width (BF16/FP16 = 2 B vs INT8 = 1 B). Source arithmetic was
+  re-derived independently for all ten and matched in every case, so the byte/GiB totals
+  are correct; the rewrite decision is driven by incompleteness rather than error. Each
+  corrected answer adds: the mechanism (why only kv_heads are materialised under GQA and
+  why growth is strictly linear in sequence length), the per-token KV cost as the actual
+  capacity-planning unit and the concurrency it implies, paged-allocator block rounding
+  (ceil(S/block)*block plus block-table overhead), prefix-cache/copy-on-write sharing,
+  transient KV from speculative decoding / beam search / chunked prefill, and for INT8 KV
+  the per-block scale/zero-point surcharge plus the requirement for a separate accuracy
+  eval gate. Each answer states a falsifiable check against engine KV block-occupancy
+  telemetry, the evidence needed (model config, KV dtype actually in effect at runtime,
+  memory telemetry), and a rollback gate (>10% deviation from estimate, or held-out
+  accuracy regression beyond tolerance when enabling low-precision KV).
+- Status: PROVISIONAL. These are one model's blind second-opinion reviews, not expert gold
+  labels, and they say nothing about any trained model's domain capability. Produced blind:
+  no teacher-A artifact was read while generating this batch.
+
 ## Run 2026-08-17 batch 0087
 
 - Batch file: results/train-batch-0087.jsonl
