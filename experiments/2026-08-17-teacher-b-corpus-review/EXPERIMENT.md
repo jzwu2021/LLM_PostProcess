@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0031
+
+- Batch file: results/train-batch-0031.jsonl
+- Corpus range: train.jsonl lines 301-310 (0-indexed 300-309), source IDs corpus-00332 through corpus-00341 (strict corpus order; nothing skipped or reordered)
+- Progress: train 310/5399, validation 0/601, total 310/6000, remaining 5690
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify.py VERIFY_PASS on first run; no repairs needed)
+- Repairs performed: none
+- Final schema check: PASS (JSONL parseable, 10 records, 12 required fields, lane/model/status/decision values valid, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique, train sequence is a strict prefix of train.jsonl)
+- Manifest: MANIFEST.sha256 regenerated over all files except itself; `sha256sum -c` MANIFEST_OK (67 entries)
+- Technical topics covered: all ten items are Mixture-of-Experts (MoE) Knowledge/Concept items in three sub-families — (a) how MoE differs between training and inference, (b) misleading MoE intuitions to correct, (c) designing a controlled MoE experiment. The rewrites make explicit the mechanisms the one-line source answer omits: token-level top-k routing with an auxiliary load-balancing loss and capacity factor at training time versus a frozen router with no balancing pressure and drop-less serving; the inversion from active-FLOP-bound training to HBM-capacity- and weight-bandwidth-bound decode (all experts resident, only k read); the two synchronizing all-to-alls (dispatch/combine) per MoE layer under expert parallelism whose cost tracks the most-loaded rank rather than the mean; permute/un-permute and ragged grouped-GEMM overheads; prefill/decode asymmetry motivating disaggregated serving (Mooncake/Dynamo-style); expert-count scaling trading HBM and collective latency for quality; and the fallacy that experts are human-interpretable topical specialists. Each answer states a boundary condition (typically tokens-per-step >> num_experts/k, or expert replication removing the all-to-all entirely), a falsifiable prediction, required evidence (per-expert token histograms, comm-profiler all-to-all share, TTFT/TPOT percentiles, HBM breakdown, iso-quality held-out eval), and a rollback gate.
+- Why all ten were marked `rewrite`: every source_assistant is the identical single generic sentence about routing/capacity/all-to-all, which does not answer the specific variant asked and supplies neither mechanism nor boundary condition despite the instruction demanding both.
+- Status caveat: these results are **provisional** teacher-B blind review output produced by an LLM reviewer. They are NOT expert gold labels, have not been validated by a human domain expert, and say nothing about any model's domain capability. teacher-A artifacts were not read at any point during this batch.
+
 ## Run 2026-08-17 batch 0030
 
 - Batch file: results/train-batch-0030.jsonl
