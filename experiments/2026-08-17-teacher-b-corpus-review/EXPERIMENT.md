@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0030
+
+- Batch file: results/train-batch-0030.jsonl
+- Corpus range: train.jsonl lines 291-300 (0-indexed 290-299), source IDs corpus-00321, corpus-00323, corpus-00324, corpus-00325, corpus-00326, corpus-00327, corpus-00328, corpus-00329, corpus-00330, corpus-00331 (strict corpus order; nothing skipped or reordered — corpus-00322 does not exist at this position in the corpus)
+- Progress: train 300/5399, validation 0/601, total 300/6000, remaining 5700
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify.py, VERIFY_PASS, train=300/5399 validation=0/601)
+- Repairs: none required this run. One operational note: verify.py must be invoked from the repository root (paths are repo-relative); running it from inside the experiment directory raises FileNotFoundError on research/ai-infra-expert/corpus/train.jsonl. This is a harness invocation detail, not a data defect.
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except the manifest itself; `sha256sum -c` reports 66/66 OK, 0 failures.
+- Technical topics covered: all ten items are Mixture-of-Experts (MoE) knowledge/concept items in three families — (a) a measurement plan for validating whether MoE helps a serving workload, (b) the assumptions that must be stated before making an MoE performance claim, and (c) how MoE behaves differently in training vs inference. The rewrites make explicit the active-vs-total parameter distinction, router top-k and capacity factor, dispatch/combine all-to-all under expert parallelism, expert load imbalance measured as a per-expert token histogram, the intra-node NVLink domain vs inter-node fabric boundary for the EP group, the decode-time asymmetry where total-parameter HBM residency is paid for active-parameter compute, iso-quality baseline selection, and explicit falsifiable hypotheses with SLO-based rollback gates (p95 TTFT/TPOT, HBM headroom for peak KV cache, expert max/mean load bound).
+- Seed-answer assessment: every source_assistant in this batch is the same one-sentence MoE definition, which is technically defensible but does not answer any of the three asked tasks, carries no units, no measurement method and no rollback threshold. Hence decision=rewrite for all ten, with instruction_coverage scored 1.
+- Status: PROVISIONAL. These are teacher-B second-opinion labels produced blind (teacher-A outputs were not read at any point during this batch). They are NOT expert gold, have not been validated by a human domain expert, and say nothing about any model's domain capability. Agreement analysis against teacher-A is a separate, later step.
+
 ## Run 2026-08-17 batch 0029
 
 - Batch file: results/train-batch-0029.jsonl
