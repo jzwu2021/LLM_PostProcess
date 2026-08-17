@@ -5,6 +5,38 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0059
+
+- Batch file: results/train-batch-0059.jsonl
+- Corpus range: train.jsonl lines 581-590 (source IDs corpus-00644, corpus-00645, corpus-00646, corpus-00647, corpus-00649, corpus-00650, corpus-00651, corpus-00652, corpus-00653, corpus-00654)
+- Progress: train 590/5399, validation 0/601, total 590/6000, remaining 5410
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (10/10 records, 12 required fields present, lane/model/status/decision values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique, train sequence is an exact prefix of train.jsonl)
+- Repairs performed: none required
+- Final schema check: pass (total 590 records validated, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 111 files; `sha256sum -c` all OK
+
+Technical topics covered: single-request KV cache byte sizing for GQA transformers across
+varying layer counts (24-56), KV head counts (2-8), head dimensions (64-128), sequence
+lengths (1536-4096), and BF16/FP16 vs INT8 KV element widths. All ten source arithmetic
+results were independently recomputed and were numerically correct; every record was still
+marked `rewrite` because the source answers stop at the raw number and omit the operational
+context this corpus is supposed to teach: paged-attention block-size rounding (vLLM
+PagedAttention block 16/32), INT8/FP8 KV scale and zero-point overhead, tensor-parallel KV
+head sharding that only divides cleanly when kv_heads % TP == 0 (otherwise KV is replicated),
+MLA / cross-layer-KV architectures that invalidate the formula outright, and speculative
+decoding or beam search multiplying live KV by the branch count. Each corrected answer states
+its assumptions explicitly, gives the formula and substitution, lists falsifiable boundary
+conditions, names the evidence needed to confirm it (config.json fields, vLLM
+num_gpu_blocks x block_size accounting, measured per-request GPU memory delta), and defines a
+concrete rollback gate (reduce max_num_seqs / max_model_len if measured KV exceeds the
+estimate by more than ~10 percent).
+
+These results are PROVISIONAL model-generated second-opinion labels. They are NOT expert gold
+data, they have not been validated by a human domain expert, and they say nothing about the
+domain capability of any trained model. Agreement analysis against teacher-A is a separate,
+later step; this batch was produced blind, without reading any teacher-A artifact.
+
 ## Run 2026-08-17 batch 0058
 
 - Batch file: results/train-batch-0058.jsonl
