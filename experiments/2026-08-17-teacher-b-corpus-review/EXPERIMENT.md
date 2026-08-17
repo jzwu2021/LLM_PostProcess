@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0029
+
+- Batch file: results/train-batch-0029.jsonl
+- Corpus range: train.jsonl lines 281-290 (0-indexed 280-289), source IDs corpus-00310, corpus-00311, corpus-00312, corpus-00313, corpus-00314, corpus-00315, corpus-00317, corpus-00318, corpus-00319, corpus-00320 (contiguous in corpus order; nothing skipped or reordered — the corpus itself has no corpus-00316 at this position)
+- Progress: train 290/5399, validation 0/601, total 290/6000, remaining 5710
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify_batches.py, ERRORS=0) — no repair actions were required this run
+- Repairs: none
+- Final schema check: PASS (train 290/5399, validation 0/601, ERRORS=0, VERIFY_RESULT=PASS)
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except the manifest itself; `sha256sum -c` reports 64/64 OK, 0 failures
+- Topics covered: Mixture-of-Experts. All ten items are the same seed sentence about token routing, reduced active compute, and routing/capacity/all-to-all concerns, asked under three instruction shapes (contrast against a naive dense implementation, two failure modes/trade-offs, interaction with latency/throughput/memory). Rewrites supply what the source omits: the capacity-factor mechanism and silent token dropping; the auxiliary load-balancing loss and routing collapse; router z-loss and bf16 logit numerics; batch-dependent non-determinism at capacity saturation; dispatch/combine all-to-all as a bisection-bandwidth-bound critical path and its exposure of RoCE/PFC/ECN and GPUDirect RDMA fallback behaviour; the arithmetic-intensity crossover that makes MoE lose to dense in low-concurrency decode; the HBM partition between expert weights and KV cache and its effect on maximum concurrency; token permute/unpermute HBM traffic; prefill/decode disaggregation (Mooncake-style KV-centric and NVIDIA Dynamo-style) as the natural fit for MoE's phase asymmetry; and expert offload with GDS-style paths bounded by expert-reuse and prefetch-hit-rate conditions.
+- Every rewrite states assumptions, names one concrete mechanism and one boundary condition, and ends with the evidence required plus an explicit rollback gate. No numeric threshold is asserted as a measured fact for any specific cluster.
+- Status: PROVISIONAL. This is a single-model blind second opinion, not expert gold, not adjudicated against teacher-A, and it is not evidence of any model's domain capability. No teacher-A artifact was read, opened, or searched during this run.
+
 ## Run 2026-08-17 batch 0028
 
 - Batch file: results/train-batch-0028.jsonl

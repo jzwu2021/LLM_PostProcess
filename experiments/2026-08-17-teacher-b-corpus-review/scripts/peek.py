@@ -1,8 +1,8 @@
 import json, sys
+lines = open('research/ai-infra-expert/corpus/train.jsonl').read().splitlines()
+print('corpus_total', len(lines))
 start = int(sys.argv[1]); n = int(sys.argv[2])
-path = sys.argv[3]
-rows = [json.loads(l) for l in open(path)][start:start+n]
-for r in rows:
-    print(json.dumps(r, ensure_ascii=False))
-    print('=====')
-print('KEYS', list(rows[0].keys()))
+for i in range(start, start+n):
+    d = json.loads(lines[i])
+    print('=== idx', i, 'keys', list(d.keys()))
+    print(json.dumps(d, ensure_ascii=False)[:1600])
