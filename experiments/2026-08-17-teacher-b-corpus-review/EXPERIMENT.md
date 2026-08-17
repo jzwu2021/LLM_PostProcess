@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0083
+
+- Batch file: results/train-batch-0083.jsonl
+- Corpus range: train.jsonl lines 821-830 (source IDs corpus-00904, corpus-00905, corpus-00906, corpus-00907, corpus-00908, corpus-00909, corpus-00910, corpus-00911, corpus-00912, corpus-00913 — corpus file order preserved exactly, no skips, no reordering)
+- Progress: train 830/5399, validation 0/601, total 830/6000, remaining 5170
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (ad-hoc verifier tools/verify.py — per-line JSONL parse, batch count 10, the 12 required fields, enum values for teacher_lane / teacher_model / calibration_status / decision, quality_dimensions integers in 1-5, risks and evidence_required as string arrays, character-exact source_user and source_assistant against research/ai-infra-expert/corpus/train.jsonl, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness across all 83 batches, and strict train/validation corpus-prefix ordering)
+- Repairs performed: none required. No corpus file, no earlier batch, no benchmark generation and no teacher-A artifact was read or modified.
+- Final schema check: PASS (train 830 records prefix-checked, validation 0, total 830, VERIFY_PASS)
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except itself; `sha256sum -c` reported all OK, 0 failures.
+- Technical topics covered: single-request K/V cache sizing for GQA/MQA decoder stacks — layer depths 24/32/40/48/56, KV head counts 2/4/6/8, head dims 64/96/128, contexts 1024-4096 tokens, seven BF16/FP16 rows (2 B/value) and three INT8 rows (corpus-00906, corpus-00909, corpus-00912, 1 B/value). Every source byte total and GiB conversion was independently recomputed from 2 x layers x seq_len x kv_heads x head_dim x bytes_per_value before writing (tools/chk.py); all ten matched the source exactly, hence technical_correctness 5 and no rejections. All ten are nonetheless `rewrite` because the source stops at formula-plus-number with one boilerplate caveat and states no mechanism or validity domain. Each rewrite adds: the decode-time mechanism and why kv_heads rather than query heads sets the retained width under GQA/MQA; per-layer and per-token marginal byte cost (the quantity that actually composes into admission control and max_num_seqs); decimal-GB vs binary-GiB disambiguation; paged-attention block round-up with an explicit ceil(S/16) block count; the exclusion list (weights, activations/workspace, CUDA context ~300-600 MiB/GPU, NCCL buffers, allocator fragmentation, prefix-cache retention, speculative decoding and beam width); tensor-parallel sharding behaviour and the TP > kv_heads boundary where KV heads must be replicated and per-GPU KV stops shrinking; for the INT8 rows the per-token/per-head scale and zero-point metadata that the 1 B/value assumption omits, quantified against the reported total, plus the point that INT8 KV is an accuracy decision and not only a capacity win; a falsifiable prediction (single request of S tokens raises engine-reported KV usage by the computed GiB +/- one allocator block, scaling linearly with concurrency until pool exhaustion) with the exact evidence list needed to test it; and a rollback gate — size limits from measured steady state, not arithmetic, and roll back on KV pool utilization above ~90%, preemption/recompute events in engine logs, or p99 TTFT SLO regression, since KV exhaustion degrades as queueing rather than clean OOM.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, listed, grepped or searched at any point in this run. The only inputs were source_user and source_assistant from research/ai-infra-expert/corpus/train.jsonl.
+- Status caveat: PROVISIONAL teacher-B model output. Not expert gold labels, not human-validated, and not evidence of any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0082
 
 - Batch file: results/train-batch-0082.jsonl
