@@ -5,6 +5,34 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0109
+
+- Batch file: results/train-batch-0109.jsonl
+- Corpus range: train.jsonl lines 1081-1090 (0-indexed 1080..1089)
+- Source IDs: corpus-01191 .. corpus-01200 (连续，原始顺序保持，无跳过无重排)
+- Progress: train 1090/5399, validation 0/601, total 1090/6000, remaining 4910
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (scripts/verify_batches.py, 首次即通过，无修复动作)
+- Fix actions: 无
+- Final schema check: PASS (train 1090 records, validation 0, TOTAL 1090, VERIFY=PASS)
+- Manifest: MANIFEST.sha256 重新生成（184 条），`sha256sum -c` 全部通过
+- 技术主题: 混合短 prompt / 长生成流量的服务评估协议。本批 10 条同源模板，
+  按 category 分成三种独立视角改写：Troubleshooting（排队受限 / KV 耗尽与抢占 /
+  prefill-decode 干扰 / 硬件与 NCCL 四条可证伪假设，按成本从低到高排序）、
+  Performance Analysis（prefill 计算受限与 decode 显存带宽受限的 roofline 容量模型、
+  KV bytes/token = 2*n_layers*n_kv_heads*head_dim*dtype_bytes 的可核对推导、
+  预测与实测偏差 >20% 即判模型失效）、System Design（可复现 trace 生成器与结果
+  schema、容量口径定义为满足 SLO 的最大到达率而非最大吞吐、灰度与自动回滚门槛）。
+  共同部分强制：开环 Poisson 到达（闭环会掩盖排队时延并低估 P99）、TTFT/TPOT 的
+  精确测量端点与 queue_wait+prefill 分解、按 short/long 分类分别报告 P99 并给
+  bootstrap 95% CI、warmup 截断与稳态判据、每臂 3-5 次独立启动、DCGM 1Hz 采样含
+  throttle reasons、Little's Law 一致性校验，以及 abort/rollback 门槛。
+- 原始 assistant 内容为评分要点清单而非可执行答案，故 10 条全部判为 rewrite；
+  quality_dimensions 统一给 technical_correctness=3 / instruction_coverage=2 /
+  operational_safety=2，confidence 0.70-0.71。
+- 声明: 本结果为 provisional teacher-B 盲审产物，不是 expert gold，也不代表任何
+  模型的领域能力。本批产出过程中未读取 teacher-A 目录下任何文件。
+
 ## Run 2026-08-17 batch 0108
 
 - Batch file: results/train-batch-0108.jsonl

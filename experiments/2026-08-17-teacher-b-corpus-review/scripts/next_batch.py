@@ -1,28 +1,31 @@
 import json, glob, sys
-BASE='/home/johnson/workspace/LLM_PostProcess/'
-RES=BASE+'experiments/2026-08-17-teacher-b-corpus-review/results/'
-tr=[json.loads(l) for l in open(BASE+'research/ai-infra-expert/corpus/train.jsonl')]
-va=[json.loads(l) for l in open(BASE+'research/ai-infra-expert/corpus/validation.jsonl')]
-def done(pref):
-    out=[]
-    for f in sorted(glob.glob(RES+pref+'-batch-*.jsonl')):
+
+RES = 'experiments/2026-08-17-teacher-b-corpus-review/results'
+
+def load(prefix):
+    ids = []
+    for f in sorted(glob.glob(f'{RES}/{prefix}-batch-*.jsonl')):
         for l in open(f):
-            out.append(json.loads(l)['source_id'])
-    return out
-dt=done('train'); dv=done('validation')
-print('TRAIN_DONE',len(dt),'VAL_DONE',len(dv),'TOTAL',len(dt)+len(dv))
-print('train_prefix_ok',[r['id'] for r in tr][:len(dt)]==dt)
-print('val_prefix_ok',[r['id'] for r in va][:len(dv)]==dv)
-if len(dt)<len(tr):
-    src=tr; off=len(dt); lane='train'
+            l = l.strip()
+            if l:
+                ids.append(json.loads(l)['source_id'])
+    return ids
+
+tr = load('train')
+va = load('validation')
+src_tr = [json.loads(l) for l in open('research/ai-infra-expert/corpus/train.jsonl')]
+src_va = [json.loads(l) for l in open('research/ai-infra-expert/corpus/validation.jsonl')]
+
+print('train_done', len(tr), 'validation_done', len(va))
+print('train_prefix_ok', [s['id'] for s in src_tr[:len(tr)]] == tr)
+print('validation_prefix_ok', [s['id'] for s in src_va[:len(va)]] == va)
+
+if len(tr) < len(src_tr):
+    lane, nxt, n = 'train', src_tr[len(tr):len(tr)+10], len(glob.glob(f'{RES}/train-batch-*.jsonl'))+1
 else:
-    src=va; off=len(dv); lane='validation'
-nxt=src[off:off+10]
-print('LANE',lane,'NEXTBATCH',len(glob.glob(RES+lane+'-batch-*.jsonl'))+1)
-for r in nxt:
-    m=r['messages']
-    u=[x['content'] for x in m if x['role']=='user'][0]
-    a=[x['content'] for x in m if x['role']=='assistant'][0]
-    print('=====',r['id'],r['category'],r.get('difficulty'),r.get('concepts'))
-    print('U:',u)
-    print('A:',a)
+    lane, nxt, n = 'validation', src_va[len(va):len(va)+10], len(glob.glob(f'{RES}/validation-batch-*.jsonl'))+1
+print('NEXT_LANE', lane, 'BATCHNUM', '%04d' % n)
+with open('/tmp/tb_next.json', 'w') as f:
+    json.dump({'lane': lane, 'batch': '%04d' % n, 'items': nxt}, f, ensure_ascii=False)
+for it in nxt:
+    print('---ID', it['id'])
