@@ -5,6 +5,37 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0108
+
+- Batch file: results/train-batch-0108.jsonl
+- Corpus range: train.jsonl lines 1071-1080 (0-indexed 1070..1079)
+- Source IDs: corpus-01180, corpus-01181, corpus-01182, corpus-01184, corpus-01185,
+  corpus-01186, corpus-01187, corpus-01188, corpus-01189, corpus-01190
+  (corpus-01183 is absent from the corpus itself; original order preserved, nothing skipped by this worker)
+- Progress: train=1080/5399, validation=0/601, total=1080/6000, remaining=4920
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_batches.py, first run, no repair needed)
+- Repairs: none
+- Final schema check: PASS
+- Manifest: regenerated, sha256sum -c => 185/185 OK
+- Technical topics covered: LLM serving evaluation methodology for mixed
+  short-prompt / long-generation traffic — TTFT / TPOT / queueing-delay / goodput
+  definitions frozen before measurement, open-loop Poisson load generation and
+  coordinated-omission avoidance, prefill (compute-bound) vs decode
+  (HBM-bandwidth-bound) decomposition, chunked prefill and prefill/decode
+  disaggregation trade-offs including the KV-handoff interconnect boundary,
+  KV-cache preemption/eviction as a P99 tail driver, clock pinning and thermal/power
+  drift as confounders, per-step scheduler and per-request tracing as required
+  evidence, and pre-registered mechanical rollback gates.
+- Per-category framing: Performance Analysis items got a chunked-prefill goodput
+  hypothesis, System Design items an equal-GPU disaggregation-vs-homogeneous-pool
+  hypothesis with a stated sign-flip crossover, Troubleshooting items a
+  queueing/preemption-vs-compute discriminating diagnosis with an explicit falsifier.
+- Blind review discipline: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, or searched during this run.
+- Status: PROVISIONAL. These are provisional teacher-B second opinions, not expert
+  gold labels, and they are not evidence of any model's domain capability.
+
 ## Run 2026-08-17 batch 0107
 
 - Batch file: results/train-batch-0107.jsonl
