@@ -5,6 +5,38 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0093
+
+- Batch file: results/train-batch-0093.jsonl
+- Corpus range: train.jsonl lines 921-930 (source IDs corpus-01011, corpus-01012, corpus-01014, corpus-01015, corpus-01016, corpus-01017, corpus-01018, corpus-01019, corpus-01020, corpus-01021 — corpus file order preserved exactly, no skips, no reordering; the gap at corpus-01013 is pre-existing in the corpus and was NOT introduced by this lane)
+- Progress: train 930/5399, validation 0/601, total 930/6000, remaining 5070
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify_batches.py — 930 train records, 930 unique source_ids, batch size 10, all 12 required fields present, enum fields correct, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers in [1,5], risks/evidence_required string arrays, source_user/source_assistant byte-identical to corpus, aggregate train sequence a strict prefix of train.jsonl)
+- Repairs applied: none required; the batch passed verification on first run.
+- Final schema check: PASS (VERIFY=PASS)
+- Manifest: MANIFEST.sha256 regenerated over 166 files (everything in this directory except MANIFEST.sha256); `sha256sum -c` reported 166/166 OK, exit 0
+- Technical topics covered: all ten items are scenario variants 11-21 of the same serving-evaluation
+  design prompt (mixed short prompts / long generations; report TTFT, TPOT, throughput, queueing,
+  P99, with an explicit falsifiable hypothesis and a controlled experiment). The source assistants
+  are rubric stubs listing what an answer "should" contain rather than an answer, so every item was
+  marked rewrite (instruction_coverage 2, operational_safety 2). The rewrites make the mechanism
+  explicit: open-loop vs closed-loop load generation and why closed-loop structurally under-reports
+  P99; prefill as compute-bound vs decode as memory-bandwidth-bound and the roofline floor implied
+  by KV bytes read per step; queueing delay taken from engine scheduler metrics rather than inferred
+  from TTFT; chunked prefill stated as a testable hypothesis with quantified accept/reject bounds
+  (>=25% P99 TTFT reduction, <=10% median TPOT regression, <=5% output-throughput loss); load-ladder
+  sweeps past the saturation knee with fixed warmup, interleaved A/B repeats and bootstrap CIs;
+  confounders (prefix/radix cache hits, CUDA-graph capture, thermal and power throttling, client-side
+  bottlenecks, truncated tails from timeouts) each paired with a control; and explicit rollback
+  thresholds plus a safety requirement that saturation sweeps run on a canary with an automatic abort,
+  never against production traffic. Category-specific tails were added: Troubleshooting items get a
+  three-way cause separation (queueing vs prefill interference vs decode slowdown), Performance
+  Analysis items get the roofline check, System Design items get prefill/decode disaggregation
+  (Mooncake / NVIDIA Dynamo style) framed as a measured trade against KV-transfer cost over the fabric.
+- Status: PROVISIONAL. This is one model's blind second-opinion pass. It is not expert gold, has not
+  been validated against measured hardware behaviour, and says nothing about any trained model's
+  domain capability. Blind protocol held: no teacher-A artifact was read while producing this batch.
+
 ## Run 2026-08-17 batch 0092
 
 - Batch file: results/train-batch-0092.jsonl

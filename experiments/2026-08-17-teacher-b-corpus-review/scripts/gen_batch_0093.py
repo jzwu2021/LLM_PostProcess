@@ -1,0 +1,113 @@
+import json, os
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+CORPUS = os.path.join(ROOT, "research/ai-infra-expert/corpus/train.jsonl")
+OUT = os.path.join(ROOT, "experiments/2026-08-17-teacher-b-corpus-review/results/train-batch-0093.jsonl")
+START, END = 921, 930  # 1-indexed inclusive
+
+CORE = """Evaluation plan for a mixed short-prompt / long-generation serving workload.
+
+1. Assumptions (state them or the numbers are meaningless)
+- Single deployment under test, fixed engine version, fixed model weights and dtype, fixed TP/PP degree, fixed max_num_seqs / max_num_batched_tokens, chunked prefill setting recorded.
+- Workload is an open-loop arrival process (Poisson at a fixed request rate), NOT closed-loop with N fixed workers. Closed-loop harnesses hide queueing: they cannot produce a queue longer than the worker count, so P99 latency is structurally under-reported.
+- Input/output length distributions are fixed and replayed from a recorded trace or a seeded synthetic distribution (e.g. short prompts 64-512 tokens, long generations 512-2048 tokens), with the exact seed pinned so runs are comparable.
+- Tokenizer-level accounting: all lengths are in tokens, measured with the served model's tokenizer, not characters.
+
+2. Metric definitions (mechanism, not just names)
+- TTFT = arrival timestamp -> first streamed token. It is dominated by queueing delay + prefill compute, which is compute-bound and scales roughly with total prefill tokens in the batch.
+- TPOT (inter-token latency) = (end_to_end - TTFT) / (output_tokens - 1). Decode is memory-bandwidth-bound: it scales with KV-cache bytes read per step and with batch size, not with FLOPs.
+- Throughput must be reported as two separate numbers: output tokens/s and completed requests/s. Total-token throughput mixes prefill and decode work and is not actionable.
+- Queueing delay must be measured directly from engine metrics (e.g. vLLM num_requests_waiting / time_in_queue histogram), not inferred as TTFT minus a modeled prefill time.
+- P99 latency is reported per-metric (P99 TTFT, P99 TPOT, P99 end-to-end) and only from the steady-state window; a single P99 over a run containing warmup is an artifact.
+
+3. Falsifiable hypothesis
+H1: Enabling chunked prefill (chunk size 512) at the load level where P99 TTFT first exceeds the SLO will reduce P99 TTFT by at least 25% while degrading median TPOT by no more than 10% and reducing output-token throughput by no more than 5%.
+This is falsifiable in both directions: if P99 TTFT improves by less than 25%, or TPOT regresses more than 10%, H1 is rejected. The mechanism under test is that long prefills otherwise block the decode loop head-of-line; chunking bounds the stall at one chunk's compute time.
+
+4. Controlled experiment
+- Factor under test: chunked prefill off vs on. Everything else held constant.
+- Load ladder: sweep request rate in >= 6 steps up to and past the saturation knee, so the SLO-attainment curve, not one point, is the result.
+- Per cell: 60s warmup discarded (covers CUDA graph capture, allocator growth, prefix-cache fill), then >= 300s or >= 2000 completed requests of steady-state measurement.
+- >= 3 independent repeats per cell, runs interleaved A/B/A/B rather than all-A-then-all-B, to absorb thermal drift and node-level noise. Report median and a bootstrap 95% CI over repeats; a difference smaller than the overlap of CIs is not a result.
+- Client must be off the GPU node and provably not the bottleneck: verify client CPU < 60% and that a null/echo backend sustains >= 3x the peak measured rate.
+
+5. Expected confounders (each with its control)
+- Prefix caching / radix cache silently removing prefill work -> report cache hit rate; run with cache disabled as a reference cell.
+- Warmup and CUDA-graph capture inflating early latencies -> fixed discarded warmup window.
+- Thermal throttling and power capping -> log nvidia-smi clocks, power draw and throttle reasons; discard cells with SW power/thermal slowdown flags set.
+- Noisy neighbours / other processes on the GPU -> require exclusive access; assert GPU utilization by PID.
+- Tail truncated by client timeouts -> record timeout and error counts; a P99 computed while dropping timed-out requests is invalid, count them as >= timeout.
+- Length-distribution drift between arms -> assert identical seeded trace per arm and compare input/output token histograms post-hoc.
+
+6. Evidence to collect
+Per-request trace (arrival, queue-exit, first-token, completion, input/output tokens, finish reason); engine metrics (running/waiting requests, KV-cache utilization, preemption/recompute counts, batch size histogram); GPU telemetry (SM utilization, memory bandwidth or DRAM throughput, power, clocks, throttle reasons); engine and driver versions; full config dump per run.
+
+7. Rollback criteria
+Roll back the change if any of: P99 TTFT regresses > 10% vs baseline at the target load; output-token throughput regresses > 5%; preemption/recompute rate rises above 1% of requests; error or timeout rate exceeds baseline + 0.1 percentage points; or the improvement does not reproduce across all 3 repeats. Roll back first, then investigate; do not tune under live traffic.
+
+8. Operational safety
+Run on a canary or isolated node, never by loading a production replica to saturation. Saturation sweeps are deliberately driving the service past its knee, so they must be fenced off from real traffic and bounded by an automatic abort when error rate or queue depth exceeds a preset kill threshold."""
+
+FOCUS = {
+ "Troubleshooting": "\n\n9. Diagnosis framing\nWhen a tail-latency complaint arrives, first separate the three candidate causes before changing anything: (a) queueing (waiting-requests metric > 0 while GPU is idle between steps -> admission/scheduling problem), (b) prefill interference (P99 TTFT spikes correlate with long-input requests -> chunked prefill / priority scheduling), (c) decode slowdown (TPOT rises with batch size and KV utilization -> memory-bandwidth or KV-capacity-driven preemption). Each maps to a different fix, and applying the wrong one produces a change that looks neutral in the mean and worse in the tail.",
+ "Performance Analysis": "\n\n9. Analysis framing\nModel the service as prefill (compute-bound, FLOP-limited) plus decode (memory-bandwidth-bound, KV-read-limited) and check the measured numbers against a roofline before believing them: expected decode step time >= (KV bytes read per step) / (achievable HBM bandwidth, ~70-80% of peak). If measured TPOT is far above that floor, the limiter is scheduling or kernel launch overhead, not bandwidth; if it is at the floor, only KV size reduction (GQA, quantized KV, shorter contexts) or more memory bandwidth will help.",
+ "System Design": "\n\n9. Design framing\nIf the measurement shows prefill and decode contending, the structural answer is disaggregation (separate prefill and decode pools, KV transferred over the fabric, as in Mooncake or NVIDIA Dynamo style architectures) rather than continued scheduler tuning on one pool. That trade must itself be measured: disaggregation adds a KV transfer on the critical path, so it only pays when the transfer time over the interconnect (RDMA/RoCE or NVLink) is small relative to the prefill stall it removes. Test it with the same load ladder and the same SLO-attainment metric before committing.",
+}
+
+RISKS = [
+ "Closed-loop load generation understates queueing delay and P99 latency",
+ "Warmup, CUDA graph capture, and prefix-cache fill contaminate steady-state percentiles",
+ "Reporting a single aggregate throughput number conflates compute-bound prefill with bandwidth-bound decode",
+ "Client-side or network bottleneck misattributed to the serving engine",
+ "Timed-out or errored requests silently excluded from the latency tail",
+ "Saturation sweeps run against production traffic can cause a real outage",
+]
+
+EVIDENCE = [
+ "Per-request trace with arrival, queue-exit, first-token, and completion timestamps plus input/output token counts",
+ "Engine scheduler metrics: waiting/running requests, time-in-queue histogram, batch size, KV-cache utilization, preemption and recompute counts",
+ "GPU telemetry: SM utilization, DRAM/HBM throughput, power, clocks, and throttle reasons over the measurement window",
+ "Pinned run configuration: engine and driver versions, model and dtype, TP/PP degree, max_num_seqs, max_num_batched_tokens, chunked-prefill setting, workload seed",
+ "Repeat-level results with median and bootstrap 95% confidence intervals across at least 3 interleaved A/B runs",
+ "Client-side saturation check proving the load generator is not the bottleneck",
+]
+
+def main():
+    rows = []
+    with open(CORPUS) as f:
+        for i, line in enumerate(f, 1):
+            if i < START:
+                continue
+            if i > END:
+                break
+            d = json.loads(line)
+            msgs = d["messages"]
+            u = [m for m in msgs if m["role"] == "user"][0]["content"]
+            a = [m for m in msgs if m["role"] == "assistant"][0]["content"]
+            cat = d.get("category", "")
+            ans = CORE + FOCUS.get(cat, "")
+            rows.append({
+                "source_id": d["id"],
+                "teacher_lane": "teacher-B",
+                "teacher_model": "claude-opus-5-current",
+                "calibration_status": "provisional",
+                "decision": "rewrite",
+                "source_user": u,
+                "source_assistant": a,
+                "corrected_answer": ans,
+                "quality_dimensions": {
+                    "technical_correctness": 3,
+                    "instruction_coverage": 2,
+                    "operational_safety": 2,
+                },
+                "risks": RISKS,
+                "evidence_required": EVIDENCE,
+                "confidence": 0.72,
+            })
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    with open(OUT, "w") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print("wrote", len(rows), OUT)
+
+main()
