@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0042
+
+- Batch file: results/train-batch-0042.jsonl
+- Corpus range: train.jsonl lines 411-420 (0-indexed 410-419), source IDs corpus-00458 through corpus-00467 — strict corpus order, nothing skipped or reordered.
+- Progress: train 420/5399, validation 0/601, total 420/6000, remaining 5580
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (ad-hoc verifier — JSONL line-parse, batch count 10, all 12 required fields, enum values for teacher_lane/teacher_model/calibration_status/decision, exact source_user/source_assistant equality against corpus, non-empty corrected_answer, confidence in [0,1], globally unique source_id, train/validation aggregate strictly a prefix of each corpus).
+- Repairs: none required; the batch passed on first verification.
+- Final schema check: PASS (VERIFY_PASS, train 420/5399, validation 0/601, total 420, 0 errors).
+- Manifest: MANIFEST.sha256 regenerated over all 83 files in the experiment directory (excluding the manifest itself); `sha256sum -c` returned OK for all 83 entries.
+
+Technical topics covered by this batch: all ten items are speculative-decoding
+concept questions in three sub-clusters. (1) corpus-00458..00460 — contrast
+against naive autoregressive decode: the memory-bandwidth-bound decode regime
+where per-token latency is bytes_read / effective_HBM_bandwidth, the
+draft-propose / single-pass-target-verify mechanism, the modified
+rejection-sampling acceptance rule min(1, p_target/p_draft) with residual
+resampling that makes the technique provably distribution-preserving rather
+than an approximation, and the inversion boundary where a compute-bound target
+step makes verification cost scale with block size so speculation becomes a net
+loss. (2) corpus-00461..00465 — failure modes and trade-offs: negative speedup
+above a measurable crossover batch size B*, acceptance-rate collapse under
+distribution shift (code, non-English, structured output, high sampling
+temperature) with the superlinear sensitivity of expected accepted tokens
+(1-alpha^(gamma+1))/(1-alpha) - 1 to alpha, wasted draft+verify work below
+break-even alpha, widened p99 inter-token latency variance even when mean
+throughput improves, HBM taken from the KV pool by draft weights, and outright
+breakage on tokenizer/vocabulary mismatch. (3) corpus-00466..00467 — the
+latency / throughput / memory interaction: TPOT improves while TTFT is
+essentially unchanged because prefill is already parallel and compute-bound,
+aggregate throughput can regress at high concurrency because speculation
+converts spare FLOPs into latency and there are none to convert, and memory
+pressure arrives twice (resident draft weights reducing max concurrency, plus
+gamma+1 speculative KV positions per sequence requiring correct rollback on
+rejection — a silent-corruption surface rather than a crashing one).
+
+All ten source answers were single-sentence definitional stubs that stated the
+draft/verify mechanism but supplied no boundary condition, no acceptance-rule
+detail, no measurement plan and no rollback gate, so every item was scored
+instruction_coverage 2 and operational_safety 2 and marked `rewrite`.
+
+These results are PROVISIONAL teacher-B second opinions produced blind (no
+teacher-A artifact was read, opened, or grepped while producing this batch).
+They are NOT expert gold labels, they are NOT adjudicated, and they say nothing
+about any model's domain capability — they are corpus-review annotations only.
+
 ## Run 2026-08-17 batch 0041
 
 - Batch file: results/train-batch-0041.jsonl
