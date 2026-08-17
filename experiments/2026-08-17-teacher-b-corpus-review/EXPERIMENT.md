@@ -56,11 +56,58 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 20/5399; validation 0/601; total 20/6000; remaining 5980.
+Progress: train 30/5399; validation 0/601; total 30/6000; remaining 5970.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 11:1x UTC — train-batch-0003.jsonl
+
+- Batch file: results/train-batch-0003.jsonl
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 21-30 (0-indexed 20-29)
+- Source IDs: corpus-00024, corpus-00025, corpus-00026, corpus-00027, corpus-00028,
+  corpus-00029, corpus-00030, corpus-00031, corpus-00032, corpus-00033
+  (corpus order preserved verbatim; nothing skipped or reordered)
+- Progress after this run: train 30/5399; validation 0/601; total 30/6000; remaining 5970
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run (scripts/verify_batches.py →
+  train=30/5399 validation=0/601 total=30/6000, VERIFY_PASS)
+- Repairs performed: none required
+- Final schema/ad-hoc check: PASS (identical output)
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself;
+  `sha256sum -c` reported all files OK
+- Blind-mode compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, grepped, or listed while producing this batch.
+
+Technical topics covered by this batch. All ten records are `Knowledge/Concept`,
+difficulty medium, concept `kv_cache`, and split across three question families:
+(a) measurement plans for validating whether the KV cache helps a serving workload
+(variants 4-5), (b) the assumptions that must be declared before any KV-cache
+performance claim (variants 1-5), and (c) how the KV cache differs between training
+and inference (variants 1-3). The rewritten answers cover: the KV sizing identity
+kv_bytes = 2 * layers * seq_len * kv_heads * head_dim * bytes_per_elem; paged
+allocation and bounded internal fragmentation; the decode bandwidth roofline
+TPOT_floor ≈ kv_bytes / achievable_HBM_bandwidth; prefix caching / RadixAttention
+hit-rate mechanisms and multi-tenant reuse leakage; KV quantisation as a
+throughput/accuracy trade with a greedy-token equivalence gate; tensor-parallel KV
+sharding and the GQA case where kv_heads < TP forces replication; disaggregated
+prefill/decode (Mooncake, NVIDIA Dynamo) with KV moved over RDMA/RoCE, GDR and
+HCA-to-GPU affinity, and PFC/ECN pause-frame counters as the fault signal; and
+open-loop vs closed-loop load generation as a statistical-validity assumption.
+Every record carries an explicit falsifiable hypothesis, a boundary condition, an
+evidence list, and a rollback gate.
+
+Uniform assessment for this batch: every `source_assistant` is the same generic
+KV-cache definition regardless of which question was asked, so
+instruction_coverage is 1 across the batch while technical_correctness is 4 (the
+statement itself is true, just not responsive). Decision is therefore `rewrite`,
+not `reject`: the prompts are usable, the paired answers are not.
+
+IMPORTANT: these results are PROVISIONAL teacher-B review output. They are not
+expert gold labels, they have not been validated by a human domain expert, and
+they say nothing about any model's domain capability. Agreement with teacher-A is
+deliberately unknown at this point and is computed only in a separate later step.
 
 ### 2026-08-17 11:0x UTC — train-batch-0002.jsonl
 
