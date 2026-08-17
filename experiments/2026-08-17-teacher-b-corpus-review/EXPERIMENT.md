@@ -62,6 +62,42 @@ Runs are appended below, newest first.
 
 ## Run log (newest first)
 
+### 2026-08-17 — train-batch-0011.jsonl
+
+- Batch file: results/train-batch-0011.jsonl
+- Corpus range: train.jsonl lines 101–110
+- Source IDs: corpus-00114, corpus-00115, corpus-00116, corpus-00117, corpus-00118,
+  corpus-00119, corpus-00121, corpus-00122, corpus-00123, corpus-00124
+- Progress: train 110/5399, validation 0/601, total 110/6000, remaining 5890
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_batches.py → VERIFY_PASS, train=110 validation=0 total=110)
+- Repairs: none required
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over all 26 non-manifest files; `sha256sum -c` → 26 OK, 0 failures
+- Generator script preserved: scripts/gen_batch_0011.py
+
+Technical topics covered by this batch: the decode phase of LLM inference. All ten
+records share the same boilerplate source_assistant, so all ten were rewritten. The
+replacement answers cover: (1) HBM-bandwidth starvation at low batch size with the
+weight-streaming cost model and the GEMV degeneration mechanism; (2) KV-cache capacity
+collapse, paged KV, GQA/MQA byte accounting, and preemption/swap thrash driven by the
+length-distribution tail; (3) tensor-parallel decode becoming collective-latency bound
+(~2 NCCL all-reduces per layer per token in the small-message latency regime) and the
+U-shaped TPOT-vs-TP curve; (4) speculative decoding's dependence on the model being
+bandwidth bound and its regression under load; (5) weight and KV quantization as
+bandwidth optimizations, including the fused-dequant boundary condition; (6) chunked
+prefill vs prefill/decode disaggregation (Dynamo- and Mooncake-style), with the KV
+transfer byte/time budget over RDMA/RoCE and GPUDirect RDMA, plus the cross-root-complex
+and PFC/ECN boundary conditions; and (7) four distinct measurement plans covering
+open- vs closed-loop load models, A/A noise-floor quantification, clock/thermal
+confounder control, output-token parity, mechanism-counter attribution, canary/overload
+testing, and pre-registered rollback gates.
+
+Status caveat: these corrected_answer values are PROVISIONAL teacher-B review output
+produced blind (teacher-A artifacts were not read while producing this batch). They are
+NOT expert gold labels, have not been verified against hardware measurements, and are
+NOT evidence of any model's domain capability.
+
 ### 2026-08-17 — train-batch-0010.jsonl
 
 - Batch file: results/train-batch-0010.jsonl
