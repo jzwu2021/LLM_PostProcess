@@ -5,6 +5,23 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0041
+
+- Batch file: results/train-batch-0041.jsonl
+- Corpus range: train.jsonl lines 401-410 (0-indexed 400-409), source IDs corpus-00447 through corpus-00457 (corpus-00455 is absent from the source file) — strict corpus order, nothing skipped or reordered.
+- Progress: train 410/5399, validation 0/601, total 410/6000, remaining 5590
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify_batches.py — JSONL line-parse, batch count 10, all 12 required fields, enum values, exact source_user/source_assistant equality with corpus, non-empty corrected_answer, confidence in [0,1], globally unique source_id, train/validation prefix ordering).
+- Repairs: none required; the batch passed on first verification.
+- Final schema check: PASS (VERIFY_RESULT=PASS, train 410/5399, validation 0/601, ERRORS 0).
+- Manifest: MANIFEST.sha256 regenerated over all 80 files in the experiment directory; `sha256sum -c` verified all entries OK.
+
+Technical topics covered by this batch: (1) NCCL collective diagnosis — hang vs. throughput-regression triage, ring allreduce cost model 2*(N-1)/N*S bytes over 2*(N-1) synchronous steps and why the reporting rank is usually the victim rather than the cause, layered bisection across topology / transport / process group / workload, the watchdog-timeout boundary condition where a legitimately slow large-buffer collective is misread as deadlock, and the safety rule that NCCL_P2P_DISABLE / NCCL_IB_DISABLE are diagnostics and not production fixes. (2) Speculative decoding — draft-propose / target-verify mechanism, why memory-bandwidth-bound decode leaves FLOP headroom that batched verification converts into throughput, modified rejection sampling giving provable losslessness, the expected-speedup relation (1 + E[accepted]) / (1 + k*c), and the two collapse regimes (low acceptance from a domain-shifted draft, and high concurrency where continuous batching has already consumed the FLOP headroom so aggregate tokens/s can regress).
+
+All ten source assistant answers in this batch were one-line generic stubs that restated a taxonomy or a definition without the requested concrete mechanism, boundary condition, quantities, or evidence, hence a uniform `rewrite` decision with instruction_coverage = 1.
+
+Status caveat: these results are **provisional** teacher-B output produced by a general-purpose model under blind review. They are NOT expert gold labels, have not been validated by a human domain expert, and say nothing about any trained model's domain capability. Agreement analysis against teacher-A is a separate, later step and was deliberately not consulted here to avoid anchoring.
+
 ## Run 2026-08-17 batch 0040
 
 - Batch file: results/train-batch-0040.jsonl
