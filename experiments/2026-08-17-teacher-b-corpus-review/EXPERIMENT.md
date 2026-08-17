@@ -56,11 +56,42 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 80/5399; validation 0/601; total 80/6000; remaining 5920.
+Progress: train 90/5399; validation 0/601; total 90/6000; remaining 5910.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 — train-batch-0009.jsonl
+
+- Batch file: results/train-batch-0009.jsonl
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 81–90 (0-indexed 80–89)
+- Source IDs: corpus-00091, corpus-00092, corpus-00093, corpus-00094, corpus-00095,
+  corpus-00096, corpus-00097, corpus-00098, corpus-00100, corpus-00101
+- Progress after this run: train 90/5399; validation 0/601; total 90/6000; remaining 5910
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/verification check: PASS on first run (scripts/verify_batches.py →
+  train=90/5399 validation=0/601 total=90/6000 VERIFY_PASS)
+- Fix actions: none required this run
+- Final schema/verification check: PASS
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except
+  MANIFEST.sha256 itself; `sha256sum -c` verified OK for every entry
+- Topics covered: prefill as a parallel prompt-processing phase and its
+  compute/GEMM-bound behavior (controlled experiment design, P-sweep, arithmetic
+  intensity, O(P^2) attention term, chunked prefill and prefix caching as
+  confounders); prefill/TTFT regression triage runbook (queueing vs kernels vs
+  clock throttling vs KV preemption); and decode as the memory-bandwidth-bound
+  autoregressive phase (weight re-read per step, batch-size scaling, KV-read
+  crossover at long context, A30 24 GB capacity limits).
+- Why rewrite for all 10: every source_assistant is a single generic sentence with
+  no units, no boundary condition, no falsifiable prediction, no evidence list and
+  no rollback gate, while each source_user explicitly asks for one concrete
+  mechanism and one boundary condition. Instruction coverage was scored 1.
+- Caveat: these results are PROVISIONAL teacher-B review output. They are NOT
+  expert gold labels, have NOT been validated by a human domain expert, and say
+  nothing about any model's domain capability. Hardware figures quoted inside the
+  corrected answers (A30 BF16 peak, HBM2 bandwidth, model byte sizes) are vendor
+  spec or arithmetic estimates, not measurements on this cluster.
 
 ### 2026-08-17 — train-batch-0008.jsonl
 
