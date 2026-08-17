@@ -62,6 +62,67 @@ Runs are appended below, newest first.
 
 ## Run log (newest first)
 
+### 2026-08-17 — train-batch-0007.jsonl
+
+- Batch file: results/train-batch-0007.jsonl
+- Builder: scripts/gen_batch_0007.py
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 61-70 (0-indexed 60-69)
+- Source IDs: corpus-00069, corpus-00070, corpus-00071, corpus-00072, corpus-00073,
+  corpus-00074, corpus-00075, corpus-00076, corpus-00079, corpus-00080
+- Progress after this batch: train 70/5399, validation 0/601, total 70/6000,
+  remaining 5930
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: scripts/verify_batches.py → VERIFY_PASS on first run
+  (train=70/5399 validation=0/601 total=70/6000). No repair actions were needed.
+- Repair actions: none.
+- Final schema check: VERIFY_PASS (JSONL line-parse, batch count 10, all 12 required
+  fields, teacher_lane/teacher_model/calibration_status/decision value checks,
+  byte-exact source_user and source_assistant equality against the raw corpus,
+  non-empty corrected_answer, confidence within [0,1], globally unique source_id,
+  and train sequence is a strict prefix of corpus order).
+- Manifest: MANIFEST.sha256 regenerated over all 19 files in this directory except
+  the manifest itself; `sha256sum -c MANIFEST.sha256 --quiet` → MANIFEST_OK.
+
+#### Technical topics covered by this batch
+
+All ten records are prefill-themed Knowledge/Concept items whose seed assistant text
+is the same one-sentence stub ("Prefill processes the prompt and is generally parallel
+across prompt tokens..."), which is directionally correct but non-actionable, so every
+record was marked `rewrite`. The rewrites cover:
+
+- Prefill vs decode roofline separation: prefill ≈ 2 · P_active · N FLOPs (compute-bound,
+  weight reads amortised over N) versus decode ≈ 2 · P_active per token (HBM-bandwidth
+  bound), plus the O(L · H · N² · d_head) attention term that dominates at long context.
+- KV cache sizing: bytes/token = 2 · L · H_kv · d_head · dtype_bytes, with the GQA/MQA
+  ratio and FP8 KV as the two largest capacity levers.
+- Scheduler coupling: head-of-line blocking of decode by long prefills, chunked prefill
+  as a TTFT-vs-ITL trade, and max_num_batched_tokens trading GEMM tile efficiency against
+  KV-pool capacity (and its interaction with tensor-parallel degree).
+- Prefix caching: block-hash reuse of prefix KV, the offline longest-common-prefix
+  characterisation that must precede any experiment, template-ordering pitfalls, cache
+  thrashing under load, and a temperature-0 output-equivalence correctness gate.
+- Prefill/decode disaggregation (NVIDIA Dynamo, Mooncake style): KV transfer volume over
+  the fabric, the RDMA/RoCE and GPUDirect prerequisites, perftest/ib_write_bw baselining,
+  ECN/PFC and retransmit counters, and the transfer_time < ~0.3 · prefill_time break-even.
+- Length-aware admission / shortest-job-first approximation, per-length-bucket metrics,
+  and explicit starvation instrumentation for long requests.
+- Measurement hygiene: assumptions that must be stated before any prefill performance
+  claim (active vs total parameters for MoE, uncached N after prefix-cache matching, KV
+  dtype, clock locking and throttle reasons, MIG/co-tenancy, open- vs closed-loop load
+  generation, TTFT measurement boundary, percentile estimator and repetition count).
+
+Each rewrite states an explicit mechanism, at least one boundary condition where the
+claim stops holding, a falsifiable prediction where applicable, the evidence required to
+check it, and a rollback gate.
+
+#### Status caveats
+
+These records are **provisional teacher-B output only**. They are NOT expert gold labels,
+NOT validated by a human domain expert, and NOT evidence of any model's domain capability
+(model domain capability and runtime/system capability remain strictly separate concerns).
+Agreement with teacher-A was not computed and teacher-A artefacts were not read while
+producing this batch — this lane is blind by construction.
+
 ### 2026-08-17 — train-batch-0006.jsonl
 
 - Batch file: results/train-batch-0006.jsonl
