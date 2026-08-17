@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0075
+
+- Batch file: results/train-batch-0075.jsonl
+- Corpus range: train.jsonl lines 741-750 (source IDs corpus-00818 … corpus-00827, contiguous, corpus file order preserved exactly, no skips or reordering)
+- Progress: train 750/5399, validation 0/601, total 750/6000, remaining 5250
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (verify_batches.py — JSONL line-parse, batch count 10, 12 required fields, teacher_lane/teacher_model/calibration_status/decision enums, source_user/source_assistant byte-exact vs corpus, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness, train/validation aggregate is a strict prefix of each corpus)
+- Repairs: none required
+- Final schema check: VERIFY_PASS, train=750/5399 validation=0/601 total=750/6000
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself; `sha256sum -c` reports 132/132 OK, 0 failures
+- Technical topics covered: single-request KV cache sizing for GQA/MQA models across BF16/FP16 and INT8 KV widths. All ten source answers use the same bare `2 × layers × S × kv_heads × head_dim × bytes_per_value` formula. The arithmetic in every source item was independently recomputed and is correct, so the rewrites are coverage rewrites, not correctness fixes. Each corrected answer adds: the assumption that exactly one K and one V tensor exists per layer (invalid for MLA latent KV in DeepSeek-V2/V3 and for hybrid SSM/attention stacks with fewer KV-bearing layers); the requirement to read num_key_value_heads rather than num_attention_heads, which is the dominant real-world overestimate; the effect of sliding-window attention capping effective length at min(S, W) and making the cache constant rather than linear in S; S as total context (prompt + generated) growing monotonically through decode; per-token KV bytes as the actual capacity-planning unit; paged-attention block rounding (ceil(S/block)*block) as an occupancy term the formula omits; and for the INT8 cases, that INT8 KV is lossy and needs per-token scales, kernel support, and accuracy validation rather than being a free 2x. Each answer states a falsifiable single-request measurement check against engine-reported KV block usage, the evidence set to collect (config.json fields, engine startup log block size and total blocks, controlled single-request KV utilization, allocator snapshot separating weights/activations/KV), and a rollback threshold of >15% deviation in measured per-token KV before the estimate may no longer be used for admission control.
+- Status: PROVISIONAL. This is a blind, single-model second-opinion pass produced without any visibility into the teacher-A lane. It is not expert gold, has not been human-verified, and says nothing about the domain capability of any trained model. Agreement analysis against teacher-A is a separate, later step outside this task.
+
 ## Run 2026-08-17 batch 0074
 
 - Batch file: results/train-batch-0074.jsonl
