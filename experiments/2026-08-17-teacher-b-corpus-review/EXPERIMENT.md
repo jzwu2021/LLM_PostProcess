@@ -5,6 +5,40 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0049
+
+- Batch file: results/train-batch-0049.jsonl
+- Corpus range: train.jsonl lines 481-490 (0-indexed 480-489), source IDs corpus-00532, corpus-00534, corpus-00535, corpus-00536, corpus-00537, corpus-00538, corpus-00539, corpus-00540, corpus-00541, corpus-00543 — contiguous in corpus order (corpus-00533 and corpus-00542 are absent from the corpus file itself; this run skipped and reordered nothing).
+- Progress: train 490/5399, validation 0/601, total 490/6000, remaining 5510
+- Decisions: keep 10, rewrite 0, reject 0
+- Initial schema check: PASS on first run (10/10 rows parsed, 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], 490 globally unique source_ids, aggregated train sequence is an exact prefix of train.jsonl).
+- Repairs: none required. No batch was rewritten, and neither the original corpus nor any earlier batch was modified.
+- Final schema check: PASS (train=490 validation=0 total=490 unique_ids=490).
+- Manifest: MANIFEST.sha256 regenerated over all 96 files in this directory except the manifest itself; `sha256sum -c` verified all entries PASS.
+
+Technical topics covered by this batch: all ten items are single-request KV-cache
+sizing calculations for GQA/MQA transformer decoders, spanning 24-56 layers, 2-8 KV
+heads, head dimensions 64/96/128, sequence lengths 1024-4096, in both BF16/FP16 and
+INT8 KV dtypes. Each corrected answer states the closed-form
+`2 x layers x seq_len x kv_heads x head_dim x bytes_per_value`, derives the
+per-token byte cost used for admission control, and makes the assumption set
+explicit (KV heads not query heads, dense attention, no sliding-window KV sharing,
+no cross-attention). Boundary conditions added beyond the source answer: paged-KV
+block rounding in vLLM-style engines and prefix-cache sharing, tensor-parallel KV
+head sharding versus replication when kv_heads is not divisible by the TP degree,
+INT8 per-group scale/zero-point overhead, and exclusion of weights, activation
+workspaces, CUDA graph pools and allocator fragmentation. Each answer carries a
+falsifiable prediction about KV-block occupancy growth under a concurrency ramp and
+an explicit rollback gate forbidding max_num_seqs / max_model_len increases on
+arithmetic alone. The source arithmetic was recomputed independently for all ten
+items and matched exactly in both byte counts and GiB values, which is why all ten
+are `keep` rather than `rewrite`.
+
+These results are PROVISIONAL teacher-B output produced blind by the current
+conversation model. They are not expert gold labels, they have not been checked
+against teacher-A (deliberately, to avoid anchoring), and they say nothing about
+any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0048
 
 - Batch file: results/train-batch-0048.jsonl
