@@ -17,18 +17,24 @@ def load_corpus(p):
 
 train_c = load_corpus('research/ai-infra-expert/corpus/train.jsonl')
 val_c = load_corpus('research/ai-infra-expert/corpus/validation.jsonl')
+CORPUS_LEN = {'train': len(train_c), 'validation': len(val_c)}
 
 def collect(prefix):
     recs = []
-    for fp in sorted(glob.glob(f'{BASE}/{prefix}-batch-*.jsonl')):
+    files = sorted(glob.glob(f'{BASE}/{prefix}-batch-*.jsonl'))
+    for fi, fp in enumerate(files):
+        n = 0
         for i, line in enumerate(open(fp), 1):
             line = line.rstrip('\n')
             if not line.strip():
                 errs.append(f'{fp}:{i} empty line'); continue
             try:
-                recs.append((fp, i, json.loads(line)))
+                recs.append((fp, i, json.loads(line))); n += 1
             except Exception as e:
                 errs.append(f'{fp}:{i} JSON parse fail: {e}')
+        # every batch holds 10 records; only a batch that exhausts the corpus may be short
+        if n != 10 and not (fi == len(files) - 1 and len(recs) == CORPUS_LEN[prefix]):
+            errs.append(f'{fp} has {n} records, expected 10')
     return recs
 
 seen = set()
