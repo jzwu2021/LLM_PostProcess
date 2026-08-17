@@ -5,6 +5,21 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0095
+
+- Batch file: results/train-batch-0095.jsonl
+- Corpus range: train.jsonl lines 941-950 (source IDs corpus-01036, corpus-01037, corpus-01038, corpus-01040, corpus-01041, corpus-01042, corpus-01043, corpus-01045, corpus-01046, corpus-01047 — corpus file order preserved exactly, no skips, no reordering; the gaps at corpus-01039 and corpus-01044 are pre-existing in the corpus and were NOT introduced by this lane)
+- Progress: train 950/5399, validation 0/601, total 950/6000, remaining 5050
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema/ad-hoc verification: PASS on first run (verify_batches.py over 950 aggregate train rows: every line JSON-parseable, 10 rows in this batch, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values valid, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers in 1-5, source_id globally unique across all batches, aggregate train sequence a strict prefix of train.jsonl, validation 0/601)
+- Repairs performed: none required
+- Final schema/ad-hoc verification: PASS (VERIFY=PASS, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over all 163 files in this directory except itself (excluding __pycache__); `sha256sum -c` verified 163/163 entries OK with no failures
+- Technical topics covered: serving-side evaluation methodology for mixed short-prompt / long-generation LLM traffic, continuing the same scenario family. All ten rewrites separate prefill (compute-bound, scaling with total batched prompt tokens) from decode (HBM-bandwidth and KV-capacity bound, scaling with concurrent sequences); define TTFT with queueing delay split out from prefill service time, TPOT per request, throughput reported as both request goodput and output tokens/s, and P99 per request class with bootstrap CIs and reported sample counts; state a falsifiable H0/H1 pair with numeric thresholds (queueing component grows >3x vs median TPOT grows >20%) that the traces must decide between; specify an open-loop seeded replayed trace, single-variable arms, a load ladder around the empirically located saturation point including one deliberately over-saturated point, warmup exclusion and >=3 trials; enumerate confounders (closed-loop self-throttling, output-length drift, cold CUDA graphs, power/thermal capping on A30-class GPUs, prefix-cache hit-rate inflation, co-tenancy) each with a control; and define abort thresholds (error rate >1%, P99 >2x SLO for >60 s, any OOM or replica restart) plus a canary-first rollout with a single config-hash revert whose rollback path is exercised before use. Category-specific emphasis was added per item: Performance Analysis items carry a roofline/bandwidth expected-value model (weights+KV bytes per token over achievable HBM bandwidth) so measured-vs-expected ratios are the finding; System Design items carry harness topology and per-class percentile discipline; Troubleshooting items carry a discrimination matrix for head-of-line blocking vs KV preemption vs admission queueing vs clock capping.
+- Why all ten were marked `rewrite`: each source_assistant is a grading rubric ("Answer should state assumptions, a falsifiable hypothesis, measurements...") rather than an answer. Supervising on rubric text teaches meta-commentary about answers instead of the engineering reasoning, and it omits the numeric falsifiable hypothesis, the abort/rollback gates and the per-request-class percentile discipline the prompts explicitly demand.
+- Blind-review integrity: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened or searched during this run. Only research/ai-infra-expert/corpus/train.jsonl was consulted for source text.
+- Status: these corrected_answer records are PROVISIONAL teacher-B output from a blind review. They are NOT expert gold labels, have NOT been validated against a running system, and say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0094
 
 - Batch file: results/train-batch-0094.jsonl
