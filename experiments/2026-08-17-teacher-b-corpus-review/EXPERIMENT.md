@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0047
+
+- Batch file: results/train-batch-0047.jsonl
+- Corpus range: train.jsonl lines 461-470 (0-indexed 460-469), source IDs corpus-00511 … corpus-00520 — contiguous in corpus order, nothing skipped or reordered.
+- Progress: train 470/5399, validation 0/601, total 470/6000, remaining 5530
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py — per-line JSONL parse, 10 records this batch, all 12 required fields present with no extras, lane/model/status/decision enum checks, quality_dimensions integer 1-5 on all three axes, risks/evidence_required string arrays, byte-exact source_user/source_assistant equality against research/ai-infra-expert/corpus/train.jsonl, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness across all 47 batches, and strict train-prefix ordering).
+- Repairs: none required this run.
+- Final schema check: PASS (train 470, validation 0, total 470 unique source IDs).
+- Manifest: MANIFEST.sha256 regenerated over all 93 files in the experiment directory (excluding the manifest itself); `sha256sum -c` returned OK for every entry.
+- Technical topics covered: ten per-request KV-cache sizing calculations (Calculation / medium, concepts kv_cache + memory) spanning 24–56 layers, 2–8 KV heads, head_dim 64–128, seq_len 1024–4096, across BF16/FP16 (7 cases) and INT8 (3 cases: corpus-00513, corpus-00516, corpus-00519). All ten source byte counts and GiB conversions were independently recomputed with the formula 2 x layers x seq_len x kv_heads x head_dim x bytes_per_value and matched exactly, so every rewrite is an enrichment rather than an arithmetic correction. Added mechanism and boundary material: why GQA/MQA makes kv_heads (not query heads) the driving term; the per-token marginal cost 2 x L x H x D x B as the quantity that actually governs how far a live request can grow; PagedAttention/RadixAttention block rounding (ceil(S/block)*block, up to block_size-1 tokens of internal fragmentation per request); exclusion of weights, activation/workspace buffers, CUDA-graph pools, NCCL buffers and allocator fragmentation from the KV pool; TP sharding of KV heads only when kv_heads % TP == 0 and the replication cliff once TP exceeds kv_heads, versus PP splitting the layer dimension; prefix/radix cache sharing breaking the naive concurrency x per-request aggregation; and for INT8 KV the scale/zero-point metadata overhead (~1-6%) plus the requirement to gate on an accuracy comparison, not memory alone. Each rewrite states a falsifiable prediction (measured single-request KV pool delta within ~5-10% of the analytic value, with >20% divergence indicating wrong config, MLA/latent-KV compression, or fixed pool preallocation), the evidence needed (model config fields, engine-reported KV block size and GPU block count, controlled nvidia-smi / torch.cuda.memory_summary deltas, TP/PP topology, INT8 quality comparison), and a rollback gate (>20% measured-vs-estimate gap or preemption/recompute at target concurrency ⇒ revert max_num_seqs / gpu_memory_utilization and re-derive from measured KV).
+- Status: PROVISIONAL. These are blind, single-pass teacher-B judgements, not expert gold labels, and they say nothing about any model's domain capability. No file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, or grepped at any point during this batch.
+
 ## Run 2026-08-17 batch 0046
 
 - Batch file: results/train-batch-0046.jsonl

@@ -1,0 +1,3838 @@
+{
+ "overlap": 470,
+ "teacher_a_model": [
+  "gpt-5.6-luna-current"
+ ],
+ "teacher_b_model": [
+  "claude-opus-5-current"
+ ],
+ "splits": {
+  "train": 470
+ },
+ "decision_raw_agreement": 1.0,
+ "decision_kappa": null,
+ "decision_dist_a": {
+  "rewrite": 470
+ },
+ "decision_dist_b": {
+  "rewrite": 470
+ },
+ "token_jaccard_mean": 0.07336022236704526,
+ "char5_cosine_mean": 0.29457768268294743,
+ "length_ratio_mean": 0.2812335946098888,
+ "a_vs_source_jaccard": 0.06638140802766353,
+ "b_vs_source_jaccard": 0.03137729206422599,
+ "confidence_mean_a": 0.9677872340425532,
+ "confidence_mean_b": 0.7664468085106383,
+ "low_agreement_ids": [
+  "corpus-00163",
+  "corpus-00363",
+  "corpus-00398",
+  "corpus-00399",
+  "corpus-00443",
+  "corpus-00256",
+  "corpus-00130",
+  "corpus-00129",
+  "corpus-00243",
+  "corpus-00119",
+  "corpus-00485",
+  "corpus-00257",
+  "corpus-00033",
+  "corpus-00293",
+  "corpus-00252",
+  "corpus-00254",
+  "corpus-00403",
+  "corpus-00370",
+  "corpus-00388",
+  "corpus-00430",
+  "corpus-00115",
+  "corpus-00432",
+  "corpus-00133",
+  "corpus-00390",
+  "corpus-00037",
+  "corpus-00405",
+  "corpus-00123",
+  "corpus-00373",
+  "corpus-00387",
+  "corpus-00442",
+  "corpus-00040",
+  "corpus-00375",
+  "corpus-00414",
+  "corpus-00245",
+  "corpus-00434",
+  "corpus-00253",
+  "corpus-00424",
+  "corpus-00410",
+  "corpus-00187",
+  "corpus-00299",
+  "corpus-00483",
+  "corpus-00127",
+  "corpus-00118",
+  "corpus-00402",
+  "corpus-00297",
+  "corpus-00190",
+  "corpus-00482"
+ ],
+ "per_record": [
+  {
+   "source_id": "corpus-00163",
+   "jaccard": 0.022151898734177215,
+   "char5_cosine": 0.20105038459414906,
+   "length_ratio": 0.23682616596002423,
+   "a_len": 782,
+   "b_len": 3302
+  },
+  {
+   "source_id": "corpus-00363",
+   "jaccard": 0.02262443438914027,
+   "char5_cosine": 0.18210600867632387,
+   "length_ratio": 0.2654067378800329,
+   "a_len": 646,
+   "b_len": 2434
+  },
+  {
+   "source_id": "corpus-00398",
+   "jaccard": 0.023809523809523808,
+   "char5_cosine": 0.23707285438679304,
+   "length_ratio": 0.32251352476071576,
+   "a_len": 775,
+   "b_len": 2403
+  },
+  {
+   "source_id": "corpus-00399",
+   "jaccard": 0.027131782945736434,
+   "char5_cosine": 0.13044439577988048,
+   "length_ratio": 0.19627457744049673,
+   "a_len": 569,
+   "b_len": 2899
+  },
+  {
+   "source_id": "corpus-00443",
+   "jaccard": 0.027888446215139442,
+   "char5_cosine": 0.13913281585107853,
+   "length_ratio": 0.26360544217687076,
+   "a_len": 620,
+   "b_len": 2352
+  },
+  {
+   "source_id": "corpus-00256",
+   "jaccard": 0.029304029304029304,
+   "char5_cosine": 0.17327965753775829,
+   "length_ratio": 0.1302725968436155,
+   "a_len": 454,
+   "b_len": 3485
+  },
+  {
+   "source_id": "corpus-00130",
+   "jaccard": 0.029315960912052116,
+   "char5_cosine": 0.26376133063060875,
+   "length_ratio": 0.20643876535014935,
+   "a_len": 622,
+   "b_len": 3013
+  },
+  {
+   "source_id": "corpus-00129",
+   "jaccard": 0.029801324503311258,
+   "char5_cosine": 0.22586612608447448,
+   "length_ratio": 0.20175438596491227,
+   "a_len": 621,
+   "b_len": 3078
+  },
+  {
+   "source_id": "corpus-00243",
+   "jaccard": 0.029850746268656716,
+   "char5_cosine": 0.177340577734432,
+   "length_ratio": 0.21645663454410674,
+   "a_len": 584,
+   "b_len": 2698
+  },
+  {
+   "source_id": "corpus-00119",
+   "jaccard": 0.030973451327433628,
+   "char5_cosine": 0.19866162823776878,
+   "length_ratio": 0.2413201885983712,
+   "a_len": 563,
+   "b_len": 2333
+  },
+  {
+   "source_id": "corpus-00485",
+   "jaccard": 0.03225806451612903,
+   "char5_cosine": 0.2773202451756258,
+   "length_ratio": 0.14299007444168735,
+   "a_len": 461,
+   "b_len": 3224
+  },
+  {
+   "source_id": "corpus-00257",
+   "jaccard": 0.03296703296703297,
+   "char5_cosine": 0.2018121413677006,
+   "length_ratio": 0.13744619799139168,
+   "a_len": 479,
+   "b_len": 3485
+  },
+  {
+   "source_id": "corpus-00033",
+   "jaccard": 0.03333333333333333,
+   "char5_cosine": 0.2813433681743306,
+   "length_ratio": 0.218760698390962,
+   "a_len": 639,
+   "b_len": 2921
+  },
+  {
+   "source_id": "corpus-00293",
+   "jaccard": 0.03363914373088685,
+   "char5_cosine": 0.3219644682113234,
+   "length_ratio": 0.18631732168850074,
+   "a_len": 768,
+   "b_len": 4122
+  },
+  {
+   "source_id": "corpus-00252",
+   "jaccard": 0.03460207612456748,
+   "char5_cosine": 0.17701270359545757,
+   "length_ratio": 0.13520481237467774,
+   "a_len": 472,
+   "b_len": 3491
+  },
+  {
+   "source_id": "corpus-00254",
+   "jaccard": 0.03484320557491289,
+   "char5_cosine": 0.1775043492249812,
+   "length_ratio": 0.12059581781724434,
+   "a_len": 421,
+   "b_len": 3491
+  },
+  {
+   "source_id": "corpus-00403",
+   "jaccard": 0.034934497816593885,
+   "char5_cosine": 0.26282763328272996,
+   "length_ratio": 0.17699775952203137,
+   "a_len": 474,
+   "b_len": 2678
+  },
+  {
+   "source_id": "corpus-00370",
+   "jaccard": 0.035,
+   "char5_cosine": 0.21228237079500845,
+   "length_ratio": 0.3930666666666667,
+   "a_len": 737,
+   "b_len": 1875
+  },
+  {
+   "source_id": "corpus-00388",
+   "jaccard": 0.03587443946188341,
+   "char5_cosine": 0.19689939463575098,
+   "length_ratio": 0.2689144736842105,
+   "a_len": 654,
+   "b_len": 2432
+  },
+  {
+   "source_id": "corpus-00430",
+   "jaccard": 0.0364963503649635,
+   "char5_cosine": 0.20387384471358927,
+   "length_ratio": 0.2119815668202765,
+   "a_len": 598,
+   "b_len": 2821
+  },
+  {
+   "source_id": "corpus-00115",
+   "jaccard": 0.036885245901639344,
+   "char5_cosine": 0.19514003253336734,
+   "length_ratio": 0.25212809079854076,
+   "a_len": 622,
+   "b_len": 2467
+  },
+  {
+   "source_id": "corpus-00432",
+   "jaccard": 0.03690036900369004,
+   "char5_cosine": 0.2532354687481663,
+   "length_ratio": 0.18187660668380462,
+   "a_len": 566,
+   "b_len": 3112
+  },
+  {
+   "source_id": "corpus-00133",
+   "jaccard": 0.03754266211604096,
+   "char5_cosine": 0.18182459371002832,
+   "length_ratio": 0.1874801398156975,
+   "a_len": 590,
+   "b_len": 3147
+  },
+  {
+   "source_id": "corpus-00390",
+   "jaccard": 0.037914691943127965,
+   "char5_cosine": 0.2124842542487345,
+   "length_ratio": 0.30793942175309774,
+   "a_len": 671,
+   "b_len": 2179
+  },
+  {
+   "source_id": "corpus-00037",
+   "jaccard": 0.03902439024390244,
+   "char5_cosine": 0.16942177036164868,
+   "length_ratio": 0.2095077829196466,
+   "a_len": 498,
+   "b_len": 2377
+  },
+  {
+   "source_id": "corpus-00405",
+   "jaccard": 0.03902439024390244,
+   "char5_cosine": 0.24024324232592742,
+   "length_ratio": 0.17503010839020475,
+   "a_len": 436,
+   "b_len": 2491
+  },
+  {
+   "source_id": "corpus-00123",
+   "jaccard": 0.0390625,
+   "char5_cosine": 0.23018863672659348,
+   "length_ratio": 0.3527045149754135,
+   "a_len": 789,
+   "b_len": 2237
+  },
+  {
+   "source_id": "corpus-00373",
+   "jaccard": 0.0392156862745098,
+   "char5_cosine": 0.2411512840231409,
+   "length_ratio": 0.44994617868675996,
+   "a_len": 836,
+   "b_len": 1858
+  },
+  {
+   "source_id": "corpus-00387",
+   "jaccard": 0.039301310043668124,
+   "char5_cosine": 0.17660197676795314,
+   "length_ratio": 0.26074380165289257,
+   "a_len": 631,
+   "b_len": 2420
+  },
+  {
+   "source_id": "corpus-00442",
+   "jaccard": 0.039525691699604744,
+   "char5_cosine": 0.15108689562540817,
+   "length_ratio": 0.2546768707482993,
+   "a_len": 599,
+   "b_len": 2352
+  },
+  {
+   "source_id": "corpus-00040",
+   "jaccard": 0.03982300884955752,
+   "char5_cosine": 0.18207552569173058,
+   "length_ratio": 0.1865159467097295,
+   "a_len": 462,
+   "b_len": 2477
+  },
+  {
+   "source_id": "corpus-00375",
+   "jaccard": 0.04035874439461883,
+   "char5_cosine": 0.23561947206366224,
+   "length_ratio": 0.4202355460385439,
+   "a_len": 785,
+   "b_len": 1868
+  },
+  {
+   "source_id": "corpus-00414",
+   "jaccard": 0.04060913705583756,
+   "char5_cosine": 0.19356873284325024,
+   "length_ratio": 0.30648648648648646,
+   "a_len": 567,
+   "b_len": 1850
+  },
+  {
+   "source_id": "corpus-00245",
+   "jaccard": 0.040983606557377046,
+   "char5_cosine": 0.19327353668403463,
+   "length_ratio": 0.22639405204460966,
+   "a_len": 609,
+   "b_len": 2690
+  },
+  {
+   "source_id": "corpus-00434",
+   "jaccard": 0.041666666666666664,
+   "char5_cosine": 0.16349810080038427,
+   "length_ratio": 0.1799933087989294,
+   "a_len": 538,
+   "b_len": 2989
+  },
+  {
+   "source_id": "corpus-00253",
+   "jaccard": 0.04195804195804196,
+   "char5_cosine": 0.1794418625714456,
+   "length_ratio": 0.13835577198510454,
+   "a_len": 483,
+   "b_len": 3491
+  },
+  {
+   "source_id": "corpus-00424",
+   "jaccard": 0.042071197411003236,
+   "char5_cosine": 0.16364240826780205,
+   "length_ratio": 0.19032361422620955,
+   "a_len": 594,
+   "b_len": 3121
+  },
+  {
+   "source_id": "corpus-00410",
+   "jaccard": 0.04219409282700422,
+   "char5_cosine": 0.22091818593883109,
+   "length_ratio": 0.20132013201320131,
+   "a_len": 488,
+   "b_len": 2424
+  },
+  {
+   "source_id": "corpus-00187",
+   "jaccard": 0.04263565891472868,
+   "char5_cosine": 0.2818932314137488,
+   "length_ratio": 0.39747781410555816,
+   "a_len": 851,
+   "b_len": 2141
+  },
+  {
+   "source_id": "corpus-00299",
+   "jaccard": 0.042682926829268296,
+   "char5_cosine": 0.24942621357882744,
+   "length_ratio": 0.1952028578719061,
+   "a_len": 765,
+   "b_len": 3919
+  },
+  {
+   "source_id": "corpus-00483",
+   "jaccard": 0.04330708661417323,
+   "char5_cosine": 0.35027551821101727,
+   "length_ratio": 0.15291563275434245,
+   "a_len": 493,
+   "b_len": 3224
+  },
+  {
+   "source_id": "corpus-00127",
+   "jaccard": 0.043333333333333335,
+   "char5_cosine": 0.24419455328762893,
+   "length_ratio": 0.2155887230514096,
+   "a_len": 650,
+   "b_len": 3015
+  },
+  {
+   "source_id": "corpus-00118",
+   "jaccard": 0.043478260869565216,
+   "char5_cosine": 0.19011723689063068,
+   "length_ratio": 0.271448025419882,
+   "a_len": 598,
+   "b_len": 2203
+  },
+  {
+   "source_id": "corpus-00402",
+   "jaccard": 0.043478260869565216,
+   "char5_cosine": 0.2307594593921035,
+   "length_ratio": 0.18706221672847137,
+   "a_len": 454,
+   "b_len": 2427
+  },
+  {
+   "source_id": "corpus-00297",
+   "jaccard": 0.0438871473354232,
+   "char5_cosine": 0.3460218283867473,
+   "length_ratio": 0.18831334524113294,
+   "a_len": 738,
+   "b_len": 3919
+  },
+  {
+   "source_id": "corpus-00190",
+   "jaccard": 0.04417670682730924,
+   "char5_cosine": 0.2474178976393484,
+   "length_ratio": 0.4010013654984069,
+   "a_len": 881,
+   "b_len": 2197
+  },
+  {
+   "source_id": "corpus-00482",
+   "jaccard": 0.04417670682730924,
+   "char5_cosine": 0.3424157721708133,
+   "length_ratio": 0.16160049627791565,
+   "a_len": 521,
+   "b_len": 3224
+  },
+  {
+   "source_id": "corpus-00014",
+   "jaccard": 0.04433497536945813,
+   "char5_cosine": 0.18847674528900968,
+   "length_ratio": 0.2326454033771107,
+   "a_len": 496,
+   "b_len": 2132
+  },
+  {
+   "source_id": "corpus-00484",
+   "jaccard": 0.044534412955465584,
+   "char5_cosine": 0.29370637440969255,
+   "length_ratio": 0.13554590570719602,
+   "a_len": 437,
+   "b_len": 3224
+  },
+  {
+   "source_id": "corpus-00188",
+   "jaccard": 0.044715447154471545,
+   "char5_cosine": 0.2619780733643669,
+   "length_ratio": 0.40290806754221387,
+   "a_len": 859,
+   "b_len": 2132
+  },
+  {
+   "source_id": "corpus-00407",
+   "jaccard": 0.044715447154471545,
+   "char5_cosine": 0.2286420857576958,
+   "length_ratio": 0.21618405394684648,
+   "a_len": 545,
+   "b_len": 2521
+  },
+  {
+   "source_id": "corpus-00441",
+   "jaccard": 0.044715447154471545,
+   "char5_cosine": 0.15360441420562063,
+   "length_ratio": 0.2708333333333333,
+   "a_len": 637,
+   "b_len": 2352
+  },
+  {
+   "source_id": "corpus-00396",
+   "jaccard": 0.044897959183673466,
+   "char5_cosine": 0.15262959252261524,
+   "length_ratio": 0.36415675913694406,
+   "a_len": 827,
+   "b_len": 2271
+  },
+  {
+   "source_id": "corpus-00128",
+   "jaccard": 0.04498269896193772,
+   "char5_cosine": 0.23352652884535235,
+   "length_ratio": 0.21192722371967654,
+   "a_len": 629,
+   "b_len": 2968
+  },
+  {
+   "source_id": "corpus-00148",
+   "jaccard": 0.04504504504504504,
+   "char5_cosine": 0.24836443005111591,
+   "length_ratio": 0.20049986114968063,
+   "a_len": 722,
+   "b_len": 3601
+  },
+  {
+   "source_id": "corpus-00435",
+   "jaccard": 0.04529616724738676,
+   "char5_cosine": 0.2515993527574241,
+   "length_ratio": 0.1783498759305211,
+   "a_len": 575,
+   "b_len": 3224
+  },
+  {
+   "source_id": "corpus-00314",
+   "jaccard": 0.04564315352697095,
+   "char5_cosine": 0.19245790004581076,
+   "length_ratio": 0.3761602344894968,
+   "a_len": 770,
+   "b_len": 2047
+  },
+  {
+   "source_id": "corpus-00239",
+   "jaccard": 0.046610169491525424,
+   "char5_cosine": 0.18254916653956177,
+   "length_ratio": 0.20106423413150892,
+   "a_len": 529,
+   "b_len": 2631
+  },
+  {
+   "source_id": "corpus-00028",
+   "jaccard": 0.04672897196261682,
+   "char5_cosine": 0.25039713106167355,
+   "length_ratio": 0.26334519572953735,
+   "a_len": 592,
+   "b_len": 2248
+  },
+  {
+   "source_id": "corpus-00165",
+   "jaccard": 0.04672897196261682,
+   "char5_cosine": 0.24108152648860384,
+   "length_ratio": 0.22431004110393424,
+   "a_len": 764,
+   "b_len": 3406
+  },
+  {
+   "source_id": "corpus-00296",
+   "jaccard": 0.046875,
+   "char5_cosine": 0.3307873729958055,
+   "length_ratio": 0.19214085225822913,
+   "a_len": 753,
+   "b_len": 3919
+  },
+  {
+   "source_id": "corpus-00072",
+   "jaccard": 0.04716981132075472,
+   "char5_cosine": 0.27982771443250093,
+   "length_ratio": 0.37686062246278756,
+   "a_len": 1114,
+   "b_len": 2956
+  },
+  {
+   "source_id": "corpus-00393",
+   "jaccard": 0.04716981132075472,
+   "char5_cosine": 0.18883495630792757,
+   "length_ratio": 0.37344199424736335,
+   "a_len": 779,
+   "b_len": 2086
+  },
+  {
+   "source_id": "corpus-00064",
+   "jaccard": 0.04741379310344827,
+   "char5_cosine": 0.24044977595155378,
+   "length_ratio": 0.2806167400881057,
+   "a_len": 637,
+   "b_len": 2270
+  },
+  {
+   "source_id": "corpus-00340",
+   "jaccard": 0.04741379310344827,
+   "char5_cosine": 0.21690738979743915,
+   "length_ratio": 0.2660588479071695,
+   "a_len": 642,
+   "b_len": 2413
+  },
+  {
+   "source_id": "corpus-00109",
+   "jaccard": 0.047619047619047616,
+   "char5_cosine": 0.20729468188264705,
+   "length_ratio": 0.45813953488372094,
+   "a_len": 788,
+   "b_len": 1720
+  },
+  {
+   "source_id": "corpus-00140",
+   "jaccard": 0.04780876494023904,
+   "char5_cosine": 0.19897412876967907,
+   "length_ratio": 0.29768659973810563,
+   "a_len": 682,
+   "b_len": 2291
+  },
+  {
+   "source_id": "corpus-00043",
+   "jaccard": 0.04814814814814815,
+   "char5_cosine": 0.2191581622304677,
+   "length_ratio": 0.23876500857632932,
+   "a_len": 696,
+   "b_len": 2915
+  },
+  {
+   "source_id": "corpus-00339",
+   "jaccard": 0.04824561403508772,
+   "char5_cosine": 0.29331223142247037,
+   "length_ratio": 0.24276778733385457,
+   "a_len": 621,
+   "b_len": 2558
+  },
+  {
+   "source_id": "corpus-00065",
+   "jaccard": 0.048458149779735685,
+   "char5_cosine": 0.2673669356111917,
+   "length_ratio": 0.22888616891064872,
+   "a_len": 561,
+   "b_len": 2451
+  },
+  {
+   "source_id": "corpus-00113",
+   "jaccard": 0.04854368932038835,
+   "char5_cosine": 0.21028295101015382,
+   "length_ratio": 0.4518039849219171,
+   "a_len": 839,
+   "b_len": 1857
+  },
+  {
+   "source_id": "corpus-00444",
+   "jaccard": 0.04897959183673469,
+   "char5_cosine": 0.18504321057377737,
+   "length_ratio": 0.2614795918367347,
+   "a_len": 615,
+   "b_len": 2352
+  },
+  {
+   "source_id": "corpus-00038",
+   "jaccard": 0.04918032786885246,
+   "char5_cosine": 0.22717770407036325,
+   "length_ratio": 0.23328025477707007,
+   "a_len": 586,
+   "b_len": 2512
+  },
+  {
+   "source_id": "corpus-00177",
+   "jaccard": 0.04935064935064935,
+   "char5_cosine": 0.3058053178099499,
+   "length_ratio": 0.2329803328290469,
+   "a_len": 924,
+   "b_len": 3966
+  },
+  {
+   "source_id": "corpus-00180",
+   "jaccard": 0.049868766404199474,
+   "char5_cosine": 0.2582285207127543,
+   "length_ratio": 0.24314024390243902,
+   "a_len": 957,
+   "b_len": 3936
+  },
+  {
+   "source_id": "corpus-00164",
+   "jaccard": 0.05,
+   "char5_cosine": 0.2632706501685239,
+   "length_ratio": 0.21644392794886694,
+   "a_len": 745,
+   "b_len": 3442
+  },
+  {
+   "source_id": "corpus-00380",
+   "jaccard": 0.05,
+   "char5_cosine": 0.25910342760228544,
+   "length_ratio": 0.27356422621657167,
+   "a_len": 624,
+   "b_len": 2281
+  },
+  {
+   "source_id": "corpus-00498",
+   "jaccard": 0.05014749262536873,
+   "char5_cosine": 0.25684076957367924,
+   "length_ratio": 0.14407158836689038,
+   "a_len": 644,
+   "b_len": 4470
+  },
+  {
+   "source_id": "corpus-00372",
+   "jaccard": 0.0502283105022831,
+   "char5_cosine": 0.3027643473655893,
+   "length_ratio": 0.4132407901761879,
+   "a_len": 774,
+   "b_len": 1873
+  },
+  {
+   "source_id": "corpus-00294",
+   "jaccard": 0.050314465408805034,
+   "char5_cosine": 0.31890421802548335,
+   "length_ratio": 0.1841339155749636,
+   "a_len": 759,
+   "b_len": 4122
+  },
+  {
+   "source_id": "corpus-00240",
+   "jaccard": 0.05045871559633028,
+   "char5_cosine": 0.20338625682878247,
+   "length_ratio": 0.22633744855967078,
+   "a_len": 550,
+   "b_len": 2430
+  },
+  {
+   "source_id": "corpus-00166",
+   "jaccard": 0.050595238095238096,
+   "char5_cosine": 0.304584929689155,
+   "length_ratio": 0.20463629096722621,
+   "a_len": 768,
+   "b_len": 3753
+  },
+  {
+   "source_id": "corpus-00248",
+   "jaccard": 0.05063291139240506,
+   "char5_cosine": 0.21086895372738454,
+   "length_ratio": 0.11049022098044196,
+   "a_len": 435,
+   "b_len": 3937
+  },
+  {
+   "source_id": "corpus-00075",
+   "jaccard": 0.05084745762711865,
+   "char5_cosine": 0.22302014215966068,
+   "length_ratio": 0.39985642498205315,
+   "a_len": 1114,
+   "b_len": 2786
+  },
+  {
+   "source_id": "corpus-00361",
+   "jaccard": 0.05084745762711865,
+   "char5_cosine": 0.290111533059901,
+   "length_ratio": 0.23164701407379232,
+   "a_len": 609,
+   "b_len": 2629
+  },
+  {
+   "source_id": "corpus-00144",
+   "jaccard": 0.050980392156862744,
+   "char5_cosine": 0.2151218283328994,
+   "length_ratio": 0.32302549101546174,
+   "a_len": 773,
+   "b_len": 2393
+  },
+  {
+   "source_id": "corpus-00213",
+   "jaccard": 0.05154639175257732,
+   "char5_cosine": 0.22819461737881938,
+   "length_ratio": 0.4576672587329781,
+   "a_len": 773,
+   "b_len": 1689
+  },
+  {
+   "source_id": "corpus-00420",
+   "jaccard": 0.05154639175257732,
+   "char5_cosine": 0.16666052934480532,
+   "length_ratio": 0.3030628694250403,
+   "a_len": 564,
+   "b_len": 1861
+  },
+  {
+   "source_id": "corpus-00238",
+   "jaccard": 0.05172413793103448,
+   "char5_cosine": 0.21356205819415658,
+   "length_ratio": 0.22161529457666795,
+   "a_len": 568,
+   "b_len": 2563
+  },
+  {
+   "source_id": "corpus-00428",
+   "jaccard": 0.05185185185185185,
+   "char5_cosine": 0.2687619331152889,
+   "length_ratio": 0.18723994452149792,
+   "a_len": 540,
+   "b_len": 2884
+  },
+  {
+   "source_id": "corpus-00479",
+   "jaccard": 0.05185185185185185,
+   "char5_cosine": 0.3228322618359954,
+   "length_ratio": 0.16842759477936606,
+   "a_len": 542,
+   "b_len": 3218
+  },
+  {
+   "source_id": "corpus-00062",
+   "jaccard": 0.05188679245283019,
+   "char5_cosine": 0.2213629122209025,
+   "length_ratio": 0.2812926718252162,
+   "a_len": 618,
+   "b_len": 2197
+  },
+  {
+   "source_id": "corpus-00219",
+   "jaccard": 0.05188679245283019,
+   "char5_cosine": 0.23330802178956883,
+   "length_ratio": 0.4735182849936948,
+   "a_len": 751,
+   "b_len": 1586
+  },
+  {
+   "source_id": "corpus-00132",
+   "jaccard": 0.05204460966542751,
+   "char5_cosine": 0.29339319127596314,
+   "length_ratio": 0.1773981603153745,
+   "a_len": 540,
+   "b_len": 3044
+  },
+  {
+   "source_id": "corpus-00415",
+   "jaccard": 0.052083333333333336,
+   "char5_cosine": 0.22686602833182462,
+   "length_ratio": 0.3166935050993022,
+   "a_len": 590,
+   "b_len": 1863
+  },
+  {
+   "source_id": "corpus-00117",
+   "jaccard": 0.05217391304347826,
+   "char5_cosine": 0.2454631723659931,
+   "length_ratio": 0.23284313725490197,
+   "a_len": 570,
+   "b_len": 2448
+  },
+  {
+   "source_id": "corpus-00173",
+   "jaccard": 0.05235602094240838,
+   "char5_cosine": 0.24415999393415888,
+   "length_ratio": 0.24737118822292323,
+   "a_len": 941,
+   "b_len": 3804
+  },
+  {
+   "source_id": "corpus-00344",
+   "jaccard": 0.05241935483870968,
+   "char5_cosine": 0.25925160707776473,
+   "length_ratio": 0.2916183854770181,
+   "a_len": 755,
+   "b_len": 2589
+  },
+  {
+   "source_id": "corpus-00255",
+   "jaccard": 0.05244755244755245,
+   "char5_cosine": 0.22203183174077568,
+   "length_ratio": 0.12947579490117445,
+   "a_len": 452,
+   "b_len": 3491
+  },
+  {
+   "source_id": "corpus-00055",
+   "jaccard": 0.05263157894736842,
+   "char5_cosine": 0.3377634264076476,
+   "length_ratio": 0.25084459459459457,
+   "a_len": 594,
+   "b_len": 2368
+  },
+  {
+   "source_id": "corpus-00015",
+   "jaccard": 0.05291005291005291,
+   "char5_cosine": 0.16166516596844224,
+   "length_ratio": 0.2457200402819738,
+   "a_len": 488,
+   "b_len": 1986
+  },
+  {
+   "source_id": "corpus-00497",
+   "jaccard": 0.052941176470588235,
+   "char5_cosine": 0.3531809859469651,
+   "length_ratio": 0.15011185682326622,
+   "a_len": 671,
+   "b_len": 4470
+  },
+  {
+   "source_id": "corpus-00499",
+   "jaccard": 0.052941176470588235,
+   "char5_cosine": 0.32603798717665683,
+   "length_ratio": 0.15391498881431767,
+   "a_len": 688,
+   "b_len": 4470
+  },
+  {
+   "source_id": "corpus-00251",
+   "jaccard": 0.053003533568904596,
+   "char5_cosine": 0.2079231009318062,
+   "length_ratio": 0.13377255800630192,
+   "a_len": 467,
+   "b_len": 3491
+  },
+  {
+   "source_id": "corpus-00080",
+   "jaccard": 0.05307262569832402,
+   "char5_cosine": 0.3240820637836158,
+   "length_ratio": 0.346177750155376,
+   "a_len": 1114,
+   "b_len": 3218
+  },
+  {
+   "source_id": "corpus-00141",
+   "jaccard": 0.053231939163498096,
+   "char5_cosine": 0.22705795320123834,
+   "length_ratio": 0.3399661303979678,
+   "a_len": 803,
+   "b_len": 2362
+  },
+  {
+   "source_id": "corpus-00440",
+   "jaccard": 0.05325443786982249,
+   "char5_cosine": 0.17376860990013443,
+   "length_ratio": 0.31594036697247707,
+   "a_len": 551,
+   "b_len": 1744
+  },
+  {
+   "source_id": "corpus-00135",
+   "jaccard": 0.05333333333333334,
+   "char5_cosine": 0.28470836967288826,
+   "length_ratio": 0.2023285084959094,
+   "a_len": 643,
+   "b_len": 3178
+  },
+  {
+   "source_id": "corpus-00462",
+   "jaccard": 0.05338078291814947,
+   "char5_cosine": 0.27045468432358305,
+   "length_ratio": 0.18282286075149984,
+   "a_len": 579,
+   "b_len": 3167
+  },
+  {
+   "source_id": "corpus-00178",
+   "jaccard": 0.05361930294906166,
+   "char5_cosine": 0.296731012974376,
+   "length_ratio": 0.23341836734693877,
+   "a_len": 915,
+   "b_len": 3920
+  },
+  {
+   "source_id": "corpus-00124",
+   "jaccard": 0.05363984674329502,
+   "char5_cosine": 0.18934580720960334,
+   "length_ratio": 0.32194918783840065,
+   "a_len": 773,
+   "b_len": 2401
+  },
+  {
+   "source_id": "corpus-00138",
+   "jaccard": 0.05384615384615385,
+   "char5_cosine": 0.2262014917757158,
+   "length_ratio": 0.24010756819054938,
+   "a_len": 625,
+   "b_len": 2603
+  },
+  {
+   "source_id": "corpus-00360",
+   "jaccard": 0.05392156862745098,
+   "char5_cosine": 0.3120194042018998,
+   "length_ratio": 0.2344,
+   "a_len": 586,
+   "b_len": 2500
+  },
+  {
+   "source_id": "corpus-00492",
+   "jaccard": 0.05413105413105413,
+   "char5_cosine": 0.33753427865219604,
+   "length_ratio": 0.15129486597001363,
+   "a_len": 666,
+   "b_len": 4402
+  },
+  {
+   "source_id": "corpus-00397",
+   "jaccard": 0.05439330543933055,
+   "char5_cosine": 0.2967205309046411,
+   "length_ratio": 0.31423827314238273,
+   "a_len": 757,
+   "b_len": 2409
+  },
+  {
+   "source_id": "corpus-00110",
+   "jaccard": 0.054455445544554455,
+   "char5_cosine": 0.25276524700000313,
+   "length_ratio": 0.5067527891955372,
+   "a_len": 863,
+   "b_len": 1703
+  },
+  {
+   "source_id": "corpus-00143",
+   "jaccard": 0.054474708171206226,
+   "char5_cosine": 0.19734817436456142,
+   "length_ratio": 0.3096425602660017,
+   "a_len": 745,
+   "b_len": 2406
+  },
+  {
+   "source_id": "corpus-00260",
+   "jaccard": 0.05514705882352941,
+   "char5_cosine": 0.3592458165678291,
+   "length_ratio": 0.1666138739309471,
+   "a_len": 526,
+   "b_len": 3157
+  },
+  {
+   "source_id": "corpus-00417",
+   "jaccard": 0.055299539170506916,
+   "char5_cosine": 0.2142775086368332,
+   "length_ratio": 0.2747768905589479,
+   "a_len": 585,
+   "b_len": 2129
+  },
+  {
+   "source_id": "corpus-00391",
+   "jaccard": 0.05555555555555555,
+   "char5_cosine": 0.18444946039024737,
+   "length_ratio": 0.3566465956461325,
+   "a_len": 770,
+   "b_len": 2159
+  },
+  {
+   "source_id": "corpus-00162",
+   "jaccard": 0.05572755417956656,
+   "char5_cosine": 0.2473925275749209,
+   "length_ratio": 0.21000581733566026,
+   "a_len": 722,
+   "b_len": 3438
+  },
+  {
+   "source_id": "corpus-00212",
+   "jaccard": 0.05622489959839357,
+   "char5_cosine": 0.2197541612425554,
+   "length_ratio": 0.3426160337552743,
+   "a_len": 812,
+   "b_len": 2370
+  },
+  {
+   "source_id": "corpus-00291",
+   "jaccard": 0.05625,
+   "char5_cosine": 0.3142433628098297,
+   "length_ratio": 0.19044153323629306,
+   "a_len": 785,
+   "b_len": 4122
+  },
+  {
+   "source_id": "corpus-00289",
+   "jaccard": 0.056451612903225805,
+   "char5_cosine": 0.2504803236742729,
+   "length_ratio": 0.29442186922792757,
+   "a_len": 797,
+   "b_len": 2707
+  },
+  {
+   "source_id": "corpus-00445",
+   "jaccard": 0.056451612903225805,
+   "char5_cosine": 0.16504316632760618,
+   "length_ratio": 0.26360544217687076,
+   "a_len": 620,
+   "b_len": 2352
+  },
+  {
+   "source_id": "corpus-00246",
+   "jaccard": 0.05660377358490566,
+   "char5_cosine": 0.26335512663199984,
+   "length_ratio": 0.12776225552451104,
+   "a_len": 503,
+   "b_len": 3937
+  },
+  {
+   "source_id": "corpus-00480",
+   "jaccard": 0.05660377358490566,
+   "char5_cosine": 0.36148490079117546,
+   "length_ratio": 0.1665630826600373,
+   "a_len": 536,
+   "b_len": 3218
+  },
+  {
+   "source_id": "corpus-00063",
+   "jaccard": 0.05668016194331984,
+   "char5_cosine": 0.30085149197912914,
+   "length_ratio": 0.2765421737305917,
+   "a_len": 659,
+   "b_len": 2383
+  },
+  {
+   "source_id": "corpus-00250",
+   "jaccard": 0.056962025316455694,
+   "char5_cosine": 0.2621371592117207,
+   "length_ratio": 0.11557023114046228,
+   "a_len": 455,
+   "b_len": 3937
+  },
+  {
+   "source_id": "corpus-00060",
+   "jaccard": 0.05701754385964912,
+   "char5_cosine": 0.2883022351599423,
+   "length_ratio": 0.26104240282685515,
+   "a_len": 591,
+   "b_len": 2264
+  },
+  {
+   "source_id": "corpus-00362",
+   "jaccard": 0.05701754385964912,
+   "char5_cosine": 0.27673954589406086,
+   "length_ratio": 0.27321063394683026,
+   "a_len": 668,
+   "b_len": 2445
+  },
+  {
+   "source_id": "corpus-00139",
+   "jaccard": 0.05725190839694656,
+   "char5_cosine": 0.14607734919301105,
+   "length_ratio": 0.2849002849002849,
+   "a_len": 700,
+   "b_len": 2457
+  },
+  {
+   "source_id": "corpus-00350",
+   "jaccard": 0.05725190839694656,
+   "char5_cosine": 0.2511246406361006,
+   "length_ratio": 0.29215170859932404,
+   "a_len": 778,
+   "b_len": 2663
+  },
+  {
+   "source_id": "corpus-00205",
+   "jaccard": 0.05741626794258373,
+   "char5_cosine": 0.22144612121432175,
+   "length_ratio": 0.34276284771334276,
+   "a_len": 727,
+   "b_len": 2121
+  },
+  {
+   "source_id": "corpus-00409",
+   "jaccard": 0.05752212389380531,
+   "char5_cosine": 0.2177328216250664,
+   "length_ratio": 0.19889267461669505,
+   "a_len": 467,
+   "b_len": 2348
+  },
+  {
+   "source_id": "corpus-00426",
+   "jaccard": 0.05776173285198556,
+   "char5_cosine": 0.2684352283819643,
+   "length_ratio": 0.17748478701825557,
+   "a_len": 525,
+   "b_len": 2958
+  },
+  {
+   "source_id": "corpus-00364",
+   "jaccard": 0.05785123966942149,
+   "char5_cosine": 0.23213197185768014,
+   "length_ratio": 0.2271530650620534,
+   "a_len": 604,
+   "b_len": 2659
+  },
+  {
+   "source_id": "corpus-00300",
+   "jaccard": 0.057971014492753624,
+   "char5_cosine": 0.27733100594676247,
+   "length_ratio": 0.25457054156605724,
+   "a_len": 738,
+   "b_len": 2899
+  },
+  {
+   "source_id": "corpus-00039",
+   "jaccard": 0.05803571428571429,
+   "char5_cosine": 0.19532049006134808,
+   "length_ratio": 0.2007240547063556,
+   "a_len": 499,
+   "b_len": 2486
+  },
+  {
+   "source_id": "corpus-00464",
+   "jaccard": 0.05860805860805861,
+   "char5_cosine": 0.35480687045987913,
+   "length_ratio": 0.1761919797916009,
+   "a_len": 558,
+   "b_len": 3167
+  },
+  {
+   "source_id": "corpus-00425",
+   "jaccard": 0.05862068965517241,
+   "char5_cosine": 0.26320752074761067,
+   "length_ratio": 0.17148182665424044,
+   "a_len": 552,
+   "b_len": 3219
+  },
+  {
+   "source_id": "corpus-00073",
+   "jaccard": 0.05863192182410423,
+   "char5_cosine": 0.28952299362838485,
+   "length_ratio": 0.39225352112676054,
+   "a_len": 1114,
+   "b_len": 2840
+  },
+  {
+   "source_id": "corpus-00295",
+   "jaccard": 0.059190031152647975,
+   "char5_cosine": 0.33842572163533663,
+   "length_ratio": 0.1826783114992722,
+   "a_len": 753,
+   "b_len": 4122
+  },
+  {
+   "source_id": "corpus-00145",
+   "jaccard": 0.05925925925925926,
+   "char5_cosine": 0.1841188313656226,
+   "length_ratio": 0.33218654434250766,
+   "a_len": 869,
+   "b_len": 2616
+  },
+  {
+   "source_id": "corpus-00210",
+   "jaccard": 0.0594059405940594,
+   "char5_cosine": 0.29931477518632366,
+   "length_ratio": 0.3686200378071834,
+   "a_len": 780,
+   "b_len": 2116
+  },
+  {
+   "source_id": "corpus-00446",
+   "jaccard": 0.06015037593984962,
+   "char5_cosine": 0.25691143647534487,
+   "length_ratio": 0.3018638573743922,
+   "a_len": 745,
+   "b_len": 2468
+  },
+  {
+   "source_id": "corpus-00411",
+   "jaccard": 0.060240963855421686,
+   "char5_cosine": 0.23995928019782595,
+   "length_ratio": 0.2308316430020284,
+   "a_len": 569,
+   "b_len": 2465
+  },
+  {
+   "source_id": "corpus-00069",
+   "jaccard": 0.0603448275862069,
+   "char5_cosine": 0.33020588207141377,
+   "length_ratio": 0.3216863990759457,
+   "a_len": 1114,
+   "b_len": 3463
+  },
+  {
+   "source_id": "corpus-00259",
+   "jaccard": 0.06037735849056604,
+   "char5_cosine": 0.3768155899066863,
+   "length_ratio": 0.15045929680076023,
+   "a_len": 475,
+   "b_len": 3157
+  },
+  {
+   "source_id": "corpus-00352",
+   "jaccard": 0.06048387096774194,
+   "char5_cosine": 0.2711371220093534,
+   "length_ratio": 0.2979072630283135,
+   "a_len": 726,
+   "b_len": 2437
+  },
+  {
+   "source_id": "corpus-00241",
+   "jaccard": 0.06060606060606061,
+   "char5_cosine": 0.24524288287306692,
+   "length_ratio": 0.1998018494055482,
+   "a_len": 605,
+   "b_len": 3028
+  },
+  {
+   "source_id": "corpus-00262",
+   "jaccard": 0.06072874493927125,
+   "char5_cosine": 0.29364233839442705,
+   "length_ratio": 0.1676300578034682,
+   "a_len": 522,
+   "b_len": 3114
+  },
+  {
+   "source_id": "corpus-00167",
+   "jaccard": 0.060810810810810814,
+   "char5_cosine": 0.29058450085304566,
+   "length_ratio": 0.2216661760376803,
+   "a_len": 753,
+   "b_len": 3397
+  },
+  {
+   "source_id": "corpus-00036",
+   "jaccard": 0.06086956521739131,
+   "char5_cosine": 0.28947496336614875,
+   "length_ratio": 0.21811535337124288,
+   "a_len": 537,
+   "b_len": 2462
+  },
+  {
+   "source_id": "corpus-00048",
+   "jaccard": 0.061224489795918366,
+   "char5_cosine": 0.1873492149822864,
+   "length_ratio": 0.34190077704722055,
+   "a_len": 572,
+   "b_len": 1673
+  },
+  {
+   "source_id": "corpus-00458",
+   "jaccard": 0.061224489795918366,
+   "char5_cosine": 0.43868391239580506,
+   "length_ratio": 0.16536964980544747,
+   "a_len": 510,
+   "b_len": 3084
+  },
+  {
+   "source_id": "corpus-00029",
+   "jaccard": 0.06147540983606557,
+   "char5_cosine": 0.25619456411792696,
+   "length_ratio": 0.21401657874905802,
+   "a_len": 568,
+   "b_len": 2654
+  },
+  {
+   "source_id": "corpus-00496",
+   "jaccard": 0.06158357771260997,
+   "char5_cosine": 0.2674064061968451,
+   "length_ratio": 0.1563758389261745,
+   "a_len": 699,
+   "b_len": 4470
+  },
+  {
+   "source_id": "corpus-00465",
+   "jaccard": 0.06159420289855073,
+   "char5_cosine": 0.2970164655353657,
+   "length_ratio": 0.17303441742974424,
+   "a_len": 548,
+   "b_len": 3167
+  },
+  {
+   "source_id": "corpus-00358",
+   "jaccard": 0.06167400881057269,
+   "char5_cosine": 0.2556171858856986,
+   "length_ratio": 0.22100741897696213,
+   "a_len": 566,
+   "b_len": 2561
+  },
+  {
+   "source_id": "corpus-00470",
+   "jaccard": 0.06168831168831169,
+   "char5_cosine": 0.40404301402446785,
+   "length_ratio": 0.16087844739530133,
+   "a_len": 630,
+   "b_len": 3916
+  },
+  {
+   "source_id": "corpus-00261",
+   "jaccard": 0.06172839506172839,
+   "char5_cosine": 0.3985968967038044,
+   "length_ratio": 0.16795118818240207,
+   "a_len": 523,
+   "b_len": 3114
+  },
+  {
+   "source_id": "corpus-00225",
+   "jaccard": 0.06177606177606178,
+   "char5_cosine": 0.3298306797114635,
+   "length_ratio": 0.27786088257292446,
+   "a_len": 743,
+   "b_len": 2674
+  },
+  {
+   "source_id": "corpus-00368",
+   "jaccard": 0.06190476190476191,
+   "char5_cosine": 0.20364637476571704,
+   "length_ratio": 0.3854341736694678,
+   "a_len": 688,
+   "b_len": 1785
+  },
+  {
+   "source_id": "corpus-00384",
+   "jaccard": 0.06198347107438017,
+   "char5_cosine": 0.3430316144645543,
+   "length_ratio": 0.27383766745468874,
+   "a_len": 695,
+   "b_len": 2538
+  },
+  {
+   "source_id": "corpus-00134",
+   "jaccard": 0.06204379562043796,
+   "char5_cosine": 0.23463938847229754,
+   "length_ratio": 0.20073113991359257,
+   "a_len": 604,
+   "b_len": 3009
+  },
+  {
+   "source_id": "corpus-00215",
+   "jaccard": 0.062146892655367235,
+   "char5_cosine": 0.21574266195973263,
+   "length_ratio": 0.5115646258503401,
+   "a_len": 752,
+   "b_len": 1470
+  },
+  {
+   "source_id": "corpus-00419",
+   "jaccard": 0.06217616580310881,
+   "char5_cosine": 0.21440890976996285,
+   "length_ratio": 0.31097890751757706,
+   "a_len": 575,
+   "b_len": 1849
+  },
+  {
+   "source_id": "corpus-00348",
+   "jaccard": 0.0625,
+   "char5_cosine": 0.29738556178218095,
+   "length_ratio": 0.2831661092530658,
+   "a_len": 762,
+   "b_len": 2691
+  },
+  {
+   "source_id": "corpus-00476",
+   "jaccard": 0.06273062730627306,
+   "char5_cosine": 0.3758897477015546,
+   "length_ratio": 0.22032828282828282,
+   "a_len": 698,
+   "b_len": 3168
+  },
+  {
+   "source_id": "corpus-00074",
+   "jaccard": 0.06333333333333334,
+   "char5_cosine": 0.2968999297397374,
+   "length_ratio": 0.4248665141113654,
+   "a_len": 1114,
+   "b_len": 2622
+  },
+  {
+   "source_id": "corpus-00489",
+   "jaccard": 0.06334841628959276,
+   "char5_cosine": 0.31627416026796645,
+   "length_ratio": 0.17794221282593375,
+   "a_len": 505,
+   "b_len": 2838
+  },
+  {
+   "source_id": "corpus-00491",
+   "jaccard": 0.06340057636887608,
+   "char5_cosine": 0.37449645465810355,
+   "length_ratio": 0.1444797819173103,
+   "a_len": 636,
+   "b_len": 4402
+  },
+  {
+   "source_id": "corpus-00208",
+   "jaccard": 0.06341463414634146,
+   "char5_cosine": 0.2215674464533885,
+   "length_ratio": 0.3745704467353952,
+   "a_len": 763,
+   "b_len": 2037
+  },
+  {
+   "source_id": "corpus-00220",
+   "jaccard": 0.06349206349206349,
+   "char5_cosine": 0.2139899387994973,
+   "length_ratio": 0.5020107238605898,
+   "a_len": 749,
+   "b_len": 1492
+  },
+  {
+   "source_id": "corpus-00032",
+   "jaccard": 0.0635593220338983,
+   "char5_cosine": 0.3300999851456839,
+   "length_ratio": 0.1909658464928388,
+   "a_len": 520,
+   "b_len": 2723
+  },
+  {
+   "source_id": "corpus-00439",
+   "jaccard": 0.06395348837209303,
+   "char5_cosine": 0.17119706625555248,
+   "length_ratio": 0.31594036697247707,
+   "a_len": 551,
+   "b_len": 1744
+  },
+  {
+   "source_id": "corpus-00472",
+   "jaccard": 0.06397306397306397,
+   "char5_cosine": 0.32044386630236826,
+   "length_ratio": 0.22734254992319508,
+   "a_len": 740,
+   "b_len": 3255
+  },
+  {
+   "source_id": "corpus-00019",
+   "jaccard": 0.06403940886699508,
+   "char5_cosine": 0.2693803892178896,
+   "length_ratio": 0.2273348519362187,
+   "a_len": 499,
+   "b_len": 2195
+  },
+  {
+   "source_id": "corpus-00312",
+   "jaccard": 0.0641025641025641,
+   "char5_cosine": 0.2613325370701224,
+   "length_ratio": 0.36444444444444446,
+   "a_len": 820,
+   "b_len": 2250
+  },
+  {
+   "source_id": "corpus-00459",
+   "jaccard": 0.0642570281124498,
+   "char5_cosine": 0.4022880812629872,
+   "length_ratio": 0.16569390402075226,
+   "a_len": 511,
+   "b_len": 3084
+  },
+  {
+   "source_id": "corpus-00026",
+   "jaccard": 0.06451612903225806,
+   "char5_cosine": 0.2996491061059505,
+   "length_ratio": 0.26917839310031777,
+   "a_len": 593,
+   "b_len": 2203
+  },
+  {
+   "source_id": "corpus-00229",
+   "jaccard": 0.06451612903225806,
+   "char5_cosine": 0.27222483771213785,
+   "length_ratio": 0.2675937631689844,
+   "a_len": 635,
+   "b_len": 2373
+  },
+  {
+   "source_id": "corpus-00298",
+   "jaccard": 0.06451612903225806,
+   "char5_cosine": 0.3138939981820089,
+   "length_ratio": 0.18040316407246745,
+   "a_len": 707,
+   "b_len": 3919
+  },
+  {
+   "source_id": "corpus-00315",
+   "jaccard": 0.06451612903225806,
+   "char5_cosine": 0.22798212201315468,
+   "length_ratio": 0.3805862566074003,
+   "a_len": 792,
+   "b_len": 2081
+  },
+  {
+   "source_id": "corpus-00161",
+   "jaccard": 0.06472491909385113,
+   "char5_cosine": 0.27551347939760557,
+   "length_ratio": 0.22033898305084745,
+   "a_len": 741,
+   "b_len": 3363
+  },
+  {
+   "source_id": "corpus-00112",
+   "jaccard": 0.065,
+   "char5_cosine": 0.22690517719331296,
+   "length_ratio": 0.4701492537313433,
+   "a_len": 819,
+   "b_len": 1742
+  },
+  {
+   "source_id": "corpus-00313",
+   "jaccard": 0.06511627906976744,
+   "char5_cosine": 0.295206652524005,
+   "length_ratio": 0.36553030303030304,
+   "a_len": 772,
+   "b_len": 2112
+  },
+  {
+   "source_id": "corpus-00413",
+   "jaccard": 0.06521739130434782,
+   "char5_cosine": 0.1853536125197913,
+   "length_ratio": 0.2708224201152436,
+   "a_len": 517,
+   "b_len": 1909
+  },
+  {
+   "source_id": "corpus-00265",
+   "jaccard": 0.0653061224489796,
+   "char5_cosine": 0.3656179158247637,
+   "length_ratio": 0.170199100834939,
+   "a_len": 530,
+   "b_len": 3114
+  },
+  {
+   "source_id": "corpus-00383",
+   "jaccard": 0.0653061224489796,
+   "char5_cosine": 0.46126670499958733,
+   "length_ratio": 0.2543502406516105,
+   "a_len": 687,
+   "b_len": 2701
+  },
+  {
+   "source_id": "corpus-00374",
+   "jaccard": 0.06532663316582915,
+   "char5_cosine": 0.26459063657208565,
+   "length_ratio": 0.4372955288985823,
+   "a_len": 802,
+   "b_len": 1834
+  },
+  {
+   "source_id": "corpus-00288",
+   "jaccard": 0.06550218340611354,
+   "char5_cosine": 0.28720491180846,
+   "length_ratio": 0.30568535825545173,
+   "a_len": 785,
+   "b_len": 2568
+  },
+  {
+   "source_id": "corpus-00460",
+   "jaccard": 0.06557377049180328,
+   "char5_cosine": 0.38910144069804986,
+   "length_ratio": 0.16245136186770429,
+   "a_len": 501,
+   "b_len": 3084
+  },
+  {
+   "source_id": "corpus-00023",
+   "jaccard": 0.06563706563706563,
+   "char5_cosine": 0.2437103237143575,
+   "length_ratio": 0.2968627450980392,
+   "a_len": 757,
+   "b_len": 2550
+  },
+  {
+   "source_id": "corpus-00379",
+   "jaccard": 0.06563706563706563,
+   "char5_cosine": 0.30900917643776005,
+   "length_ratio": 0.2866666666666667,
+   "a_len": 688,
+   "b_len": 2400
+  },
+  {
+   "source_id": "corpus-00467",
+   "jaccard": 0.06569343065693431,
+   "char5_cosine": 0.32430101381258314,
+   "length_ratio": 0.16748617086662568,
+   "a_len": 545,
+   "b_len": 3254
+  },
+  {
+   "source_id": "corpus-00347",
+   "jaccard": 0.06589147286821706,
+   "char5_cosine": 0.23051128140524857,
+   "length_ratio": 0.2634057971014493,
+   "a_len": 727,
+   "b_len": 2760
+  },
+  {
+   "source_id": "corpus-00160",
+   "jaccard": 0.0660377358490566,
+   "char5_cosine": 0.2924840180588938,
+   "length_ratio": 0.2322018624211475,
+   "a_len": 773,
+   "b_len": 3329
+  },
+  {
+   "source_id": "corpus-00457",
+   "jaccard": 0.06607929515418502,
+   "char5_cosine": 0.31881607107226895,
+   "length_ratio": 0.21260767423649177,
+   "a_len": 543,
+   "b_len": 2554
+  },
+  {
+   "source_id": "corpus-00448",
+   "jaccard": 0.06611570247933884,
+   "char5_cosine": 0.3033900020048152,
+   "length_ratio": 0.22450504295853568,
+   "a_len": 601,
+   "b_len": 2677
+  },
+  {
+   "source_id": "corpus-00463",
+   "jaccard": 0.0661764705882353,
+   "char5_cosine": 0.33610462767388144,
+   "length_ratio": 0.18029681086201452,
+   "a_len": 571,
+   "b_len": 3167
+  },
+  {
+   "source_id": "corpus-00179",
+   "jaccard": 0.06629834254143646,
+   "char5_cosine": 0.3215948849906379,
+   "length_ratio": 0.29354265402843605,
+   "a_len": 991,
+   "b_len": 3376
+  },
+  {
+   "source_id": "corpus-00209",
+   "jaccard": 0.06637168141592921,
+   "char5_cosine": 0.2577076690438379,
+   "length_ratio": 0.35998085208233604,
+   "a_len": 752,
+   "b_len": 2089
+  },
+  {
+   "source_id": "corpus-00146",
+   "jaccard": 0.06666666666666667,
+   "char5_cosine": 0.2645355021361049,
+   "length_ratio": 0.20077756178839212,
+   "a_len": 723,
+   "b_len": 3601
+  },
+  {
+   "source_id": "corpus-00150",
+   "jaccard": 0.06666666666666667,
+   "char5_cosine": 0.22737650434589654,
+   "length_ratio": 0.2027214662593724,
+   "a_len": 730,
+   "b_len": 3601
+  },
+  {
+   "source_id": "corpus-00395",
+   "jaccard": 0.06694560669456066,
+   "char5_cosine": 0.20930823487716363,
+   "length_ratio": 0.35763728657129673,
+   "a_len": 775,
+   "b_len": 2167
+  },
+  {
+   "source_id": "corpus-00353",
+   "jaccard": 0.06741573033707865,
+   "char5_cosine": 0.37024820032687017,
+   "length_ratio": 0.3007380073800738,
+   "a_len": 815,
+   "b_len": 2710
+  },
+  {
+   "source_id": "corpus-00059",
+   "jaccard": 0.06756756756756757,
+   "char5_cosine": 0.36791965139709637,
+   "length_ratio": 0.23015539689206216,
+   "a_len": 548,
+   "b_len": 2381
+  },
+  {
+   "source_id": "corpus-00242",
+   "jaccard": 0.06756756756756757,
+   "char5_cosine": 0.17527638809120852,
+   "length_ratio": 0.2217160212604404,
+   "a_len": 584,
+   "b_len": 2634
+  },
+  {
+   "source_id": "corpus-00475",
+   "jaccard": 0.06756756756756757,
+   "char5_cosine": 0.3620467616554854,
+   "length_ratio": 0.24516129032258063,
+   "a_len": 798,
+   "b_len": 3255
+  },
+  {
+   "source_id": "corpus-00071",
+   "jaccard": 0.06769230769230769,
+   "char5_cosine": 0.2820415829823187,
+   "length_ratio": 0.39142656359803235,
+   "a_len": 1114,
+   "b_len": 2846
+  },
+  {
+   "source_id": "corpus-00224",
+   "jaccard": 0.06787330316742081,
+   "char5_cosine": 0.19629799564902675,
+   "length_ratio": 0.4956572090330052,
+   "a_len": 856,
+   "b_len": 1727
+  },
+  {
+   "source_id": "corpus-00126",
+   "jaccard": 0.06796116504854369,
+   "char5_cosine": 0.30234059537939106,
+   "length_ratio": 0.18615244457941088,
+   "a_len": 613,
+   "b_len": 3293
+  },
+  {
+   "source_id": "corpus-00122",
+   "jaccard": 0.06818181818181818,
+   "char5_cosine": 0.2520176656300846,
+   "length_ratio": 0.3088467614533965,
+   "a_len": 782,
+   "b_len": 2532
+  },
+  {
+   "source_id": "corpus-00386",
+   "jaccard": 0.06818181818181818,
+   "char5_cosine": 0.29744807549559155,
+   "length_ratio": 0.28558758314855875,
+   "a_len": 644,
+   "b_len": 2255
+  },
+  {
+   "source_id": "corpus-00394",
+   "jaccard": 0.06818181818181818,
+   "char5_cosine": 0.2617098168676428,
+   "length_ratio": 0.3508153371529308,
+   "a_len": 796,
+   "b_len": 2269
+  },
+  {
+   "source_id": "corpus-00385",
+   "jaccard": 0.06827309236947791,
+   "char5_cosine": 0.39068916500121825,
+   "length_ratio": 0.27553816046966734,
+   "a_len": 704,
+   "b_len": 2555
+  },
+  {
+   "source_id": "corpus-00024",
+   "jaccard": 0.0683453237410072,
+   "char5_cosine": 0.21913759241790343,
+   "length_ratio": 0.1968981793661497,
+   "a_len": 584,
+   "b_len": 2966
+  },
+  {
+   "source_id": "corpus-00090",
+   "jaccard": 0.06857142857142857,
+   "char5_cosine": 0.3023347388716226,
+   "length_ratio": 0.525500322788896,
+   "a_len": 814,
+   "b_len": 1549
+  },
+  {
+   "source_id": "corpus-00423",
+   "jaccard": 0.06862745098039216,
+   "char5_cosine": 0.23321538003530523,
+   "length_ratio": 0.18922120225051822,
+   "a_len": 639,
+   "b_len": 3377
+  },
+  {
+   "source_id": "corpus-00082",
+   "jaccard": 0.06870229007633588,
+   "char5_cosine": 0.3784927759822511,
+   "length_ratio": 0.2624699002407981,
+   "a_len": 763,
+   "b_len": 2907
+  },
+  {
+   "source_id": "corpus-00292",
+   "jaccard": 0.06896551724137931,
+   "char5_cosine": 0.3605583575565112,
+   "length_ratio": 0.17758369723435224,
+   "a_len": 732,
+   "b_len": 4122
+  },
+  {
+   "source_id": "corpus-00494",
+   "jaccard": 0.06896551724137931,
+   "char5_cosine": 0.36502091025079625,
+   "length_ratio": 0.15470240799636528,
+   "a_len": 681,
+   "b_len": 4402
+  },
+  {
+   "source_id": "corpus-00107",
+   "jaccard": 0.06951871657754011,
+   "char5_cosine": 0.26257466470597374,
+   "length_ratio": 0.5111678366305041,
+   "a_len": 801,
+   "b_len": 1567
+  },
+  {
+   "source_id": "corpus-00171",
+   "jaccard": 0.06963788300835655,
+   "char5_cosine": 0.3209060986361974,
+   "length_ratio": 0.265329189036451,
+   "a_len": 939,
+   "b_len": 3539
+  },
+  {
+   "source_id": "corpus-00155",
+   "jaccard": 0.06976744186046512,
+   "char5_cosine": 0.3334359250517422,
+   "length_ratio": 0.2247191011235955,
+   "a_len": 760,
+   "b_len": 3382
+  },
+  {
+   "source_id": "corpus-00181",
+   "jaccard": 0.07023411371237458,
+   "char5_cosine": 0.4151428447391614,
+   "length_ratio": 0.2947236965344989,
+   "a_len": 944,
+   "b_len": 3203
+  },
+  {
+   "source_id": "corpus-00270",
+   "jaccard": 0.07048458149779736,
+   "char5_cosine": 0.3905309912473835,
+   "length_ratio": 0.2528375733855186,
+   "a_len": 646,
+   "b_len": 2555
+  },
+  {
+   "source_id": "corpus-00318",
+   "jaccard": 0.07079646017699115,
+   "char5_cosine": 0.27339582101323245,
+   "length_ratio": 0.35190097259062775,
+   "a_len": 796,
+   "b_len": 2262
+  },
+  {
+   "source_id": "corpus-00041",
+   "jaccard": 0.07086614173228346,
+   "char5_cosine": 0.2710240920295897,
+   "length_ratio": 0.23273273273273273,
+   "a_len": 620,
+   "b_len": 2664
+  },
+  {
+   "source_id": "corpus-00418",
+   "jaccard": 0.07106598984771574,
+   "char5_cosine": 0.2502938652924889,
+   "length_ratio": 0.29065238558909445,
+   "a_len": 597,
+   "b_len": 2054
+  },
+  {
+   "source_id": "corpus-00233",
+   "jaccard": 0.07111111111111111,
+   "char5_cosine": 0.29292601190189893,
+   "length_ratio": 0.2494390426327599,
+   "a_len": 667,
+   "b_len": 2674
+  },
+  {
+   "source_id": "corpus-00456",
+   "jaccard": 0.07111111111111111,
+   "char5_cosine": 0.34596880379356487,
+   "length_ratio": 0.20751761942051683,
+   "a_len": 530,
+   "b_len": 2554
+  },
+  {
+   "source_id": "corpus-00186",
+   "jaccard": 0.07112970711297072,
+   "char5_cosine": 0.27570801668801354,
+   "length_ratio": 0.37285843101893595,
+   "a_len": 827,
+   "b_len": 2218
+  },
+  {
+   "source_id": "corpus-00490",
+   "jaccard": 0.0711743772241993,
+   "char5_cosine": 0.41411374682282326,
+   "length_ratio": 0.14240919780506925,
+   "a_len": 545,
+   "b_len": 3827
+  },
+  {
+   "source_id": "corpus-00267",
+   "jaccard": 0.0711864406779661,
+   "char5_cosine": 0.41124768542047285,
+   "length_ratio": 0.1752148599944552,
+   "a_len": 632,
+   "b_len": 3607
+  },
+  {
+   "source_id": "corpus-00174",
+   "jaccard": 0.0712401055408971,
+   "char5_cosine": 0.3532576665594027,
+   "length_ratio": 0.29219858156028367,
+   "a_len": 1030,
+   "b_len": 3525
+  },
+  {
+   "source_id": "corpus-00116",
+   "jaccard": 0.07142857142857142,
+   "char5_cosine": 0.23174022636010824,
+   "length_ratio": 0.2702479338842975,
+   "a_len": 654,
+   "b_len": 2420
+  },
+  {
+   "source_id": "corpus-00495",
+   "jaccard": 0.07163323782234957,
+   "char5_cosine": 0.345550589386852,
+   "length_ratio": 0.15720127214902316,
+   "a_len": 692,
+   "b_len": 4402
+  },
+  {
+   "source_id": "corpus-00035",
+   "jaccard": 0.072,
+   "char5_cosine": 0.2975613994127693,
+   "length_ratio": 0.25582228591902545,
+   "a_len": 714,
+   "b_len": 2791
+  },
+  {
+   "source_id": "corpus-00493",
+   "jaccard": 0.07225433526011561,
+   "char5_cosine": 0.31467321014468286,
+   "length_ratio": 0.15538391640163562,
+   "a_len": 684,
+   "b_len": 4402
+  },
+  {
+   "source_id": "corpus-00264",
+   "jaccard": 0.07228915662650602,
+   "char5_cosine": 0.3317372745734341,
+   "length_ratio": 0.18015414258188825,
+   "a_len": 561,
+   "b_len": 3114
+  },
+  {
+   "source_id": "corpus-00431",
+   "jaccard": 0.07228915662650602,
+   "char5_cosine": 0.30614023273426694,
+   "length_ratio": 0.17626582278481012,
+   "a_len": 557,
+   "b_len": 3160
+  },
+  {
+   "source_id": "corpus-00447",
+   "jaccard": 0.07228915662650602,
+   "char5_cosine": 0.29313926428353504,
+   "length_ratio": 0.2558834516249533,
+   "a_len": 685,
+   "b_len": 2677
+  },
+  {
+   "source_id": "corpus-00009",
+   "jaccard": 0.07239819004524888,
+   "char5_cosine": 0.3432121737444856,
+   "length_ratio": 0.20704845814977973,
+   "a_len": 517,
+   "b_len": 2497
+  },
+  {
+   "source_id": "corpus-00091",
+   "jaccard": 0.07246376811594203,
+   "char5_cosine": 0.34379392719151947,
+   "length_ratio": 0.31902268760907504,
+   "a_len": 914,
+   "b_len": 2865
+  },
+  {
+   "source_id": "corpus-00092",
+   "jaccard": 0.07246376811594203,
+   "char5_cosine": 0.34379392719151947,
+   "length_ratio": 0.31902268760907504,
+   "a_len": 914,
+   "b_len": 2865
+  },
+  {
+   "source_id": "corpus-00093",
+   "jaccard": 0.07246376811594203,
+   "char5_cosine": 0.34379392719151947,
+   "length_ratio": 0.31902268760907504,
+   "a_len": 914,
+   "b_len": 2865
+  },
+  {
+   "source_id": "corpus-00094",
+   "jaccard": 0.07246376811594203,
+   "char5_cosine": 0.34379392719151947,
+   "length_ratio": 0.31902268760907504,
+   "a_len": 914,
+   "b_len": 2865
+  },
+  {
+   "source_id": "corpus-00095",
+   "jaccard": 0.07246376811594203,
+   "char5_cosine": 0.34379392719151947,
+   "length_ratio": 0.31902268760907504,
+   "a_len": 914,
+   "b_len": 2865
+  },
+  {
+   "source_id": "corpus-00227",
+   "jaccard": 0.0728744939271255,
+   "char5_cosine": 0.30933436745345827,
+   "length_ratio": 0.2531595576619273,
+   "a_len": 641,
+   "b_len": 2532
+  },
+  {
+   "source_id": "corpus-00108",
+   "jaccard": 0.07291666666666667,
+   "char5_cosine": 0.280152041639822,
+   "length_ratio": 0.4791792395896198,
+   "a_len": 794,
+   "b_len": 1657
+  },
+  {
+   "source_id": "corpus-00089",
+   "jaccard": 0.07303370786516854,
+   "char5_cosine": 0.25330703895623735,
+   "length_ratio": 0.5533101045296167,
+   "a_len": 794,
+   "b_len": 1435
+  },
+  {
+   "source_id": "corpus-00469",
+   "jaccard": 0.07308970099667775,
+   "char5_cosine": 0.4092006402520219,
+   "length_ratio": 0.1524514811031665,
+   "a_len": 597,
+   "b_len": 3916
+  },
+  {
+   "source_id": "corpus-00045",
+   "jaccard": 0.07317073170731707,
+   "char5_cosine": 0.2124410662813324,
+   "length_ratio": 0.39863325740318906,
+   "a_len": 700,
+   "b_len": 1756
+  },
+  {
+   "source_id": "corpus-00235",
+   "jaccard": 0.07327586206896551,
+   "char5_cosine": 0.3427669087474097,
+   "length_ratio": 0.26395173453996984,
+   "a_len": 700,
+   "b_len": 2652
+  },
+  {
+   "source_id": "corpus-00047",
+   "jaccard": 0.07329842931937172,
+   "char5_cosine": 0.2062932783950102,
+   "length_ratio": 0.351931330472103,
+   "a_len": 574,
+   "b_len": 1631
+  },
+  {
+   "source_id": "corpus-00338",
+   "jaccard": 0.07339449541284404,
+   "char5_cosine": 0.3233403194186243,
+   "length_ratio": 0.26797658862876256,
+   "a_len": 641,
+   "b_len": 2392
+  },
+  {
+   "source_id": "corpus-00335",
+   "jaccard": 0.07377049180327869,
+   "char5_cosine": 0.28885294686934104,
+   "length_ratio": 0.29975629569455725,
+   "a_len": 738,
+   "b_len": 2462
+  },
+  {
+   "source_id": "corpus-00461",
+   "jaccard": 0.07380073800738007,
+   "char5_cosine": 0.3564908612115071,
+   "length_ratio": 0.1717713924850016,
+   "a_len": 544,
+   "b_len": 3167
+  },
+  {
+   "source_id": "corpus-00031",
+   "jaccard": 0.07407407407407407,
+   "char5_cosine": 0.377910625571136,
+   "length_ratio": 0.21812822402358142,
+   "a_len": 592,
+   "b_len": 2714
+  },
+  {
+   "source_id": "corpus-00263",
+   "jaccard": 0.07407407407407407,
+   "char5_cosine": 0.39138442751107755,
+   "length_ratio": 0.1682723185613359,
+   "a_len": 524,
+   "b_len": 3114
+  },
+  {
+   "source_id": "corpus-00272",
+   "jaccard": 0.07432432432432433,
+   "char5_cosine": 0.2512073507056848,
+   "length_ratio": 0.23687580025608196,
+   "a_len": 740,
+   "b_len": 3124
+  },
+  {
+   "source_id": "corpus-00121",
+   "jaccard": 0.07434944237918216,
+   "char5_cosine": 0.2630080935647752,
+   "length_ratio": 0.33010118043844855,
+   "a_len": 783,
+   "b_len": 2372
+  },
+  {
+   "source_id": "corpus-00401",
+   "jaccard": 0.0743801652892562,
+   "char5_cosine": 0.31636645703634564,
+   "length_ratio": 0.19268030139935413,
+   "a_len": 537,
+   "b_len": 2787
+  },
+  {
+   "source_id": "corpus-00018",
+   "jaccard": 0.07441860465116279,
+   "char5_cosine": 0.2639422211420949,
+   "length_ratio": 0.18413926499032882,
+   "a_len": 476,
+   "b_len": 2585
+  },
+  {
+   "source_id": "corpus-00204",
+   "jaccard": 0.07441860465116279,
+   "char5_cosine": 0.23647255352360924,
+   "length_ratio": 0.39064039408866996,
+   "a_len": 793,
+   "b_len": 2030
+  },
+  {
+   "source_id": "corpus-00258",
+   "jaccard": 0.07462686567164178,
+   "char5_cosine": 0.42498193543521323,
+   "length_ratio": 0.16376306620209058,
+   "a_len": 517,
+   "b_len": 3157
+  },
+  {
+   "source_id": "corpus-00366",
+   "jaccard": 0.07468879668049792,
+   "char5_cosine": 0.3631578964045506,
+   "length_ratio": 0.2554244385230301,
+   "a_len": 671,
+   "b_len": 2627
+  },
+  {
+   "source_id": "corpus-00057",
+   "jaccard": 0.07488986784140969,
+   "char5_cosine": 0.3635134663844372,
+   "length_ratio": 0.2656514382402707,
+   "a_len": 628,
+   "b_len": 2364
+  },
+  {
+   "source_id": "corpus-00054",
+   "jaccard": 0.075,
+   "char5_cosine": 0.3468298385833662,
+   "length_ratio": 0.2924012158054711,
+   "a_len": 481,
+   "b_len": 1645
+  },
+  {
+   "source_id": "corpus-00087",
+   "jaccard": 0.075,
+   "char5_cosine": 0.26585309477394,
+   "length_ratio": 0.5599112426035503,
+   "a_len": 757,
+   "b_len": 1352
+  },
+  {
+   "source_id": "corpus-00076",
+   "jaccard": 0.07530120481927711,
+   "char5_cosine": 0.3309260388528999,
+   "length_ratio": 0.3614536015574302,
+   "a_len": 1114,
+   "b_len": 3082
+  },
+  {
+   "source_id": "corpus-00207",
+   "jaccard": 0.07531380753138076,
+   "char5_cosine": 0.28909746233870953,
+   "length_ratio": 0.350968351440718,
+   "a_len": 743,
+   "b_len": 2117
+  },
+  {
+   "source_id": "corpus-00136",
+   "jaccard": 0.07539682539682539,
+   "char5_cosine": 0.23345617893297263,
+   "length_ratio": 0.28860145513338725,
+   "a_len": 714,
+   "b_len": 2474
+  },
+  {
+   "source_id": "corpus-00079",
+   "jaccard": 0.07540983606557378,
+   "char5_cosine": 0.3559136818072749,
+   "length_ratio": 0.38991949597479875,
+   "a_len": 1114,
+   "b_len": 2857
+  },
+  {
+   "source_id": "corpus-00406",
+   "jaccard": 0.07555555555555556,
+   "char5_cosine": 0.20321213759479906,
+   "length_ratio": 0.1669310071371927,
+   "a_len": 421,
+   "b_len": 2522
+  },
+  {
+   "source_id": "corpus-00168",
+   "jaccard": 0.0755813953488372,
+   "char5_cosine": 0.3200793497460035,
+   "length_ratio": 0.194494936380161,
+   "a_len": 749,
+   "b_len": 3851
+  },
+  {
+   "source_id": "corpus-00184",
+   "jaccard": 0.0756578947368421,
+   "char5_cosine": 0.3938674259491844,
+   "length_ratio": 0.26894279724468406,
+   "a_len": 898,
+   "b_len": 3339
+  },
+  {
+   "source_id": "corpus-00381",
+   "jaccard": 0.07569721115537849,
+   "char5_cosine": 0.4704833368237237,
+   "length_ratio": 0.2488858416181008,
+   "a_len": 726,
+   "b_len": 2917
+  },
+  {
+   "source_id": "corpus-00389",
+   "jaccard": 0.07582938388625593,
+   "char5_cosine": 0.24618275693664207,
+   "length_ratio": 0.34165442976015664,
+   "a_len": 698,
+   "b_len": 2043
+  },
+  {
+   "source_id": "corpus-00153",
+   "jaccard": 0.07586206896551724,
+   "char5_cosine": 0.40806938627926254,
+   "length_ratio": 0.218214074512123,
+   "a_len": 738,
+   "b_len": 3382
+  },
+  {
+   "source_id": "corpus-00286",
+   "jaccard": 0.07589285714285714,
+   "char5_cosine": 0.29816047462991896,
+   "length_ratio": 0.31400571661902815,
+   "a_len": 769,
+   "b_len": 2449
+  },
+  {
+   "source_id": "corpus-00329",
+   "jaccard": 0.07589285714285714,
+   "char5_cosine": 0.2728047750129308,
+   "length_ratio": 0.35026353617632966,
+   "a_len": 731,
+   "b_len": 2087
+  },
+  {
+   "source_id": "corpus-00185",
+   "jaccard": 0.0761904761904762,
+   "char5_cosine": 0.3619161401720112,
+   "length_ratio": 0.27330126277811184,
+   "a_len": 909,
+   "b_len": 3326
+  },
+  {
+   "source_id": "corpus-00137",
+   "jaccard": 0.07623318385650224,
+   "char5_cosine": 0.24903026149914684,
+   "length_ratio": 0.2890380313199105,
+   "a_len": 646,
+   "b_len": 2235
+  },
+  {
+   "source_id": "corpus-00067",
+   "jaccard": 0.07630522088353414,
+   "char5_cosine": 0.3640402124781962,
+   "length_ratio": 0.22338830584707647,
+   "a_len": 596,
+   "b_len": 2668
+  },
+  {
+   "source_id": "corpus-00142",
+   "jaccard": 0.07630522088353414,
+   "char5_cosine": 0.24239991895842647,
+   "length_ratio": 0.32830676432572165,
+   "a_len": 762,
+   "b_len": 2321
+  },
+  {
+   "source_id": "corpus-00356",
+   "jaccard": 0.07630522088353414,
+   "char5_cosine": 0.25399252759887836,
+   "length_ratio": 0.2675773402973082,
+   "a_len": 666,
+   "b_len": 2489
+  },
+  {
+   "source_id": "corpus-00450",
+   "jaccard": 0.07630522088353414,
+   "char5_cosine": 0.2668746231772335,
+   "length_ratio": 0.23608516996638026,
+   "a_len": 632,
+   "b_len": 2677
+  },
+  {
+   "source_id": "corpus-00453",
+   "jaccard": 0.07655502392344497,
+   "char5_cosine": 0.35299700543525014,
+   "length_ratio": 0.21876263647391833,
+   "a_len": 541,
+   "b_len": 2473
+  },
+  {
+   "source_id": "corpus-00354",
+   "jaccard": 0.07659574468085106,
+   "char5_cosine": 0.2690389723855955,
+   "length_ratio": 0.32189973614775724,
+   "a_len": 732,
+   "b_len": 2274
+  },
+  {
+   "source_id": "corpus-00279",
+   "jaccard": 0.07661290322580645,
+   "char5_cosine": 0.3183031689940798,
+   "length_ratio": 0.27269124058660327,
+   "a_len": 688,
+   "b_len": 2523
+  },
+  {
+   "source_id": "corpus-00008",
+   "jaccard": 0.07692307692307693,
+   "char5_cosine": 0.35667430040248194,
+   "length_ratio": 0.19703644373247897,
+   "a_len": 492,
+   "b_len": 2497
+  },
+  {
+   "source_id": "corpus-00327",
+   "jaccard": 0.07692307692307693,
+   "char5_cosine": 0.32043023687709304,
+   "length_ratio": 0.34020124580737904,
+   "a_len": 710,
+   "b_len": 2087
+  },
+  {
+   "source_id": "corpus-00477",
+   "jaccard": 0.07692307692307693,
+   "char5_cosine": 0.4236744070124404,
+   "length_ratio": 0.23327020202020202,
+   "a_len": 739,
+   "b_len": 3168
+  },
+  {
+   "source_id": "corpus-00287",
+   "jaccard": 0.07727272727272727,
+   "char5_cosine": 0.3193092627755659,
+   "length_ratio": 0.27963037364403376,
+   "a_len": 696,
+   "b_len": 2489
+  },
+  {
+   "source_id": "corpus-00096",
+   "jaccard": 0.07751937984496124,
+   "char5_cosine": 0.3393473111359827,
+   "length_ratio": 0.38448422847399827,
+   "a_len": 902,
+   "b_len": 2346
+  },
+  {
+   "source_id": "corpus-00097",
+   "jaccard": 0.07751937984496124,
+   "char5_cosine": 0.3393473111359827,
+   "length_ratio": 0.38448422847399827,
+   "a_len": 902,
+   "b_len": 2346
+  },
+  {
+   "source_id": "corpus-00098",
+   "jaccard": 0.07751937984496124,
+   "char5_cosine": 0.3393473111359827,
+   "length_ratio": 0.38448422847399827,
+   "a_len": 902,
+   "b_len": 2346
+  },
+  {
+   "source_id": "corpus-00100",
+   "jaccard": 0.07751937984496124,
+   "char5_cosine": 0.3393473111359827,
+   "length_ratio": 0.38448422847399827,
+   "a_len": 902,
+   "b_len": 2346
+  },
+  {
+   "source_id": "corpus-00176",
+   "jaccard": 0.07777777777777778,
+   "char5_cosine": 0.3494271567951626,
+   "length_ratio": 0.24566399171628267,
+   "a_len": 949,
+   "b_len": 3863
+  },
+  {
+   "source_id": "corpus-00307",
+   "jaccard": 0.07782101167315175,
+   "char5_cosine": 0.34812200146181954,
+   "length_ratio": 0.27641149982680985,
+   "a_len": 798,
+   "b_len": 2887
+  },
+  {
+   "source_id": "corpus-00392",
+   "jaccard": 0.07792207792207792,
+   "char5_cosine": 0.2252703730681634,
+   "length_ratio": 0.3601479426722145,
+   "a_len": 779,
+   "b_len": 2163
+  },
+  {
+   "source_id": "corpus-00273",
+   "jaccard": 0.0782312925170068,
+   "char5_cosine": 0.31066108676380394,
+   "length_ratio": 0.25,
+   "a_len": 781,
+   "b_len": 3124
+  },
+  {
+   "source_id": "corpus-00221",
+   "jaccard": 0.07834101382488479,
+   "char5_cosine": 0.2441852610369738,
+   "length_ratio": 0.5353474320241692,
+   "a_len": 886,
+   "b_len": 1655
+  },
+  {
+   "source_id": "corpus-00086",
+   "jaccard": 0.0784313725490196,
+   "char5_cosine": 0.27159647121502095,
+   "length_ratio": 0.6320064987814785,
+   "a_len": 778,
+   "b_len": 1231
+  },
+  {
+   "source_id": "corpus-00481",
+   "jaccard": 0.07851239669421488,
+   "char5_cosine": 0.4216918026475294,
+   "length_ratio": 0.1696650124069479,
+   "a_len": 547,
+   "b_len": 3224
+  },
+  {
+   "source_id": "corpus-00217",
+   "jaccard": 0.07865168539325842,
+   "char5_cosine": 0.2508679466155915,
+   "length_ratio": 0.5108843537414965,
+   "a_len": 751,
+   "b_len": 1470
+  },
+  {
+   "source_id": "corpus-00280",
+   "jaccard": 0.07865168539325842,
+   "char5_cosine": 0.3346492219117581,
+   "length_ratio": 0.2925170068027211,
+   "a_len": 817,
+   "b_len": 2793
+  },
+  {
+   "source_id": "corpus-00319",
+   "jaccard": 0.07883817427385892,
+   "char5_cosine": 0.3674162490162644,
+   "length_ratio": 0.3731150366221456,
+   "a_len": 866,
+   "b_len": 2321
+  },
+  {
+   "source_id": "corpus-00021",
+   "jaccard": 0.08045977011494253,
+   "char5_cosine": 0.2614434739000875,
+   "length_ratio": 0.2891566265060241,
+   "a_len": 744,
+   "b_len": 2573
+  },
+  {
+   "source_id": "corpus-00320",
+   "jaccard": 0.08085106382978724,
+   "char5_cosine": 0.271249995590605,
+   "length_ratio": 0.34957532409476977,
+   "a_len": 782,
+   "b_len": 2237
+  },
+  {
+   "source_id": "corpus-00154",
+   "jaccard": 0.08108108108108109,
+   "char5_cosine": 0.34293175165488443,
+   "length_ratio": 0.20904790065050266,
+   "a_len": 707,
+   "b_len": 3382
+  },
+  {
+   "source_id": "corpus-00170",
+   "jaccard": 0.08123249299719888,
+   "char5_cosine": 0.28214388970368964,
+   "length_ratio": 0.22578083642138697,
+   "a_len": 853,
+   "b_len": 3778
+  },
+  {
+   "source_id": "corpus-00169",
+   "jaccard": 0.08146067415730338,
+   "char5_cosine": 0.33526354907775247,
+   "length_ratio": 0.23267074413863403,
+   "a_len": 913,
+   "b_len": 3924
+  },
+  {
+   "source_id": "corpus-00346",
+   "jaccard": 0.08163265306122448,
+   "char5_cosine": 0.3190657818654214,
+   "length_ratio": 0.29783393501805056,
+   "a_len": 825,
+   "b_len": 2770
+  },
+  {
+   "source_id": "corpus-00131",
+   "jaccard": 0.08185053380782918,
+   "char5_cosine": 0.3749326179444089,
+   "length_ratio": 0.18908081431215298,
+   "a_len": 613,
+   "b_len": 3242
+  },
+  {
+   "source_id": "corpus-00478",
+   "jaccard": 0.08203125,
+   "char5_cosine": 0.40664140409083416,
+   "length_ratio": 0.16438781852082038,
+   "a_len": 529,
+   "b_len": 3218
+  },
+  {
+   "source_id": "corpus-00020",
+   "jaccard": 0.0821917808219178,
+   "char5_cosine": 0.21780219859498243,
+   "length_ratio": 0.1782642689601251,
+   "a_len": 456,
+   "b_len": 2558
+  },
+  {
+   "source_id": "corpus-00222",
+   "jaccard": 0.08225108225108226,
+   "char5_cosine": 0.19916564764905184,
+   "length_ratio": 0.4778499704666273,
+   "a_len": 809,
+   "b_len": 1693
+  },
+  {
+   "source_id": "corpus-00159",
+   "jaccard": 0.08231707317073171,
+   "char5_cosine": 0.3692778311208026,
+   "length_ratio": 0.19306540583136328,
+   "a_len": 735,
+   "b_len": 3807
+  },
+  {
+   "source_id": "corpus-00216",
+   "jaccard": 0.08287292817679558,
+   "char5_cosine": 0.2045474704278977,
+   "length_ratio": 0.5122121423586881,
+   "a_len": 734,
+   "b_len": 1433
+  },
+  {
+   "source_id": "corpus-00369",
+   "jaccard": 0.08287292817679558,
+   "char5_cosine": 0.22810206359390375,
+   "length_ratio": 0.43280047365304913,
+   "a_len": 731,
+   "b_len": 1689
+  },
+  {
+   "source_id": "corpus-00237",
+   "jaccard": 0.08294930875576037,
+   "char5_cosine": 0.2778792601937099,
+   "length_ratio": 0.2162485065710872,
+   "a_len": 543,
+   "b_len": 2511
+  },
+  {
+   "source_id": "corpus-00012",
+   "jaccard": 0.08296943231441048,
+   "char5_cosine": 0.26537429299640597,
+   "length_ratio": 0.22908036454018227,
+   "a_len": 553,
+   "b_len": 2414
+  },
+  {
+   "source_id": "corpus-00211",
+   "jaccard": 0.08333333333333333,
+   "char5_cosine": 0.29850860585433214,
+   "length_ratio": 0.3865213082259663,
+   "a_len": 780,
+   "b_len": 2018
+  },
+  {
+   "source_id": "corpus-00377",
+   "jaccard": 0.08333333333333333,
+   "char5_cosine": 0.311103727433912,
+   "length_ratio": 0.30863692181743757,
+   "a_len": 754,
+   "b_len": 2443
+  },
+  {
+   "source_id": "corpus-00466",
+   "jaccard": 0.08333333333333333,
+   "char5_cosine": 0.36488358720874986,
+   "length_ratio": 0.16472034419176398,
+   "a_len": 536,
+   "b_len": 3254
+  },
+  {
+   "source_id": "corpus-00114",
+   "jaccard": 0.08363636363636363,
+   "char5_cosine": 0.31092529806781544,
+   "length_ratio": 0.3034608378870674,
+   "a_len": 833,
+   "b_len": 2745
+  },
+  {
+   "source_id": "corpus-00022",
+   "jaccard": 0.08368200836820083,
+   "char5_cosine": 0.2776454348896305,
+   "length_ratio": 0.25442390876917026,
+   "a_len": 647,
+   "b_len": 2543
+  },
+  {
+   "source_id": "corpus-00017",
+   "jaccard": 0.08370044052863436,
+   "char5_cosine": 0.3386655684439091,
+   "length_ratio": 0.18005133846718005,
+   "a_len": 491,
+   "b_len": 2727
+  },
+  {
+   "source_id": "corpus-00070",
+   "jaccard": 0.08387096774193549,
+   "char5_cosine": 0.3463224435877044,
+   "length_ratio": 0.3750841750841751,
+   "a_len": 1114,
+   "b_len": 2970
+  },
+  {
+   "source_id": "corpus-00199",
+   "jaccard": 0.084,
+   "char5_cosine": 0.30224023809627404,
+   "length_ratio": 0.4079696394686907,
+   "a_len": 860,
+   "b_len": 2108
+  },
+  {
+   "source_id": "corpus-00449",
+   "jaccard": 0.08403361344537816,
+   "char5_cosine": 0.24173299030309328,
+   "length_ratio": 0.23160254015689205,
+   "a_len": 620,
+   "b_len": 2677
+  },
+  {
+   "source_id": "corpus-00416",
+   "jaccard": 0.08411214953271028,
+   "char5_cosine": 0.33545577244698804,
+   "length_ratio": 0.2527618205921343,
+   "a_len": 572,
+   "b_len": 2263
+  },
+  {
+   "source_id": "corpus-00006",
+   "jaccard": 0.08444444444444445,
+   "char5_cosine": 0.42479410479635465,
+   "length_ratio": 0.21585903083700442,
+   "a_len": 539,
+   "b_len": 2497
+  },
+  {
+   "source_id": "corpus-00452",
+   "jaccard": 0.08450704225352113,
+   "char5_cosine": 0.3564234246301795,
+   "length_ratio": 0.21835826930853214,
+   "a_len": 540,
+   "b_len": 2473
+  },
+  {
+   "source_id": "corpus-00027",
+   "jaccard": 0.0845771144278607,
+   "char5_cosine": 0.27471323680729764,
+   "length_ratio": 0.24122612172367836,
+   "a_len": 543,
+   "b_len": 2251
+  },
+  {
+   "source_id": "corpus-00333",
+   "jaccard": 0.0847457627118644,
+   "char5_cosine": 0.3625284340501623,
+   "length_ratio": 0.28464271614686143,
+   "a_len": 721,
+   "b_len": 2533
+  },
+  {
+   "source_id": "corpus-00030",
+   "jaccard": 0.08482142857142858,
+   "char5_cosine": 0.270958602241502,
+   "length_ratio": 0.23736075407026563,
+   "a_len": 554,
+   "b_len": 2334
+  },
+  {
+   "source_id": "corpus-00183",
+   "jaccard": 0.08496732026143791,
+   "char5_cosine": 0.39966443937562224,
+   "length_ratio": 0.2738987114174408,
+   "a_len": 914,
+   "b_len": 3337
+  },
+  {
+   "source_id": "corpus-00234",
+   "jaccard": 0.0851063829787234,
+   "char5_cosine": 0.33078331819481743,
+   "length_ratio": 0.281900274833137,
+   "a_len": 718,
+   "b_len": 2547
+  },
+  {
+   "source_id": "corpus-00189",
+   "jaccard": 0.08536585365853659,
+   "char5_cosine": 0.2632453747935913,
+   "length_ratio": 0.3873790879778904,
+   "a_len": 841,
+   "b_len": 2171
+  },
+  {
+   "source_id": "corpus-00438",
+   "jaccard": 0.08536585365853659,
+   "char5_cosine": 0.27411107392136136,
+   "length_ratio": 0.294151376146789,
+   "a_len": 513,
+   "b_len": 1744
+  },
+  {
+   "source_id": "corpus-00228",
+   "jaccard": 0.08547008547008547,
+   "char5_cosine": 0.256402897895987,
+   "length_ratio": 0.26285479226655695,
+   "a_len": 639,
+   "b_len": 2431
+  },
+  {
+   "source_id": "corpus-00311",
+   "jaccard": 0.08547008547008547,
+   "char5_cosine": 0.3656045107360856,
+   "length_ratio": 0.36334984241332735,
+   "a_len": 807,
+   "b_len": 2221
+  },
+  {
+   "source_id": "corpus-00474",
+   "jaccard": 0.08561643835616438,
+   "char5_cosine": 0.34549991975370437,
+   "length_ratio": 0.23225806451612904,
+   "a_len": 756,
+   "b_len": 3255
+  },
+  {
+   "source_id": "corpus-00336",
+   "jaccard": 0.08571428571428572,
+   "char5_cosine": 0.29198574505442176,
+   "length_ratio": 0.2647666253614209,
+   "a_len": 641,
+   "b_len": 2421
+  },
+  {
+   "source_id": "corpus-00013",
+   "jaccard": 0.08597285067873303,
+   "char5_cosine": 0.25484864700575643,
+   "length_ratio": 0.18998817500985415,
+   "a_len": 482,
+   "b_len": 2537
+  },
+  {
+   "source_id": "corpus-00471",
+   "jaccard": 0.08620689655172414,
+   "char5_cosine": 0.3628668616988084,
+   "length_ratio": 0.23840245775729646,
+   "a_len": 776,
+   "b_len": 3255
+  },
+  {
+   "source_id": "corpus-00046",
+   "jaccard": 0.08629441624365482,
+   "char5_cosine": 0.22895710986350337,
+   "length_ratio": 0.3417142857142857,
+   "a_len": 598,
+   "b_len": 1750
+  },
+  {
+   "source_id": "corpus-00151",
+   "jaccard": 0.08650519031141868,
+   "char5_cosine": 0.40334578296011986,
+   "length_ratio": 0.2232406859846245,
+   "a_len": 755,
+   "b_len": 3382
+  },
+  {
+   "source_id": "corpus-00044",
+   "jaccard": 0.0867579908675799,
+   "char5_cosine": 0.24866735942873044,
+   "length_ratio": 0.4010526315789474,
+   "a_len": 762,
+   "b_len": 1900
+  },
+  {
+   "source_id": "corpus-00034",
+   "jaccard": 0.08677685950413223,
+   "char5_cosine": 0.2502810019095574,
+   "length_ratio": 0.29456521739130437,
+   "a_len": 813,
+   "b_len": 2760
+  },
+  {
+   "source_id": "corpus-00158",
+   "jaccard": 0.08695652173913043,
+   "char5_cosine": 0.39645231695111494,
+   "length_ratio": 0.22594259988745077,
+   "a_len": 803,
+   "b_len": 3554
+  },
+  {
+   "source_id": "corpus-00305",
+   "jaccard": 0.08733624454148471,
+   "char5_cosine": 0.39272781640184123,
+   "length_ratio": 0.3001586042823156,
+   "a_len": 757,
+   "b_len": 2522
+  },
+  {
+   "source_id": "corpus-00454",
+   "jaccard": 0.08737864077669903,
+   "char5_cosine": 0.38035451003402926,
+   "length_ratio": 0.19935301253538212,
+   "a_len": 493,
+   "b_len": 2473
+  },
+  {
+   "source_id": "corpus-00332",
+   "jaccard": 0.08778625954198473,
+   "char5_cosine": 0.3613819673832282,
+   "length_ratio": 0.26422372227579555,
+   "a_len": 822,
+   "b_len": 3111
+  },
+  {
+   "source_id": "corpus-00266",
+   "jaccard": 0.08813559322033898,
+   "char5_cosine": 0.4048259148931911,
+   "length_ratio": 0.17715553091211533,
+   "a_len": 639,
+   "b_len": 3607
+  },
+  {
+   "source_id": "corpus-00050",
+   "jaccard": 0.08823529411764706,
+   "char5_cosine": 0.23558970043246838,
+   "length_ratio": 0.3300771208226221,
+   "a_len": 642,
+   "b_len": 1945
+  },
+  {
+   "source_id": "corpus-00232",
+   "jaccard": 0.08823529411764706,
+   "char5_cosine": 0.32560767920880745,
+   "length_ratio": 0.26104417670682734,
+   "a_len": 715,
+   "b_len": 2739
+  },
+  {
+   "source_id": "corpus-00437",
+   "jaccard": 0.08823529411764706,
+   "char5_cosine": 0.1970620879702248,
+   "length_ratio": 0.3423165137614679,
+   "a_len": 597,
+   "b_len": 1744
+  },
+  {
+   "source_id": "corpus-00007",
+   "jaccard": 0.08837209302325581,
+   "char5_cosine": 0.3719524251015049,
+   "length_ratio": 0.1918301962354826,
+   "a_len": 479,
+   "b_len": 2497
+  },
+  {
+   "source_id": "corpus-00367",
+   "jaccard": 0.08837209302325581,
+   "char5_cosine": 0.31756716310969385,
+   "length_ratio": 0.35205078125,
+   "a_len": 721,
+   "b_len": 2048
+  },
+  {
+   "source_id": "corpus-00193",
+   "jaccard": 0.08849557522123894,
+   "char5_cosine": 0.38763819633954655,
+   "length_ratio": 0.4335119337554798,
+   "a_len": 890,
+   "b_len": 2053
+  },
+  {
+   "source_id": "corpus-00053",
+   "jaccard": 0.08860759493670886,
+   "char5_cosine": 0.3309501005412573,
+   "length_ratio": 0.31723315444245676,
+   "a_len": 532,
+   "b_len": 1677
+  },
+  {
+   "source_id": "corpus-00487",
+   "jaccard": 0.08878504672897196,
+   "char5_cosine": 0.34124712829187526,
+   "length_ratio": 0.16560958421423538,
+   "a_len": 470,
+   "b_len": 2838
+  },
+  {
+   "source_id": "corpus-00025",
+   "jaccard": 0.08914728682170543,
+   "char5_cosine": 0.30734934223975774,
+   "length_ratio": 0.21105702364394993,
+   "a_len": 607,
+   "b_len": 2876
+  },
+  {
+   "source_id": "corpus-00468",
+   "jaccard": 0.08940397350993377,
+   "char5_cosine": 0.44430777732717386,
+   "length_ratio": 0.16981613891726252,
+   "a_len": 665,
+   "b_len": 3916
+  },
+  {
+   "source_id": "corpus-00201",
+   "jaccard": 0.08949416342412451,
+   "char5_cosine": 0.3234287971902807,
+   "length_ratio": 0.40040733197556005,
+   "a_len": 983,
+   "b_len": 2455
+  },
+  {
+   "source_id": "corpus-00088",
+   "jaccard": 0.09032258064516129,
+   "char5_cosine": 0.23540871686720366,
+   "length_ratio": 0.595810705973623,
+   "a_len": 768,
+   "b_len": 1289
+  },
+  {
+   "source_id": "corpus-00328",
+   "jaccard": 0.09049773755656108,
+   "char5_cosine": 0.30313317452159355,
+   "length_ratio": 0.32870148538572114,
+   "a_len": 686,
+   "b_len": 2087
+  },
+  {
+   "source_id": "corpus-00357",
+   "jaccard": 0.09049773755656108,
+   "char5_cosine": 0.27639366702741835,
+   "length_ratio": 0.2310483870967742,
+   "a_len": 573,
+   "b_len": 2480
+  },
+  {
+   "source_id": "corpus-00323",
+   "jaccard": 0.09053497942386832,
+   "char5_cosine": 0.3133189644020592,
+   "length_ratio": 0.3334760273972603,
+   "a_len": 779,
+   "b_len": 2336
+  },
+  {
+   "source_id": "corpus-00152",
+   "jaccard": 0.09090909090909091,
+   "char5_cosine": 0.3256248411093695,
+   "length_ratio": 0.21910112359550563,
+   "a_len": 741,
+   "b_len": 3382
+  },
+  {
+   "source_id": "corpus-00500",
+   "jaccard": 0.09090909090909091,
+   "char5_cosine": 0.3647052867041371,
+   "length_ratio": 0.40192926045016075,
+   "a_len": 750,
+   "b_len": 1866
+  },
+  {
+   "source_id": "corpus-00157",
+   "jaccard": 0.09119496855345911,
+   "char5_cosine": 0.3164596893223546,
+   "length_ratio": 0.21890827236916152,
+   "a_len": 778,
+   "b_len": 3554
+  },
+  {
+   "source_id": "corpus-00236",
+   "jaccard": 0.09126984126984126,
+   "char5_cosine": 0.2988554783969745,
+   "length_ratio": 0.18594630427577064,
+   "a_len": 561,
+   "b_len": 3017
+  },
+  {
+   "source_id": "corpus-00310",
+   "jaccard": 0.09130434782608696,
+   "char5_cosine": 0.2764213842655946,
+   "length_ratio": 0.3233050847457627,
+   "a_len": 763,
+   "b_len": 2360
+  },
+  {
+   "source_id": "corpus-00412",
+   "jaccard": 0.091324200913242,
+   "char5_cosine": 0.2643309525201632,
+   "length_ratio": 0.23197903014416776,
+   "a_len": 531,
+   "b_len": 2289
+  },
+  {
+   "source_id": "corpus-00343",
+   "jaccard": 0.09170305676855896,
+   "char5_cosine": 0.28814692928569785,
+   "length_ratio": 0.3303751512706737,
+   "a_len": 819,
+   "b_len": 2479
+  },
+  {
+   "source_id": "corpus-00010",
+   "jaccard": 0.09216589861751152,
+   "char5_cosine": 0.406691993619513,
+   "length_ratio": 0.2038446135362435,
+   "a_len": 509,
+   "b_len": 2497
+  },
+  {
+   "source_id": "corpus-00206",
+   "jaccard": 0.09230769230769231,
+   "char5_cosine": 0.35100608741192213,
+   "length_ratio": 0.39015728056823945,
+   "a_len": 769,
+   "b_len": 1971
+  },
+  {
+   "source_id": "corpus-00421",
+   "jaccard": 0.09230769230769231,
+   "char5_cosine": 0.2507101767019649,
+   "length_ratio": 0.267362360561353,
+   "a_len": 743,
+   "b_len": 2779
+  },
+  {
+   "source_id": "corpus-00342",
+   "jaccard": 0.09293680297397769,
+   "char5_cosine": 0.3296273467406444,
+   "length_ratio": 0.30920590302178497,
+   "a_len": 880,
+   "b_len": 2846
+  },
+  {
+   "source_id": "corpus-00473",
+   "jaccard": 0.09342560553633218,
+   "char5_cosine": 0.3720869231162937,
+   "length_ratio": 0.22734254992319508,
+   "a_len": 740,
+   "b_len": 3255
+  },
+  {
+   "source_id": "corpus-00282",
+   "jaccard": 0.09349593495934959,
+   "char5_cosine": 0.39358601161883794,
+   "length_ratio": 0.32098765432098764,
+   "a_len": 910,
+   "b_len": 2835
+  },
+  {
+   "source_id": "corpus-00182",
+   "jaccard": 0.09395973154362416,
+   "char5_cosine": 0.3966370397311873,
+   "length_ratio": 0.2538145539906103,
+   "a_len": 865,
+   "b_len": 3408
+  },
+  {
+   "source_id": "corpus-00324",
+   "jaccard": 0.0942622950819672,
+   "char5_cosine": 0.2981703720450808,
+   "length_ratio": 0.3407534246575342,
+   "a_len": 796,
+   "b_len": 2336
+  },
+  {
+   "source_id": "corpus-00309",
+   "jaccard": 0.09448818897637795,
+   "char5_cosine": 0.3404909687756096,
+   "length_ratio": 0.2687911326636647,
+   "a_len": 776,
+   "b_len": 2887
+  },
+  {
+   "source_id": "corpus-00275",
+   "jaccard": 0.0945945945945946,
+   "char5_cosine": 0.317802090856556,
+   "length_ratio": 0.26312419974391804,
+   "a_len": 822,
+   "b_len": 3124
+  },
+  {
+   "source_id": "corpus-00371",
+   "jaccard": 0.09523809523809523,
+   "char5_cosine": 0.288466947085043,
+   "length_ratio": 0.42538071065989846,
+   "a_len": 838,
+   "b_len": 1970
+  },
+  {
+   "source_id": "corpus-00276",
+   "jaccard": 0.0954356846473029,
+   "char5_cosine": 0.38144158445179704,
+   "length_ratio": 0.27110582639714625,
+   "a_len": 684,
+   "b_len": 2523
+  },
+  {
+   "source_id": "corpus-00334",
+   "jaccard": 0.09663865546218488,
+   "char5_cosine": 0.30051993708796265,
+   "length_ratio": 0.2857142857142857,
+   "a_len": 722,
+   "b_len": 2527
+  },
+  {
+   "source_id": "corpus-00061",
+   "jaccard": 0.09691629955947137,
+   "char5_cosine": 0.32064369790187464,
+   "length_ratio": 0.3352967829632986,
+   "a_len": 740,
+   "b_len": 2207
+  },
+  {
+   "source_id": "corpus-00214",
+   "jaccard": 0.0972972972972973,
+   "char5_cosine": 0.23799909651467446,
+   "length_ratio": 0.4275990099009901,
+   "a_len": 691,
+   "b_len": 1616
+  },
+  {
+   "source_id": "corpus-00277",
+   "jaccard": 0.0975609756097561,
+   "char5_cosine": 0.3578115391126509,
+   "length_ratio": 0.2814110186286167,
+   "a_len": 710,
+   "b_len": 2523
+  },
+  {
+   "source_id": "corpus-00376",
+   "jaccard": 0.09767441860465116,
+   "char5_cosine": 0.3336085401571458,
+   "length_ratio": 0.41196834817012856,
+   "a_len": 833,
+   "b_len": 2022
+  },
+  {
+   "source_id": "corpus-00290",
+   "jaccard": 0.09811320754716982,
+   "char5_cosine": 0.33759435006765764,
+   "length_ratio": 0.2709137709137709,
+   "a_len": 842,
+   "b_len": 3108
+  },
+  {
+   "source_id": "corpus-00111",
+   "jaccard": 0.09844559585492228,
+   "char5_cosine": 0.2549828805942004,
+   "length_ratio": 0.47017129356172477,
+   "a_len": 796,
+   "b_len": 1693
+  },
+  {
+   "source_id": "corpus-00085",
+   "jaccard": 0.09881422924901186,
+   "char5_cosine": 0.40730244151288403,
+   "length_ratio": 0.254601226993865,
+   "a_len": 747,
+   "b_len": 2934
+  },
+  {
+   "source_id": "corpus-00202",
+   "jaccard": 0.09881422924901186,
+   "char5_cosine": 0.28307069172242366,
+   "length_ratio": 0.3800813008130081,
+   "a_len": 935,
+   "b_len": 2460
+  },
+  {
+   "source_id": "corpus-00281",
+   "jaccard": 0.09917355371900827,
+   "char5_cosine": 0.35635387139071245,
+   "length_ratio": 0.33547466095645967,
+   "a_len": 940,
+   "b_len": 2802
+  },
+  {
+   "source_id": "corpus-00325",
+   "jaccard": 0.1,
+   "char5_cosine": 0.308571664093165,
+   "length_ratio": 0.3416095890410959,
+   "a_len": 798,
+   "b_len": 2336
+  },
+  {
+   "source_id": "corpus-00330",
+   "jaccard": 0.1,
+   "char5_cosine": 0.34069379851300696,
+   "length_ratio": 0.34690943938667945,
+   "a_len": 724,
+   "b_len": 2087
+  },
+  {
+   "source_id": "corpus-00268",
+   "jaccard": 0.1004566210045662,
+   "char5_cosine": 0.4556060336558937,
+   "length_ratio": 0.2614481409001957,
+   "a_len": 668,
+   "b_len": 2555
+  },
+  {
+   "source_id": "corpus-00004",
+   "jaccard": 0.10047846889952153,
+   "char5_cosine": 0.3749599859423812,
+   "length_ratio": 0.2160929075072584,
+   "a_len": 521,
+   "b_len": 2411
+  },
+  {
+   "source_id": "corpus-00337",
+   "jaccard": 0.10091743119266056,
+   "char5_cosine": 0.2811686933361325,
+   "length_ratio": 0.2960917587085811,
+   "a_len": 697,
+   "b_len": 2354
+  },
+  {
+   "source_id": "corpus-00304",
+   "jaccard": 0.1013215859030837,
+   "char5_cosine": 0.3313561709727964,
+   "length_ratio": 0.2973830293417922,
+   "a_len": 750,
+   "b_len": 2522
+  },
+  {
+   "source_id": "corpus-00042",
+   "jaccard": 0.1016260162601626,
+   "char5_cosine": 0.23917582993098674,
+   "length_ratio": 0.2652591170825336,
+   "a_len": 691,
+   "b_len": 2605
+  },
+  {
+   "source_id": "corpus-00084",
+   "jaccard": 0.10204081632653061,
+   "char5_cosine": 0.37111571645635405,
+   "length_ratio": 0.2698191933240612,
+   "a_len": 776,
+   "b_len": 2876
+  },
+  {
+   "source_id": "corpus-00302",
+   "jaccard": 0.1036036036036036,
+   "char5_cosine": 0.40082822724268213,
+   "length_ratio": 0.2977795400475813,
+   "a_len": 751,
+   "b_len": 2522
+  },
+  {
+   "source_id": "corpus-00244",
+   "jaccard": 0.1037344398340249,
+   "char5_cosine": 0.2255060457380557,
+   "length_ratio": 0.21776814734561215,
+   "a_len": 603,
+   "b_len": 2769
+  },
+  {
+   "source_id": "corpus-00285",
+   "jaccard": 0.1037344398340249,
+   "char5_cosine": 0.37882889308191126,
+   "length_ratio": 0.3572524942440522,
+   "a_len": 931,
+   "b_len": 2606
+  },
+  {
+   "source_id": "corpus-00105",
+   "jaccard": 0.10526315789473684,
+   "char5_cosine": 0.2958049637504726,
+   "length_ratio": 0.5586519766688269,
+   "a_len": 862,
+   "b_len": 1543
+  },
+  {
+   "source_id": "corpus-00049",
+   "jaccard": 0.10555555555555556,
+   "char5_cosine": 0.2554029256012743,
+   "length_ratio": 0.37321760694358336,
+   "a_len": 602,
+   "b_len": 1613
+  },
+  {
+   "source_id": "corpus-00005",
+   "jaccard": 0.10576923076923077,
+   "char5_cosine": 0.3764972888948217,
+   "length_ratio": 0.2148486105350477,
+   "a_len": 518,
+   "b_len": 2411
+  },
+  {
+   "source_id": "corpus-00191",
+   "jaccard": 0.1059322033898305,
+   "char5_cosine": 0.37088846171038653,
+   "length_ratio": 0.45614849187935036,
+   "a_len": 983,
+   "b_len": 2155
+  },
+  {
+   "source_id": "corpus-00284",
+   "jaccard": 0.10612244897959183,
+   "char5_cosine": 0.3338791008381395,
+   "length_ratio": 0.352781019058732,
+   "a_len": 907,
+   "b_len": 2571
+  },
+  {
+   "source_id": "corpus-00308",
+   "jaccard": 0.10655737704918032,
+   "char5_cosine": 0.38127523081804937,
+   "length_ratio": 0.2459300311742293,
+   "a_len": 710,
+   "b_len": 2887
+  },
+  {
+   "source_id": "corpus-00351",
+   "jaccard": 0.10756972111553785,
+   "char5_cosine": 0.4049752664478151,
+   "length_ratio": 0.31106941838649155,
+   "a_len": 829,
+   "b_len": 2665
+  },
+  {
+   "source_id": "corpus-00195",
+   "jaccard": 0.10775862068965517,
+   "char5_cosine": 0.3646361379405957,
+   "length_ratio": 0.4321105288232492,
+   "a_len": 907,
+   "b_len": 2099
+  },
+  {
+   "source_id": "corpus-00511",
+   "jaccard": 0.10810810810810811,
+   "char5_cosine": 0.3261009795466061,
+   "length_ratio": 0.23134571521668296,
+   "a_len": 710,
+   "b_len": 3069
+  },
+  {
+   "source_id": "corpus-00512",
+   "jaccard": 0.10810810810810811,
+   "char5_cosine": 0.3273001328096575,
+   "length_ratio": 0.23136999674585096,
+   "a_len": 711,
+   "b_len": 3073
+  },
+  {
+   "source_id": "corpus-00514",
+   "jaccard": 0.10810810810810811,
+   "char5_cosine": 0.32577323978586764,
+   "length_ratio": 0.23134571521668296,
+   "a_len": 710,
+   "b_len": 3069
+  },
+  {
+   "source_id": "corpus-00515",
+   "jaccard": 0.10810810810810811,
+   "char5_cosine": 0.32677413578871406,
+   "length_ratio": 0.23136999674585096,
+   "a_len": 711,
+   "b_len": 3073
+  },
+  {
+   "source_id": "corpus-00517",
+   "jaccard": 0.10810810810810811,
+   "char5_cosine": 0.32424859390710026,
+   "length_ratio": 0.231170524942941,
+   "a_len": 709,
+   "b_len": 3067
+  },
+  {
+   "source_id": "corpus-00518",
+   "jaccard": 0.10810810810810811,
+   "char5_cosine": 0.3276340677250002,
+   "length_ratio": 0.23152067730380985,
+   "a_len": 711,
+   "b_len": 3071
+  },
+  {
+   "source_id": "corpus-00520",
+   "jaccard": 0.10810810810810811,
+   "char5_cosine": 0.32689356838849853,
+   "length_ratio": 0.2311950504721589,
+   "a_len": 710,
+   "b_len": 3071
+  },
+  {
+   "source_id": "corpus-00341",
+   "jaccard": 0.10830324909747292,
+   "char5_cosine": 0.3193337639195178,
+   "length_ratio": 0.29246266064605764,
+   "a_len": 842,
+   "b_len": 2879
+  },
+  {
+   "source_id": "corpus-00106",
+   "jaccard": 0.10857142857142857,
+   "char5_cosine": 0.300574286573416,
+   "length_ratio": 0.5406091370558376,
+   "a_len": 852,
+   "b_len": 1576
+  },
+  {
+   "source_id": "corpus-00103",
+   "jaccard": 0.11,
+   "char5_cosine": 0.3660820297458134,
+   "length_ratio": 0.5041079812206573,
+   "a_len": 859,
+   "b_len": 1704
+  },
+  {
+   "source_id": "corpus-00306",
+   "jaccard": 0.11023622047244094,
+   "char5_cosine": 0.37750178226761394,
+   "length_ratio": 0.2812608243851749,
+   "a_len": 812,
+   "b_len": 2887
+  },
+  {
+   "source_id": "corpus-00271",
+   "jaccard": 0.1103448275862069,
+   "char5_cosine": 0.2983195120610505,
+   "length_ratio": 0.2525608194622279,
+   "a_len": 789,
+   "b_len": 3124
+  },
+  {
+   "source_id": "corpus-00274",
+   "jaccard": 0.11149825783972125,
+   "char5_cosine": 0.3106854699354025,
+   "length_ratio": 0.2592829705505762,
+   "a_len": 810,
+   "b_len": 3124
+  },
+  {
+   "source_id": "corpus-00200",
+   "jaccard": 0.1115702479338843,
+   "char5_cosine": 0.31123472138433594,
+   "length_ratio": 0.4242569511025887,
+   "a_len": 885,
+   "b_len": 2086
+  },
+  {
+   "source_id": "corpus-00301",
+   "jaccard": 0.11210762331838565,
+   "char5_cosine": 0.3832411128946059,
+   "length_ratio": 0.30650277557494054,
+   "a_len": 773,
+   "b_len": 2522
+  },
+  {
+   "source_id": "corpus-00331",
+   "jaccard": 0.11261261261261261,
+   "char5_cosine": 0.37509594401964935,
+   "length_ratio": 0.3334721065778518,
+   "a_len": 801,
+   "b_len": 2402
+  },
+  {
+   "source_id": "corpus-00326",
+   "jaccard": 0.11312217194570136,
+   "char5_cosine": 0.36183056435358935,
+   "length_ratio": 0.3612841399137518,
+   "a_len": 754,
+   "b_len": 2087
+  },
+  {
+   "source_id": "corpus-00052",
+   "jaccard": 0.11320754716981132,
+   "char5_cosine": 0.38978258094208285,
+   "length_ratio": 0.36050955414012736,
+   "a_len": 566,
+   "b_len": 1570
+  },
+  {
+   "source_id": "corpus-00317",
+   "jaccard": 0.11428571428571428,
+   "char5_cosine": 0.3608091793520368,
+   "length_ratio": 0.3767985611510791,
+   "a_len": 838,
+   "b_len": 2224
+  },
+  {
+   "source_id": "corpus-00451",
+   "jaccard": 0.11483253588516747,
+   "char5_cosine": 0.44212492488878524,
+   "length_ratio": 0.24221593206631623,
+   "a_len": 599,
+   "b_len": 2473
+  },
+  {
+   "source_id": "corpus-00192",
+   "jaccard": 0.11607142857142858,
+   "char5_cosine": 0.40427187105900125,
+   "length_ratio": 0.4033850493653032,
+   "a_len": 858,
+   "b_len": 2127
+  },
+  {
+   "source_id": "corpus-00283",
+   "jaccard": 0.11666666666666667,
+   "char5_cosine": 0.4244143716482451,
+   "length_ratio": 0.3471910112359551,
+   "a_len": 927,
+   "b_len": 2670
+  },
+  {
+   "source_id": "corpus-00197",
+   "jaccard": 0.11688311688311688,
+   "char5_cosine": 0.2969323476921287,
+   "length_ratio": 0.46386395843174305,
+   "a_len": 982,
+   "b_len": 2117
+  },
+  {
+   "source_id": "corpus-00194",
+   "jaccard": 0.11739130434782609,
+   "char5_cosine": 0.3893493271698011,
+   "length_ratio": 0.43333333333333335,
+   "a_len": 910,
+   "b_len": 2100
+  },
+  {
+   "source_id": "corpus-00231",
+   "jaccard": 0.11864406779661017,
+   "char5_cosine": 0.37850679615529387,
+   "length_ratio": 0.2586145648312611,
+   "a_len": 728,
+   "b_len": 2815
+  },
+  {
+   "source_id": "corpus-00001",
+   "jaccard": 0.11981566820276497,
+   "char5_cosine": 0.36093423312266576,
+   "length_ratio": 0.25715470759021153,
+   "a_len": 620,
+   "b_len": 2411
+  },
+  {
+   "source_id": "corpus-00230",
+   "jaccard": 0.1201923076923077,
+   "char5_cosine": 0.2490152921515505,
+   "length_ratio": 0.2899957788096243,
+   "a_len": 687,
+   "b_len": 2369
+  },
+  {
+   "source_id": "corpus-00303",
+   "jaccard": 0.12053571428571429,
+   "char5_cosine": 0.3332637019544673,
+   "length_ratio": 0.2831086439333862,
+   "a_len": 714,
+   "b_len": 2522
+  },
+  {
+   "source_id": "corpus-00513",
+   "jaccard": 0.12075471698113208,
+   "char5_cosine": 0.32547571845667367,
+   "length_ratio": 0.21951980043654507,
+   "a_len": 704,
+   "b_len": 3207
+  },
+  {
+   "source_id": "corpus-00519",
+   "jaccard": 0.12075471698113208,
+   "char5_cosine": 0.32434131979958375,
+   "length_ratio": 0.21969460891243378,
+   "a_len": 705,
+   "b_len": 3209
+  },
+  {
+   "source_id": "corpus-00516",
+   "jaccard": 0.12121212121212122,
+   "char5_cosine": 0.3259949104267971,
+   "length_ratio": 0.21951980043654507,
+   "a_len": 704,
+   "b_len": 3207
+  },
+  {
+   "source_id": "corpus-00083",
+   "jaccard": 0.12236286919831224,
+   "char5_cosine": 0.4375648555000806,
+   "length_ratio": 0.2755102040816326,
+   "a_len": 783,
+   "b_len": 2842
+  },
+  {
+   "source_id": "corpus-00203",
+   "jaccard": 0.1232876712328767,
+   "char5_cosine": 0.3315867617865395,
+   "length_ratio": 0.39555555555555555,
+   "a_len": 890,
+   "b_len": 2250
+  },
+  {
+   "source_id": "corpus-00081",
+   "jaccard": 0.124,
+   "char5_cosine": 0.4297362733369189,
+   "length_ratio": 0.28256374913852517,
+   "a_len": 820,
+   "b_len": 2902
+  },
+  {
+   "source_id": "corpus-00003",
+   "jaccard": 0.1330049261083744,
+   "char5_cosine": 0.457415391562668,
+   "length_ratio": 0.22065532973869764,
+   "a_len": 532,
+   "b_len": 2411
+  },
+  {
+   "source_id": "corpus-00321",
+   "jaccard": 0.13654618473895583,
+   "char5_cosine": 0.31655189454696686,
+   "length_ratio": 0.3672945205479452,
+   "a_len": 858,
+   "b_len": 2336
+  },
+  {
+   "source_id": "corpus-00101",
+   "jaccard": 0.15384615384615385,
+   "char5_cosine": 0.44748896235063995,
+   "length_ratio": 0.37566844919786097,
+   "a_len": 843,
+   "b_len": 2244
+  },
+  {
+   "source_id": "corpus-00502",
+   "jaccard": 0.16766467065868262,
+   "char5_cosine": 0.37004578807896893,
+   "length_ratio": 0.4844246662428481,
+   "a_len": 762,
+   "b_len": 1573
+  },
+  {
+   "source_id": "corpus-00503",
+   "jaccard": 0.16766467065868262,
+   "char5_cosine": 0.3698456421738511,
+   "length_ratio": 0.4844641724793913,
+   "a_len": 764,
+   "b_len": 1577
+  },
+  {
+   "source_id": "corpus-00505",
+   "jaccard": 0.16766467065868262,
+   "char5_cosine": 0.36737370624733556,
+   "length_ratio": 0.48444444444444446,
+   "a_len": 763,
+   "b_len": 1575
+  },
+  {
+   "source_id": "corpus-00506",
+   "jaccard": 0.16766467065868262,
+   "char5_cosine": 0.36935797062900805,
+   "length_ratio": 0.4844641724793913,
+   "a_len": 764,
+   "b_len": 1577
+  },
+  {
+   "source_id": "corpus-00508",
+   "jaccard": 0.16766467065868262,
+   "char5_cosine": 0.37037221445566554,
+   "length_ratio": 0.48444444444444446,
+   "a_len": 763,
+   "b_len": 1575
+  },
+  {
+   "source_id": "corpus-00501",
+   "jaccard": 0.1686746987951807,
+   "char5_cosine": 0.36410097515648826,
+   "length_ratio": 0.4827586206896552,
+   "a_len": 756,
+   "b_len": 1566
+  },
+  {
+   "source_id": "corpus-00504",
+   "jaccard": 0.1686746987951807,
+   "char5_cosine": 0.36815296064343844,
+   "length_ratio": 0.48280254777070064,
+   "a_len": 758,
+   "b_len": 1570
+  },
+  {
+   "source_id": "corpus-00507",
+   "jaccard": 0.1686746987951807,
+   "char5_cosine": 0.3673809502677896,
+   "length_ratio": 0.48311026131293816,
+   "a_len": 758,
+   "b_len": 1569
+  },
+  {
+   "source_id": "corpus-00510",
+   "jaccard": 0.1686746987951807,
+   "char5_cosine": 0.36699672395962035,
+   "length_ratio": 0.48278061224489793,
+   "a_len": 757,
+   "b_len": 1568
+  }
+ ]
+}
