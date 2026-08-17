@@ -5,6 +5,67 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0122
+
+- Batch file: results/train-batch-0122.jsonl
+- Corpus range: train.jsonl lines 1211-1220 (0-indexed 1210..1219)
+- Source IDs: corpus-01339, corpus-01341, corpus-01342, corpus-01343, corpus-01344,
+  corpus-01345, corpus-01346, corpus-01347, corpus-01348, corpus-01349
+- Progress: train 1220/5399, validation 0/601, total 1220/6000, remaining 4780
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1220 aggregate records, 12 required fields per record,
+  lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1],
+  source_id globally unique, aggregate train sequence a strict prefix of train.jsonl,
+  validation sequence empty)
+- Repair actions: none required for the batch itself. Lifecycle note: a stale lock
+  (age ~11 minutes, above the 10-minute threshold) from a previous run was recorded
+  and removed before this run acquired the lock atomically.
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over all files in this experiment directory
+  (excluding the manifest itself and __pycache__); `sha256sum -c` reported all OK.
+
+### Technical themes covered by this batch
+
+All ten items are variants (scenario 39, 41-49) of one seed: a long-context LLM
+serving deployment that intermittently OOMs after several concurrent requests, with
+the instruction explicitly demanding a falsifiable hypothesis and a controlled
+experiment. The source assistant text is identical across all ten and is a grading
+rubric rather than an answer, so every item was marked rewrite.
+
+The ten rewrites deliberately attack the scenario from different angles so the batch
+is not ten paraphrases: memory-headroom regression and sweep design; incident triage
+with a device-OOM vs host-OOM-kill split; allocator fragmentation as the binding
+constraint (allocated vs reserved gap, prompt-length variance); admission contract as
+a design defect (L, C, P bounds making the worst case computable); intermittency as a
+state-variable/uptime question with a restart-based discriminator; quantitative memory
+budgeting with an explicit residual and unmodelled-term detection; degradation policy
+(queue vs reject vs preempt) under overload; the false-confirmation trap of lowering
+concurrency when the KV pool was never saturated; cost-of-fix accounting (headroom
+gained per unit goodput lost, with a quality gate on KV quantization); and failure
+isolation, where a single rank's OOM aborts an entire tensor-parallel collective so
+headroom requirements scale with parallel degree.
+
+Recurring technical content: the KV closed form
+2 * layers * kv_heads * head_dim * dtype_bytes * resident_tokens under GQA/MQA; the
+boundary condition that a preallocated paged KV pool should preempt or queue rather
+than raise CUDA OOM, implying out-of-pool consumers (prefill activation spikes, logits
+buffers scaling with batch x vocab, LoRA adapters, speculative draft state, allocator
+fragmentation); chunked prefill, expandable segments, length bucketing, prefix caching
+and KV quantization as mitigations ordered by reversibility; and multi-node topics
+including NCCL comm buffers, RDMA/RoCE registered memory, PFC/ECN misconfiguration
+coupling into latency and in-flight state, Dynamo-style prefill/decode disaggregation
+and Mooncake-style hierarchical KV offload as structural options with named costs.
+
+Every answer carries explicit assumptions, a numbered falsifiable hypothesis with its
+refutation condition, a controlled experiment with repeats and randomized ordering,
+named confounders, required evidence, and rollback gates.
+
+**Status: these teacher-B outputs are PROVISIONAL.** They are one model's independent
+blind second opinion, not expert gold labels, and they were produced without any
+access to the teacher-A lane. They say nothing about any trained model's domain
+capability; agreement analysis against teacher-A is a separate, later step.
+
 ## Run 2026-08-17 batch 0120
 
 - Batch file: results/train-batch-0120.jsonl
