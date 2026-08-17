@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0107
+
+- Batch file: results/train-batch-0107.jsonl
+- Corpus range: train.jsonl lines 1061-1070 (source IDs corpus-01170 through corpus-01179, contiguous, corpus file order preserved exactly, no skips, no reordering)
+- Progress: train 1070/5399, validation 0/601, total 1070/6000, remaining 4930
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema/prefix check: PASS (verify_batches.py, first run, no repairs needed)
+- Repairs performed: none
+- Final schema/prefix check: PASS — train=1070/5399 validation=0/601 total=1070/6000, SCHEMA_CHECK=PASS; source_id global uniqueness re-checked independently (1070 records, 1070 unique)
+- Manifest: MANIFEST.sha256 regenerated over all files except itself; `sha256sum -c` reports 184/184 OK, zero failures
+- Technical topics covered: LLM serving evaluation methodology for mixed short-prompt / long-generation traffic — prefill vs decode separation (compute-bound vs HBM-bandwidth-bound), frozen TTFT/TPOT/queueing-delay/goodput definitions, open-loop Poisson arrival generation and why closed-loop harnesses truncate the P99 tail, clock pinning and DVFS/thermal confounds, KV cache preemption and fragmentation as a hidden regression, roofline-style attribution for the Performance Analysis items, symptom-class triage ordering (TTFT-only / TPOT-only / both) for the Troubleshooting items, and prefill/decode disaggregation with RDMA KV transfer (Mooncake-style, NVIDIA Dynamo-style) for the System Design items, framed as a measurable inequality rather than a default recommendation. Every rewrite carries a pre-registered falsifiable hypothesis with a kill condition, an explicit confounder list, an evidence-required list, and a canary rollback gate.
+- All 10 source_assistant values were rubric checklists ("Answer should state...") rather than answers, hence decision=rewrite across the batch; source_user/source_assistant were copied byte-for-byte and the original corpus was not modified.
+- Status: PROVISIONAL. These are single-model teacher-B second opinions produced blind (no teacher-A artifact was read, opened, or grepped during this batch). They are NOT expert gold labels, have NOT been human-verified, and say nothing about any model's domain capability. Agreement analysis against teacher-A is a separate, later step and was deliberately not performed here.
+
 ## Run 2026-08-17 batch 0106
 
 - Batch file: results/train-batch-0106.jsonl
