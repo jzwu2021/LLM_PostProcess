@@ -56,11 +56,74 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 60/5399; validation 0/601; total 60/6000; remaining 5940.
+Progress: train 80/5399; validation 0/601; total 80/6000; remaining 5920.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 — train-batch-0008.jsonl
+
+- Batch file: results/train-batch-0008.jsonl
+- Builder: scripts/gen_batch_0008.py
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 71-80 (0-indexed 70-79)
+- Source IDs: corpus-00081, corpus-00082, corpus-00083, corpus-00084, corpus-00085,
+  corpus-00086, corpus-00087, corpus-00088, corpus-00089, corpus-00090
+- Progress after this batch: train 80/5399, validation 0/601, total 80/6000,
+  remaining 5920
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: scripts/verify_batches.py → VERIFY_PASS on first run
+- Repairs applied: none required
+- Final schema check: VERIFY_PASS (train=80/5399 validation=0/601 total=80/6000)
+- Manifest: MANIFEST.sha256 regenerated over all 21 files in this directory
+  except itself; `sha256sum -c` reported 21 OK, 0 failures
+- Technical topics covered: this block is two prompt families of five case
+  variants each, both anchored on the prefill phase. Family 1 ("how prefill
+  changes between training and inference") required contrasting the two regimes;
+  the rewrite separates what is structurally identical (one parallel causal pass,
+  dense GEMMs of shape (B*N x d) x (d x d'), compute-bound at large B*N) from
+  what actually differs — activation retention for backward at O(L*B*N*d) versus
+  immediate discard, the KV cache emitted by inference prefill
+  (2*L*N*n_kv_heads*head_dim*dtype_bytes) versus training throwing it away,
+  the ~3x forward cost of training with no decode phase at all, and static
+  fixed-shape training schedules versus online heterogeneous prefill needing
+  chunked prefill, continuous batching, or full P/D disaggregation
+  (Mooncake / NVIDIA Dynamo). Each variant carries a distinct boundary
+  condition: small-N underutilization crossover on A30 (~933 GB/s, ~165 TFLOPS
+  bf16, crossover N ~100-200), the O(N^2) attention term overtaking the dense
+  term past N ~8k-16k, activation checkpointing shifting the memory/compute
+  tradeoff (~25-35% step-time cost), chunked-prefill-versus-decode SM contention
+  producing a TTFT/p99-ITL frontier, and tensor-parallel all-reduce traffic of
+  ~2*B*N*d bytes per layer making prefill communication-bound across RoCE/IB.
+  Family 2 ("give one misleading intuition about prefill and correct it")
+  required naming a false intuition, which the source answer never does; the
+  five rewrites each pick a different one — "parallel means length is free",
+  "one tokens/s number describes the server" (prefill compute-bound vs decode
+  HBM-bandwidth-bound roofline split), "compute-bound means no memory problem"
+  (KV cache is created during prefill and is the dominant OOM source on 24GB
+  A30s), "TP scales prefill linearly" (per-layer collectives grow with N; GDR
+  versus host-staged paths change effective busbw), and "disaggregation always
+  wins" (full KV transfer sits on the TTFT critical path, so it loses for short
+  prompts or weak fabrics). Every rewrite states assumptions, gives a
+  falsifiable prediction, and names the measurement that would refute it;
+  variants 4 and 5 of family 2 also state explicit rollback gates (revert TP
+  width if the measured collective gap exceeds ~20% of step time; revert to
+  colocated serving if p99 TTFT regresses more than 10%).
+- Quality scoring rationale: all 10 source answers are the same single generic
+  sentence, which restates a textbook definition without mechanism, units, or
+  boundary conditions, and in both families fails to perform the instruction
+  actually issued. Scored technical_correctness=2 (directionally true but too
+  coarse to act on and silently wrong in the small-N and long-context regimes),
+  instruction_coverage=1, operational_safety=3 (no unsafe advice, but no
+  evidence requirements or rollback gates either). Decision was rewrite for all
+  10 rather than reject, since the source sentence contains a usable kernel.
+- IMPORTANT: these results are PROVISIONAL teacher-B review output. They are NOT
+  expert gold labels, have NOT been validated by a human domain expert, and do
+  NOT constitute evidence of any model's domain capability. They exist only to
+  support a later independent inter-teacher agreement analysis. This batch was
+  produced BLIND: no file under
+  experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, or
+  grepped at any point while producing it.
 
 ### 2026-08-17 — train-batch-0007.jsonl
 
