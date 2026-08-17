@@ -5,6 +5,43 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0019
+
+- Batch file: results/train-batch-0019.jsonl
+- Corpus range: train.jsonl lines 181-190, source IDs corpus-00203 .. corpus-00212 (contiguous, corpus order preserved exactly, nothing skipped or reordered)
+- Progress: train 190/5399, validation 0/601, total 190/6000, remaining 5810
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py -> VERIFY=PASS, train=190/5399, validation=0/601, total=190/6000)
+- Repairs applied: none required this run
+- Final schema check: PASS (exactly 12 fields per record; teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional, decision in keep/rewrite/reject; source_user and source_assistant character-exact against corpus; corrected_answer non-empty; confidence in [0,1]; quality_dimensions integers 1-5; risks and evidence_required string arrays; source_id globally unique; aggregated train sequence is a strict prefix of corpus order)
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory excluding itself; `sha256sum -c` reports all OK, 0 failures
+- Generator script archived at scripts/gen_train_batch_0019.py
+- Lock: /tmp/teacher-b-corpus-review.lock acquired atomically at run start, released at run end
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened or grepped during this run
+
+Technical topics covered by this batch: all ten items are tensor-parallelism (TP)
+questions in three framings - define TP (00203-00205), contrast TP against a naive
+non-TP implementation (00206-00210), and give two failure modes / trade-offs
+(00211-00212). Every source answer is the identical single sentence ("shards
+computation within layers and introduces collective communication; the best degree
+depends on memory, topology, batch, and communication cost"), which is true but is
+reused verbatim across all three question shapes, so it never actually contrasts
+anything and never enumerates failure modes. All ten were rewritten with distinct
+content: Megatron column-then-row sharding and the two all-reduces per block;
+head-sharding of attention and the min(TP, num_key_value_heads) bound on KV savings;
+the TPOT(N) = C/N + L(N) latency model and its measurable crossover on PCIe-attached
+A30s versus NVLink; ring all-reduce cost 2(N-1)/N * S bytes in 2(N-1) steps and why
+prefill is bandwidth-bound while decode is latency-bound; the non-shardable memory
+remainder (full-shape residual stream, replicated norms) that makes real savings less
+than 1/N; correlated failure and NCCL watchdog lockstep as an operational cost the
+naive single-device path does not pay; and checkpoint/TP-degree coupling with a
+generation-parity probe as the rollback gate.
+
+These outputs are PROVISIONAL teacher-B model judgements. They are not expert gold
+labels, they have not been validated against measurements on real hardware, and they
+say nothing about any model's domain capability. They exist only to be compared later,
+in a separate step, against the independently produced teacher-A lane.
+
 ## Run 2026-08-17 batch 0018
 
 - Batch file: results/train-batch-0018.jsonl
