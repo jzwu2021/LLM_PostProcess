@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0079
+
+- Batch file: results/train-batch-0079.jsonl
+- Corpus range: train.jsonl lines 781-790 (source IDs corpus-00860, corpus-00861, corpus-00862, corpus-00863, corpus-00864, corpus-00865, corpus-00866, corpus-00867, corpus-00868, corpus-00869 — corpus file order preserved exactly, no skips or reordering)
+- Progress: train 790/5399, validation 0/601, total 790/6000, remaining 5210
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py — JSONL per-line parse, batch count 10, 12 required fields, teacher_lane/teacher_model/calibration_status/decision enums, quality_dimensions integers in 1-5, risks/evidence_required string arrays, source_user/source_assistant character-exact vs corpus, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness across all batches, train/validation aggregates strict prefixes of their corpora)
+- Repairs performed: one self-initiated correction before the manifest step. The generator's first pass auto-assigned `keep` whenever the source arithmetic reproduced exactly, which scored the record on numeric correctness alone. That is the wrong rubric for this lane — instruction coverage and operational safety are graded separately — so the generator was amended to mark these `rewrite` and lower instruction_coverage/operational_safety to 2, then the batch was regenerated and re-verified. No corpus file and no earlier batch was touched.
+- Final schema check: PASS (train_processed=790, validation_processed=0, total=790, ERRORS 0)
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except itself; `sha256sum -c` all-pass, 0 failures
+- Technical topics covered: single-request KV cache capacity arithmetic for GQA/MQA decoder stacks — layer depths 24-56, KV head counts 2-8, head dims 64-96-128, contexts 1024-4096 tokens, BF16/FP16 (2 B/value) and INT8 (1 B/value) KV dtypes. Every source byte total and GiB figure was independently recomputed from 2 x layers x seq_len x kv_heads x head_dim x bytes_per_value and matched to within 5e-6 GiB, so technical_correctness is 4. All ten were still marked `rewrite`: the source states the formula and the number but never says the head count must be post-GQA `num_key_value_heads` (substituting query heads silently overestimates by the GQA ratio), never mentions paged-allocator block-granularity round-up (vLLM/SGLang PagedAttention block_size 16/32), never accounts for INT8 per-block scale and zero-point metadata, never separates a per-request logical figure from an HBM capacity constraint that must also hold weights, activations, CUDA graphs and NCCL buffers, and never flags the architectures that break linear scaling (sliding-window attention, cross-layer KV sharing, MLA latent KV). The rewrites restate each of these as explicit falsifiable assumptions, add the per-token byte cost as the quantity that actually drives concurrency planning, enumerate the evidence needed (config.json num_hidden_layers / num_key_value_heads / head_dim, engine kv_cache_dtype, the startup GPU-KV-cache-size log line, nvidia-smi and torch.cuda.memory_summary under load) with a >10% analytic-vs-measured gap as the falsification trigger, and define a rollback gate on preemption/swap events or a p99 TTFT regression above 20% versus baseline.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, listed, grepped or searched at any point during this batch. The only inputs were source_user and source_assistant from research/ai-infra-expert/corpus/train.jsonl.
+- Status caveat: these results are PROVISIONAL teacher-B model output. They are not expert gold labels, have not been validated by a human domain expert, and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0078
 
 - Batch file: results/train-batch-0078.jsonl
