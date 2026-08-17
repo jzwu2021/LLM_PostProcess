@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0028
+
+- Batch file: results/train-batch-0028.jsonl
+- Corpus range: train.jsonl lines 271-280, source IDs corpus-00300 through corpus-00309 (contiguous in corpus order; nothing skipped or reordered)
+- Progress: train 280/5399, validation 0/601, total 280/6000, remaining 5720
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema/prefix check: PASS on first run (verify_batches.py, ERRORS: 0)
+- Repairs performed: none required
+- Final schema check: VERIFY_RESULT=PASS (train 280/5399 strict corpus prefix, validation 0/601)
+- Manifest: MANIFEST.sha256 regenerated over all 61 files in this directory (excluding itself and __pycache__); `sha256sum -c` passed with no mismatches
+- Technical topics covered: pipeline parallelism runbook diagnostics (1F1B bubble fraction (P-1)/(M+P-1), stage imbalance, P2P link placement, activation-memory ceiling on raising microbatch count, small-GEMM efficiency floor); Mixture-of-Experts definition and infrastructure implications (top-k routing decoupling capacity from per-token FLOPs, expert parallelism turning the FFN into two all-to-all collectives, capacity factor and silent token dropping under routing skew); MoE vs dense FFN contrast (all-reduce vs all-to-all fabric stress, NVLink vs cross-node RoCE/IB behaviour, regimes where dense wins on wall clock, decode-time HBM residency of all experts).
+- Every record carries explicit falsifiable hypotheses, required evidence (per-expert token histograms, drop rate, profiler traces over >=3 steady-state steps, per-rank peak memory, NCCL topology dumps) and numeric rollback gates.
+- These outputs are **provisional** teacher-B review only. They are NOT expert gold labels, have not been validated by a human domain expert, and say nothing about any model's domain capability. Blind review discipline held: no teacher-A artifact was read, opened or grepped during this batch.
+
 ## Run 2026-08-17 batch 0027
 
 - Batch file: results/train-batch-0027.jsonl
