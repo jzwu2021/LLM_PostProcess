@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0085
+
+- Batch file: results/train-batch-0085.jsonl
+- Corpus range: train.jsonl lines 841-850 (source IDs corpus-00924, corpus-00925, corpus-00926, corpus-00927, corpus-00928, corpus-00930, corpus-00931, corpus-00932, corpus-00933, corpus-00934 — corpus file order preserved exactly, no skips, no reordering; note the corpus itself skips corpus-00929)
+- Progress: train 850/5399, validation 0/601, total 850/6000, remaining 5150
+- This run: 10 items
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: `python3 experiments/2026-08-17-teacher-b-corpus-review/verify.py` → VERIFY_PASS on first attempt (train=850/5399, validation=0/601, total=850)
+- Repairs performed: none required
+- Final schema check: VERIFY_PASS (JSONL line-parseable, 10 records, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values valid, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique, aggregated train sequence is a strict prefix of train.jsonl)
+- Manifest: MANIFEST.sha256 regenerated over all files except itself; `sha256sum -c` → 153/153 OK, 0 failures
+- Blind-review discipline: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, grepped or listed while producing this batch. Only research/ai-infra-expert/corpus/train.jsonl was consulted.
+
+### Technical topics covered by this batch
+
+All ten items are `Calculation` / `numeric` cases on the same axis: per-request K/V cache
+footprint for a grouped-query-attention decoder, spanning 24–56 layers, 2–8 KV heads,
+head_dim 64/96/128, sequence lengths 1024–4096, and both BF16/FP16 (2 B) and INT8 (1 B)
+KV element widths. The arithmetic in every source answer was re-derived independently and
+matched, so all rewrites are additive rather than corrective: technical_correctness 5,
+instruction_coverage 4, operational_safety 3.
+
+The reason for `rewrite` rather than `keep` is that the source answers stop at the closed
+form and a one-line caveat. For an infrastructure copilot that is not sufficient — a capacity
+planner acting on the bare number will over-subscribe HBM. Each corrected_answer therefore adds:
+the mechanism (why the product form holds under GQA and why it is strictly linear in sequence
+length), the derived per-token cost `2 × layers × kv_heads × head_dim × bytes_per_value` as
+the quantity that actually drives concurrency budgeting, and explicit boundary conditions —
+PagedAttention block-size rounding and internal fragmentation, INT8/FP8 per-block scale
+metadata (~1–3 % overhead and an accuracy-affecting change, not a free win), the tensor-parallel
+sharding limit where kv_heads < TP degree causes replication so per-GPU KV stops shrinking,
+and MLA/compressed-latent architectures where the formula does not apply at all.
+
+Each answer states a falsifiable prediction (measured KV-pool occupancy at N concurrent
+requests should land within ~5–10 % above N × bytes; a larger gap must be attributed to
+fragmentation, prefix-cache retention or quantisation metadata by measurement, not assumption),
+the evidence needed to check it (model config fields, vLLM `GPU KV cache size` / num_gpu_blocks
+startup accounting, `nvidia-smi` or `torch.cuda.memory_summary()` steady-state HBM), and a
+rollback gate (keep ≥10 % HBM headroom and zero scheduler preemption/recompute events, else
+revert the max_num_seqs / max_model_len change before touching KV quantisation).
+
+**Status caveat:** these outputs are *provisional* teacher-B second opinions produced by a
+single model under blind conditions. They are not expert gold labels, they have not been
+adjudicated against teacher-A, and they say nothing about the domain capability of any trained
+model. Agreement analysis against teacher-A is a separate, later step outside this worker's scope.
+
 ## Run 2026-08-17 batch 0084
 
 - Batch file: results/train-batch-0084.jsonl
