@@ -5,6 +5,31 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0091
+
+- Batch file: results/train-batch-0091.jsonl
+- Corpus range: train.jsonl lines 901-910 (source IDs corpus-00988, corpus-00989, corpus-00990, corpus-00991, corpus-00992, corpus-00993, corpus-00994, corpus-00995, corpus-00997, corpus-00998 — corpus file order preserved exactly, no skips, no reordering; the gap at corpus-00996 is pre-existing in the corpus and was NOT introduced by this lane)
+- Progress: train 910/5399, validation 0/601, total 910/6000, remaining 5090
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (scripts/verify_batches.py — 910 train records, 910 unique source_ids, batch size 10, all 12 required fields present, enum fields correct, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers in [1,5], risks/evidence_required string arrays, source_user/source_assistant byte-identical to corpus, aggregate train sequence a strict prefix of train.jsonl)
+- Repairs applied: none required. Every rewritten answer's arithmetic was recomputed independently from the parsed parameters and asserted equal to the byte count stated in the source record before the batch was written; all 10 assertions passed.
+- Final schema check: PASS (VERIFY=PASS)
+- Manifest: MANIFEST.sha256 regenerated over 163 files (everything in this directory except MANIFEST.sha256); `sha256sum -c` reported all OK, exit 0
+- Technical topics covered: per-request K/V cache sizing under grouped-query / multi-query attention
+  (Calculation generator cases 488-498), spanning layers 24/32/40/48/56, kv_heads 2/4/6/8,
+  head_dim 64/96/128, sequence length 1024-4096, and both BF16/FP16 and INT8 KV dtypes. Each rewrite
+  keeps the correct closed-form formula but adds the operational boundary conditions the source omits:
+  PagedAttention block rounding, concurrency multiplication against the (GPU memory - weights -
+  activations - overhead) budget, tensor-parallel KV-head replication when kv_heads < TP degree,
+  prefix-cache and beam-search effects, speculative-decoding/chunked-prefill staging buffers, and for
+  INT8 the per-block scale/zero-point overhead plus dequant cost. Each answer states a falsifiable
+  doubling prediction, the specific telemetry needed to test it (engine KV block usage,
+  torch.cuda.memory_allocated deltas, nvidia-smi, model config.json), and a ~15% over-estimate
+  rollback gate before raising max_num_seqs / max_model_len.
+- Status: PROVISIONAL. This is a single-model blind second opinion, not expert gold, not adjudicated
+  against teacher-A (no teacher-A file was read during this run), and it says nothing about any
+  model's domain capability.
+
 ## Run 2026-08-17 batch 0090
 
 - Batch file: results/train-batch-0090.jsonl
