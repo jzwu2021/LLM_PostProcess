@@ -5,6 +5,56 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0044
+
+- Batch file: results/train-batch-0044.jsonl
+- Corpus range: train.jsonl lines 431-440 (0-indexed 430-439), source IDs corpus-00478, 00479, 00480, 00481, 00482, 00483, 00484, 00485, 00487, 00489 — strict corpus order, nothing skipped or reordered (the gaps at 00486/00488 are gaps in the corpus itself, not skips by this lane).
+- Progress: train 440/5399, validation 0/601, total 440/6000, remaining 5560
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (ad-hoc verifier `verify_batches.py` — JSONL line-parse, batch count 10, all 12 required fields, enum values for teacher_lane/teacher_model/calibration_status/decision, exact source_user/source_assistant equality against the original corpus, non-empty corrected_answer, confidence in [0,1], globally unique source_id, and train/validation aggregates strictly a prefix of each corpus).
+- Repairs: none required. No re-verification loop was needed this run.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except the manifest itself (`__pycache__` excluded); `sha256sum -c` returned OK for all 84 entries, 0 mismatches.
+- Final schema check: PASS (train 440/5399, validation 0/601, total 440, 0 errors).
+
+Technical topics covered by this batch: ten more speculative-decoding items, in
+three sub-clusters distinguished only by the user prompt. (1) corpus-00478..00480
+— "what assumptions must be stated before making a performance claim about
+speculative decoding"; the rewrite enumerates the hardware/topology, workload
+distribution and concurrency, sampling and acceptance-rule, draft/target pairing
+with measured E[a] and c_draft/c_target, and baseline-definition assumptions.
+(2) corpus-00481..00485 — "how speculative decoding changes between training and
+inference"; the rewrite makes the point that it is an inference-only execution
+strategy that leaves loss and gradients untouched, that training is already
+compute-bound under teacher forcing so there is no idle bandwidth to convert,
+that the only training-side connection is draft distillation to raise acceptance,
+and that a relaxed acceptance rule used in an RL rollout phase biases the
+gradient estimator. (3) corpus-00487, corpus-00489 — "give one misleading
+intuition and correct it"; the rewrite targets the belief that speculation is
+strictly free and raises throughput, correcting it with the latency-vs-throughput
+inversion at high concurrency, the speedup ≈ E[a]/(1 + gamma·c_draft/c_target)
+relation showing acceptance rate alone is insufficient, and the memory cost of
+resident draft weights plus speculated KV slots displacing admitted concurrency.
+Every rewrite carries an explicit mechanism (t_step ≈ model_bytes_read /
+effective_HBM_bandwidth in the memory-bound decode regime), at least one boundary
+condition, a falsifiable hypothesis, the evidence needed to test it, and a
+rollback gate.
+
+All ten source answers were the same two-clause definition. They are technically
+accurate but answer none of the three distinct questions, so the uniform decision
+is `rewrite` with instruction_coverage=1, technical_correctness=4, and
+operational_safety=2 (the source omits the memory/capacity cost and does not
+distinguish the lossless rejection-sampling acceptance rule from relaxed
+acceptance).
+
+Blindness: this batch was produced without reading, opening, grepping or
+otherwise inspecting any file under experiments/2026-08-14-teacher-a-corpus-calibration/.
+No teacher-A corrected_answer was visible at any point. Agreement-rate analysis
+is a separate, later step and is deliberately out of scope here.
+
+These results are PROVISIONAL second-opinion review output. They are not expert
+gold labels, they have not been validated against measurements on real hardware,
+and they say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0043
 
 - Batch file: results/train-batch-0043.jsonl
