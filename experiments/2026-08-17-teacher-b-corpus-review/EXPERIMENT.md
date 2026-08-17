@@ -5,6 +5,46 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0115
+
+- Batch file: results/train-batch-0115.jsonl
+- Corpus range: train.jsonl lines 1141-1150 (0-indexed 1140..1149)
+- Source IDs: corpus-01259, corpus-01262, corpus-01263, corpus-01264, corpus-01265,
+  corpus-01266, corpus-01267, corpus-01269, corpus-01270, corpus-01271
+- Progress: train 1150/5399, validation 0/601, total 1150/6000, remaining 4850
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1150 aggregate records, 12 required fields present,
+  lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1],
+  source_id globally unique, aggregate train sequence is a strict prefix of
+  train.jsonl)
+- Repairs: none required this run; verification passed on the first attempt
+- Final schema check: PASS (VERIFY_PASS, train 1150 / validation 0 / total 1150)
+- Manifest: MANIFEST.sha256 regenerated over all files except itself (198 entries),
+  `sha256sum -c` all OK
+- Technical topics covered: serving-capacity evaluation design for a mixed
+  short-prompt / long-generation workload. All ten items are the same scenario
+  family (variants 259-271) split across System Design, Troubleshooting and
+  Performance Analysis. The rewrites make explicit what the rubric only gestures at:
+  operational definitions with units for TTFT (queue-wait + prefill), TPOT
+  (decode-only, excluding the first token), throughput split into output-tokens/s
+  vs completed-requests/s, and instrumented queue-wait rather than inferred;
+  a pre-registered falsifiable hypothesis on batch-size vs throughput/TTFT-p99
+  trade-off with an explicit null; a controlled protocol fixing the workload trace,
+  arrival process (open-loop Poisson vs closed-loop concurrency are called out as
+  non-interchangeable), decoding params (ignore_eos on for throughput, off for
+  latency, never mixed), warmup discard with a stationarity check, and >=3
+  randomized repeated trials with a lambda sweep to the saturation knee;
+  confounders including prefill/decode interference bounded by chunked prefill,
+  KV-cache pressure causing preemption/recompute (bimodal TTFT), client-side
+  bottlenecks, power/thermal drift, noisy neighbours, and completion bias in the
+  percentile window; and pre-agreed rollback gates (TTFT p99 +20%, preemption >1%,
+  error-rate rise, gain inside the trial CI) with rollback by config flag against a
+  still-deployed previous build.
+- Status: PROVISIONAL. This is a second-opinion machine review, not expert gold, and
+  it says nothing about any model's domain capability. Agreement analysis against
+  teacher-A is a separate later step; no teacher-A artifact was read during this run.
+
 ## Run 2026-08-17 batch 0114
 
 - Batch file: results/train-batch-0114.jsonl
