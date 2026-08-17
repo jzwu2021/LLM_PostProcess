@@ -5,6 +5,33 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0058
+
+- Batch file: results/train-batch-0058.jsonl
+- Corpus range: train.jsonl 1-indexed lines 571-580, source IDs corpus-00633 through corpus-00643 (contiguous corpus slice; corpus-00639 is absent from train.jsonl itself, so the ID sequence has a natural gap — strict corpus line order preserved, nothing skipped or reordered by this worker).
+- Progress: train 580/5399, validation 0/601, total 580/6000, remaining 5420
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (no repairs needed this run).
+- Repairs: none. The original corpus, earlier batches, benchmark raw generations and all teacher-A artifacts were untouched; the teacher-A directory was not opened, read or grepped at any point (blind review).
+- Final schema check: PASS (train=580 validation=0 total=580; 10/10 rows parse as physical-newline JSONL, all 12 required fields present, teacher_lane=teacher-B / teacher_model=claude-opus-5-current / calibration_status=provisional / decision in {keep,rewrite,reject}, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, 580 globally unique source_ids, aggregated train sequence an exact prefix of train.jsonl, validation still empty).
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except the manifest itself; `sha256sum -c` reported OK with zero failures.
+
+Technical topics covered by this batch: single-request KV-cache memory sizing for
+transformer inference (Calculation cases 133-143). Parameter sweep: layers 24-56,
+KV heads 2-8, head_dim 64-128, seq_len 1024-4096, KV dtype INT8 and BF16/FP16.
+Each rewrite keeps the source arithmetic but adds the per-token planning constant,
+the GQA num_kv_heads-vs-num_attention_heads failure mode, paged-attention block
+rounding (vLLM/SGLang block_size=16), fixed startup KV-pool sizing under
+gpu_memory_utilization, MLA / sliding-window invalidation of the closed-form
+formula, tensor-parallel KV sharding divisibility, and disaggregated prefill/decode
+KV handoff cost over RDMA/RoCE with and without GPUDirect RDMA (Mooncake, NVIDIA
+Dynamo), plus falsifiable predictions, required evidence and an explicit rollback
+gate (>15% deviation or non-zero preemption counters).
+
+These results are PROVISIONAL model-generated second-opinion review output. They
+are NOT expert gold labels, have not been validated by a human domain expert, and
+say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0057
 
 - Batch file: results/train-batch-0057.jsonl

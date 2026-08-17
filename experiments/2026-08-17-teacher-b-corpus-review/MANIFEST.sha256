@@ -1,6 +1,6 @@
 ed6937c77afafe5c35d0fa19ec067c1fdf6a3ea42f328a2d9364315ab07a7224  ./agreement_report.json
 e110647a4e70206046794d2ebcc19160f52de6a4e3d99b6d97f9252685f8846a  ./environment.txt
-403fc1f3d96194bb8f8555bc6673810816b59ceaf5a33de733187fb3c0801527  ./EXPERIMENT.md
+eb4e4d05a6943a413a4ddb4f024fc5315ad6d41fc78f816a2611d70ab72c1ce9  ./EXPERIMENT.md
 2ac2635879e006ce78db2d7b8843f5400f28c8262cc6f42199325535b818fba0  ./results/train-batch-0001.jsonl
 baa4d2adc39351168681db1e8725c476643d78384f9da616f7c435637cb88d64  ./results/train-batch-0002.jsonl
 c89c19d7b6f05f219792edcebe18fb935a17fb9644ebc1c76725465f7b3c2758  ./results/train-batch-0003.jsonl
@@ -58,6 +58,7 @@ abce76601254702e7cdf0437125567e3bf2ea92fc8d27e8b677eebdd0737aed3  ./results/trai
 faa3f444394f7e8794ba589ff198d70f1778e43b86b98707ce36beff19e25a68  ./results/train-batch-0055.jsonl
 6983a800a2d729dbcb42916ca64af551fc21b677cde18dae88a5c63df9ca2cfa  ./results/train-batch-0056.jsonl
 b537fec3001282e486eaa08afc6a57af3c3ba684bdd390b62a615ea8161efb29  ./results/train-batch-0057.jsonl
+d25730b90c0b092cc9891c0aafcdbca51d6e44c4b0b1a17fabc8255179859e3c  ./results/train-batch-0058.jsonl
 303f94e5b0f65038e2a49e67f4c73aabce7de86aa991b33ab41f0b9dcdd35226  ./scripts/agreement_analysis.py
 827ffceee3e968eb1bc79b29522b93bbcc1e9360e05738b5e65359da60e58b01  ./scripts/build_batch_0020.py
 51dd29a33668c27c93baf86233a1171fe06b458aa74d81a3bf984b7c150cf36d  ./scripts/build_batch_0029.py
@@ -80,6 +81,7 @@ dbd618606f8ccfe4e91f9caf6a62b93ca8007f9bcd45f12b6cc9b65669f53337  ./scripts/gen_
 0da7ee0f1839dab8a4b76780ee7e2b6da7c99322efc8bbeacac8a45ffd5a1f54  ./scripts/gen_batch_0044.py
 26d1d8805909d2cebd2ca2dcdf32b776bcb288d0d41f8c4c155e66ba1909293e  ./scripts/gen_batch_0048.py
 80209074320994c9cd1b70f8c1b8da6b2b02c564b507970f0d43d7ff6a68c4f6  ./scripts/gen_batch_0057.py
+f2a9456e92be2ccdaaa2ef172b40eeef26abf0b167124b57640ebc6c226b6b61  ./scripts/gen_batch_0058.py
 fd5a435aa915dc7e5239156e2022a30cfc319ccf5c35c129bb5d370ad63f4238  ./scripts/gen_train_batch_0006.py
 72ee74c434581eeef9b68daab38f68c3ebf4a4746e82bc703a2206838e16d17a  ./scripts/gen_train_batch_0018.py
 3fd1a79d44ab2becc99f05069172cfd495afb7dd28f241acc8cecbd6c697a076  ./scripts/gen_train_batch_0019.py
@@ -98,10 +100,6 @@ f79a07828d0527389d30a3e28197c1cd3a21b19e4cbb2515b36b31ae8c66d10d  ./scripts/next
 e39fe3898d76095e7a709e1fe3f8b7ca63fc8e8528cd5765dccaf4db9cfa5fcd  ./scripts/peek_0021.py
 4f83a9bc32836bcba81e3dd186343fc0ef25f0f6a322856054116fa575dceab4  ./scripts/peek_batch.py
 4aee19cc450506acd1a9c30b0d5a68981a64db157b3cd588cdc7386e1ec9db96  ./scripts/peek.py
-8b63c31de35bcb2c79626a2580834f77d99d9ef95167794c7e9a97d3c6fc31f1  ./scripts/__pycache__/agreement_analysis.cpython-312.pyc
-0babdad036de5e8e79b4177ff76f3d1a54ca2381c312a67132dae3c61d7173c0  ./scripts/__pycache__/gen_batch_0044.cpython-311.pyc
-6dcbc6cb8d5ee5c37f1ea1c7b62288dd86bfc03eba08589d958dca93ad3b75e3  ./scripts/__pycache__/gen_train_batch_0041.cpython-311.pyc
-b396dd9a00661ce6fab84bd3dc0783aec7903df6cde524b3202ad158692d224b  ./scripts/__pycache__/peek.cpython-311.pyc
 76bdb2231eb68bea4f704480bf82410d82b5252084f0cccbe10f077441f83b87  ./scripts/state.py
 6ab402e43c06ee27cdc771b96a62842f2b2cd8b45014308710a739908df2542b  ./scripts/verify_batches.py
 c43fdc36fd86175132e7be226476da3028a91c605f34c83f76fdf3858236c975  ./verify_batches.py
