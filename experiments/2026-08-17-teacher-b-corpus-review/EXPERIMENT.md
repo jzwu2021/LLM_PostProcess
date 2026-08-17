@@ -5,6 +5,43 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0089
+
+- Batch file: results/train-batch-0089.jsonl
+- Corpus range: train.jsonl lines 881-890 (source IDs corpus-00965, corpus-00966, corpus-00967, corpus-00969, corpus-00970, corpus-00971, corpus-00972, corpus-00973, corpus-00974, corpus-00975 — corpus file order preserved exactly, no skips, no reordering; note the corpus itself has a gap at corpus-00968, which was NOT introduced by this lane)
+- Progress: train 890/5399, validation 0/601, total 890/6000, remaining 5110
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (ad-hoc verifier scripts/verify_batches.py — 890 train records, 890 unique source_ids, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision enums correct, corrected_answer non-empty, confidence in [0,1], source_user/source_assistant byte-identical to corpus, aggregate train sequence is a strict prefix of train.jsonl, batch numbering contiguous from 0001)
+- Repairs applied: none required (first-run pass)
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over 154 files (all files in this experiment directory except MANIFEST.sha256 itself and scripts/__pycache__); `sha256sum -c` reported 154/154 OK, exit 0
+- Technical topics covered: per-request K/V cache sizing under grouped-query attention, same
+  Calculation generator family (cases 465-475) as the previous batch, varying layers
+  (24/32/40/48/56), kv_heads (2/4/6/8), head_dim (64/96/128), sequence length (1024-4096)
+  and KV element width (BF16/FP16 = 2 B vs INT8 = 1 B). All ten source products were
+  re-derived independently in this run (2 x L x S x H_kv x D x B) and every byte total and
+  every GiB rounding matched the source answer exactly, so the rewrite decision is driven
+  by incompleteness and operational risk, not by arithmetic error. Each corrected answer
+  adds: the mechanism (only kv_heads are materialised under GQA/MQA because query heads are
+  broadcast, hence linearity in S), the per-token KV cost as the real capacity-planning
+  unit and the resident-token/concurrency budget it implies, paged-allocator block round-up
+  (ceil(S/block)*block), prefix/radix cache sharing and speculative-decode draft branches as
+  effects moving residency in opposite directions, the separate line items (weights,
+  activations, CUDA graph pools, NCCL buffers, fragmentation) that must not be conflated
+  with KV, and tensor-parallel behaviour including the replication case when kv_heads < TP.
+  For the four INT8 items the answer quantifies the omitted scale/zero-point surcharge
+  explicitly (2 x L x S x H_kv x 2 bytes for per-head-per-token FP16 scales, ~1.5-3% here)
+  and marks the source figure as a lower bound. Every answer carries a falsifiable
+  prediction (doubling S must double measured KV allocation), a concrete evidence list
+  (config.json fields, engine KV dtype flag, engine startup KV-blocks log line, measured
+  VRAM delta, TP degree) and a rollback gate (>20% overshoot at target concurrency stops
+  the rollout and forces max_num_seqs / max_model_len reduction before KV-pool preemption
+  wrecks tail latency).
+- Status caveat: this output is PROVISIONAL teacher-B model review, produced blind without
+  any access to the teacher-A lane. It is not expert gold, has not been validated against
+  a running engine, and says nothing about any model's domain capability. Agreement
+  analysis against teacher-A is a separate downstream step outside this lane.
+
 ## Run 2026-08-17 batch 0088
 
 - Batch file: results/train-batch-0088.jsonl
