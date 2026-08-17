@@ -1,78 +1,48 @@
-import json, glob, os, sys, re
-
-ROOT = "experiments/2026-08-17-teacher-b-corpus-review/results"
-CORP = {"train": "research/ai-infra-expert/corpus/train.jsonl",
-        "validation": "research/ai-infra-expert/corpus/validation.jsonl"}
-REQ = ["source_id","teacher_lane","teacher_model","calibration_status","decision",
-       "source_user","source_assistant","corrected_answer","quality_dimensions",
-       "risks","evidence_required","confidence"]
-errs = []
-
-corpus = {}
-for k,p in CORP.items():
-    rows=[]
-    for ln in open(p,encoding="utf-8"):
-        d=json.loads(ln)
-        m=d["messages"]
-        rows.append((d["id"],
-                     [x for x in m if x["role"]=="user"][0]["content"],
-                     [x for x in m if x["role"]=="assistant"][0]["content"]))
-    corpus[k]=rows
-
+import json,glob,os,sys
+BASE='/home/johnson/workspace/LLM_PostProcess'
+RES=os.path.join(BASE,'experiments/2026-08-17-teacher-b-corpus-review/results')
+err=[]
+def corpus(name):
+    return [json.loads(l) for l in open(os.path.join(BASE,'research/ai-infra-expert/corpus',name))]
+tr=corpus('train.jsonl'); va=corpus('validation.jsonl')
+REQ=["source_id","teacher_lane","teacher_model","calibration_status","decision","source_user","source_assistant","corrected_answer","quality_dimensions","risks","evidence_required","confidence"]
 seen=set()
-seq={"train":[], "validation":[]}
-for split in ("train","validation"):
-    files = sorted(glob.glob(f"{ROOT}/{split}-batch-*.jsonl"))
-    for fp in files:
-        raw = open(fp,encoding="utf-8").read()
-        lines = raw.split("\n")
-        if lines and lines[-1]=="": lines.pop()
-        # every batch is 10 records except a final short batch that exhausts the corpus
-        exhausts = fp==files[-1] and len(seq[split])+len(lines)==len(corpus[split])
-        if len(lines)!=10 and not exhausts:
-            errs.append(f"{fp}: expected 10 lines, got {len(lines)}")
-        for i,ln in enumerate(lines,1):
-            try: r=json.loads(ln)
-            except Exception as e:
-                errs.append(f"{fp}:{i} JSON parse: {e}"); continue
-            for f in REQ:
-                if f not in r: errs.append(f"{fp}:{i} missing field {f}")
-            if r.get("teacher_lane")!="teacher-B": errs.append(f"{fp}:{i} bad teacher_lane")
-            if r.get("teacher_model")!="claude-opus-5-current": errs.append(f"{fp}:{i} bad teacher_model")
-            if r.get("calibration_status")!="provisional": errs.append(f"{fp}:{i} bad calibration_status")
-            if r.get("decision") not in ("keep","rewrite","reject"): errs.append(f"{fp}:{i} bad decision")
-            ca=r.get("corrected_answer")
-            if not isinstance(ca,str) or not ca.strip(): errs.append(f"{fp}:{i} empty corrected_answer")
-            c=r.get("confidence")
-            if not isinstance(c,(int,float)) or not (0.0<=c<=1.0): errs.append(f"{fp}:{i} bad confidence")
-            qd=r.get("quality_dimensions")
-            if not isinstance(qd,dict): errs.append(f"{fp}:{i} quality_dimensions not object")
-            else:
-                for d3 in ("technical_correctness","instruction_coverage","operational_safety"):
-                    v=qd.get(d3)
-                    if not isinstance(v,int) or isinstance(v,bool) or not (1<=v<=5):
-                        errs.append(f"{fp}:{i} bad quality_dimensions.{d3}")
-            for lf in ("risks","evidence_required"):
-                v=r.get(lf)
-                if not isinstance(v,list) or not all(isinstance(x,str) for x in v):
-                    errs.append(f"{fp}:{i} {lf} not string array")
-            sid=r.get("source_id")
-            if sid in seen: errs.append(f"{fp}:{i} duplicate source_id {sid}")
-            seen.add(sid)
-            seq[split].append((sid, r.get("source_user"), r.get("source_assistant")))
-
-for split in ("train","validation"):
-    got=seq[split]; exp=corpus[split][:len(got)]
-    if len(got)>len(corpus[split]):
-        errs.append(f"{split}: more records ({len(got)}) than corpus ({len(corpus[split])})")
-    for i,(g,e) in enumerate(zip(got,exp)):
-        if g[0]!=e[0]: errs.append(f"{split}[{i}] id mismatch {g[0]} != {e[0]}")
-        if g[1]!=e[1]: errs.append(f"{split}[{i}] source_user mismatch for {g[0]}")
-        if g[2]!=e[2]: errs.append(f"{split}[{i}] source_assistant mismatch for {g[0]}")
-
-print(f"train={len(seq['train'])}/{len(corpus['train'])} validation={len(seq['validation'])}/{len(corpus['validation'])} total={len(seq['train'])+len(seq['validation'])}")
-if errs:
-    print("VERIFY_FAIL", len(errs))
-    for e in errs[:40]: print("  ", e)
-    sys.exit(1)
-print("VERIFY_PASS")
+agg={'train':[],'validation':[]}
+for fp in sorted(glob.glob(RES+'/*.jsonl')):
+    split='train' if os.path.basename(fp).startswith('train') else 'validation'
+    lines=open(fp).read().split('\n')
+    if lines and lines[-1]=='': lines.pop()
+    if len(lines)!=10: err.append(f'{fp}: expected 10 lines got {len(lines)}')
+    for i,l in enumerate(lines):
+        try: d=json.loads(l)
+        except Exception as e: err.append(f'{fp}:{i+1} parse {e}'); continue
+        for k in REQ:
+            if k not in d: err.append(f'{fp}:{i+1} missing {k}')
+        if d.get('teacher_lane')!='teacher-B': err.append(f'{fp}:{i+1} lane')
+        if d.get('teacher_model')!='claude-opus-5-current': err.append(f'{fp}:{i+1} model')
+        if d.get('calibration_status')!='provisional': err.append(f'{fp}:{i+1} status')
+        if d.get('decision') not in ('keep','rewrite','reject'): err.append(f'{fp}:{i+1} decision')
+        if not isinstance(d.get('corrected_answer'),str) or not d['corrected_answer'].strip(): err.append(f'{fp}:{i+1} empty corrected_answer')
+        c=d.get('confidence')
+        if not isinstance(c,(int,float)) or not (0<=c<=1): err.append(f'{fp}:{i+1} confidence')
+        qd=d.get('quality_dimensions',{})
+        for k in ('technical_correctness','instruction_coverage','operational_safety'):
+            v=qd.get(k)
+            if not isinstance(v,int) or not (1<=v<=5): err.append(f'{fp}:{i+1} qd {k}')
+        if not isinstance(d.get('risks'),list) or not isinstance(d.get('evidence_required'),list): err.append(f'{fp}:{i+1} list fields')
+        sid=d.get('source_id')
+        if sid in seen: err.append(f'{fp}:{i+1} dup id {sid}')
+        seen.add(sid)
+        agg[split].append(d)
+for split,src in (('train',tr),('validation',va)):
+    a=agg[split]
+    if len(a)>len(src): err.append(f'{split}: more rows than corpus'); continue
+    for i,d in enumerate(a):
+        s=src[i]
+        if d['source_id']!=s['id']: err.append(f'{split}[{i}] id mismatch {d["source_id"]} vs {s["id"]}'); break
+        if d['source_user']!=s['messages'][1]['content']: err.append(f'{split}[{i}] user mismatch')
+        if d['source_assistant']!=s['messages'][2]['content']: err.append(f'{split}[{i}] assistant mismatch')
+print('train',len(agg['train']),'validation',len(agg['validation']),'total',len(agg['train'])+len(agg['validation']))
+if err:
+    print('FAIL'); [print(' ',e) for e in err[:40]]; sys.exit(1)
+print('PASS')

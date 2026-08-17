@@ -5,6 +5,45 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0043
+
+- Batch file: results/train-batch-0043.jsonl
+- Corpus range: train.jsonl lines 421-430 (0-indexed 420-429), source IDs corpus-00468 through corpus-00477 — strict corpus order, nothing skipped or reordered.
+- Progress: train 430/5399, validation 0/601, total 430/6000, remaining 5570
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (ad-hoc verifier — JSONL line-parse, batch count 10, all 12 required fields, enum values for teacher_lane/teacher_model/calibration_status/decision, exact source_user/source_assistant equality against corpus, non-empty corrected_answer, confidence in [0,1], globally unique source_id, train/validation aggregate strictly a prefix of each corpus).
+- Repairs: none required; the batch passed on first verification.
+- Final schema check: PASS (train 430/5399, validation 0/601, total 430, 0 errors).
+- Manifest: MANIFEST.sha256 regenerated over all files in the experiment directory (excluding the manifest itself); `sha256sum -c` returned OK for every entry.
+
+Technical topics covered by this batch: ten speculative-decoding items in three
+sub-clusters. (1) corpus-00468..00470 — "how speculative decoding interacts with
+latency, throughput, or memory": rewrites give the memory-bound decode mechanism
+(t_step ~= model_bytes_read / effective_HBM_bandwidth, weights streamed once per
+step regardless of verified positions), the break-even inequality
+E[accepted] > 1 + gamma * c_draft/c_target, the latency-wins-vs-throughput-loses
+inversion at saturation, and the memory cost of resident draft weights plus
+speculated KV slots reducing admitted concurrency. (2) corpus-00471..00475 —
+measurement plans: open-loop arrival-rate load generation rather than closed-loop
+concurrency, per-segment acceptance logging, gamma x concurrency sweeps, fixed-seed
+output-equivalence gating, clock pinning and warmup discard, interleaved A/B repeats
+with confidence intervals. (3) corpus-00476..00477 — assumptions required before any
+performance claim: regime (memory- vs compute-bound), concurrency, draft config,
+per-segment acceptance, sampling parameters and whether the acceptance rule is exact
+rejection sampling or a lossy relaxation, metric/percentile definition, memory
+accounting, and environment/versions.
+
+All ten source_assistant strings are the same 150-character generic one-liner, which
+is not technically wrong but omits the mechanism, the boundary condition, the
+throughput inversion, and all memory accounting — hence uniform `rewrite` with
+technical_correctness 3, instruction_coverage 2, operational_safety 2, confidence 0.79.
+
+These outputs are PROVISIONAL teacher-B second opinions from a blind review. They are
+NOT expert gold labels, have not been validated against measurements on real hardware,
+and say nothing about any model's domain capability. Agreement analysis against
+teacher-A is a separate later step and was deliberately not performed here; no
+teacher-A artifact was read while producing this batch.
+
 ## Run 2026-08-17 batch 0042
 
 - Batch file: results/train-batch-0042.jsonl
