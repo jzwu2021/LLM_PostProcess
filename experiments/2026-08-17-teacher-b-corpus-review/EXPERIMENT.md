@@ -5,6 +5,38 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0062
+
+- Batch file: results/train-batch-0062.jsonl
+- Corpus range: train.jsonl lines 611-620 (source IDs corpus-00678, corpus-00680, corpus-00681, corpus-00682, corpus-00683, corpus-00684, corpus-00685, corpus-00686, corpus-00687, corpus-00688)
+- Progress: train 620/5399, validation 0/601, total 620/6000, remaining 5380
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (verify_batches.py reported `train 620 validation 0 total 620` then `PASS`; all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers in 1-5, source_id globally unique across all 620 records, train sequence an exact prefix of train.jsonl, validation still empty)
+- Repairs performed: none required (verification passed on first execution)
+- Final schema check: pass (total 620 records validated, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 115 files; `sha256sum -c` reported 115 OK and 0 failures
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened or grepped during this run; only research/ai-infra-expert/corpus/train.jsonl was consulted.
+
+Technical topics covered: single-request KV cache byte sizing under grouped-query
+attention, layer counts 24-56, KV head counts 2-8, head dimensions 64-128, sequence
+lengths 1024-4096, INT8 vs BF16/FP16 KV dtypes. Every source arithmetic result was
+independently recomputed in the generator and matched (10/10), so the rewrites are not
+corrections of numeric error but expansions of missing operational content: the leading
+factor 2 is K+V and not tensor-parallel replication (so the figure is a cluster-wide
+total, roughly divided by TP per GPU); the per-token marginal cost 2*L*H*D*bpv is the
+quantity that should size max_num_seqs / max_num_batched_tokens; paged KV (vLLM
+PagedAttention, SGLang radix cache) rounds allocations to whole blocks so real usage is
+ceil(S/block_size)*block_size*per_token_bytes; INT8 KV carries per-group scales (and
+zero-points if asymmetric) plus an accuracy obligation; prefix caching, speculative
+decoding and beam search change the number of live KV copies; and weights, activations,
+CUDA graphs and NCCL buffers sit outside this figure under gpu_memory_utilization. Each
+record states a falsifiable prediction (measured KV delta within ~5% of the computed GiB,
+falsified above ~15%), the evidence needed (model config fields, negotiated kv_cache_dtype,
+engine KV-block startup log, torch.cuda.memory_reserved delta), and a rollback gate.
+
+These outputs are PROVISIONAL teacher-B model review, not expert gold labels, and they do
+not constitute evidence of any model's domain capability.
+
 ## Run 2026-08-17 batch 0061
 
 - Batch file: results/train-batch-0061.jsonl
