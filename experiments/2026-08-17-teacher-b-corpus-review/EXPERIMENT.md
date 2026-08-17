@@ -5,6 +5,22 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0086
+
+- Batch file: results/train-batch-0086.jsonl
+- Corpus range: train.jsonl lines 851-860 (source IDs corpus-00935 … corpus-00944, contiguous; corpus file order preserved exactly, no skips, no reordering)
+- Progress: train 860/5399, validation 0/601, total 860/6000, remaining 5140
+- This run: 10 items
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: VERIFY_PASS on first attempt (train=860/5399, validation=0/601, total=860)
+- Repairs performed: none required
+- Final schema check: VERIFY_PASS (JSONL line-parseable, 10 records, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values valid, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique, aggregated train sequence is a strict prefix of train.jsonl)
+- Manifest: MANIFEST.sha256 regenerated over all files except itself; `sha256sum -c` → all OK, 0 failures
+- Technical topics covered: KV-cache capacity sizing for grouped-query attention decoders — the 2 × layers × seq_len × kv_heads × head_dim × bytes_per_value identity, BF16/FP16 vs INT8 KV element width, per-token KV cost as the actual concurrency-planning quantity, paged-allocator block rounding and internal fragmentation, prefix-cache retention inflating steady-state occupancy, the kv_heads ≥ TP-degree limit on tensor-parallel KV sharding, MLA/latent-KV architectures invalidating the formula, and preemption/recompute counters plus HBM headroom as the rollback gate.
+- Review note: every source answer's arithmetic was independently recomputed and matched; all 10 were marked `rewrite` (not `reject`) because the numbers are right but the answers stop at a raw byte count, omitting per-token cost, allocator overhead, TP sharding limits and any INT8 accuracy caveat — i.e. correct but operationally insufficient.
+- Blind-review discipline: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, grepped or listed while producing this batch. Only research/ai-infra-expert/corpus/train.jsonl was consulted.
+- Status: PROVISIONAL. These corrected answers are a second-opinion model review, not expert gold labels, and they say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0085
 
 - Batch file: results/train-batch-0085.jsonl
