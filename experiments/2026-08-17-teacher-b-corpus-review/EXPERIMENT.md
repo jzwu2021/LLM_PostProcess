@@ -5,6 +5,21 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0066
+
+- Batch file: results/train-batch-0066.jsonl
+- Corpus range: train.jsonl lines 651-660 (source IDs corpus-00722 … corpus-00731, contiguous; corpus order preserved exactly, no skips or reordering)
+- Progress: train 660/5399, validation 0/601, total 660/6000, remaining 5340
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (ad-hoc verifier `verify_batches.py` reported `train: 660 records checked against corpus of 5399`, `validation: 0`, `unique source_ids: 660`, `VERIFY=PASS`). Checks covered: line-by-line JSONL parse, exactly 10 records per batch file, all 12 required fields present and no extra fields, teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional, decision in {keep,rewrite,reject}, source_user/source_assistant character-identical to the corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions an object of exactly three integers in 1-5, source_id globally unique across all 660 records, and the aggregated train sequence an exact prefix of train.jsonl.
+- Repairs performed: none required (verification passed on first execution). The generator asserted each recomputed byte total and GiB value against the source string before writing, so any arithmetic divergence would have aborted the write rather than emitted a bad batch.
+- Final schema check: pass (660 records validated, 0 errors)
+- Independent arithmetic re-derivation: all ten source byte totals were recomputed from (layers, kv_heads, head_dim, seq_len, dtype) parsed from the prompt text and all ten matched the source exactly (201326592 / 110100480 / 603979776 / 58720256 / 18874368 / 150994944 / 419430400 / 37748736 / 308281344 / 301989888 B). The rewrite decision is therefore about insufficiency of the answer, not about arithmetic error.
+- Manifest: MANIFEST.sha256 regenerated over all files in the experiment directory except MANIFEST.sha256 itself; `sha256sum -c` returned exit 0 with 116 OK lines and 0 failures.
+- Technical topics covered by this batch: single-request KV cache sizing for GQA/MQA transformers across BF16/FP16 and INT8 KV dtypes, at layer counts 24-56, KV head counts 2-8, head_dim 64-128 and context lengths 1024-4096. Each rewrite adds the mechanism (per-token KV growth, linear in tokens and concurrency), the derived per-token byte rate as the actual capacity-planning quantity, PagedAttention block-padding waste at block_size 16, the preallocated KV pool interacting with gpu_memory_utilization, the TP <= kv_heads limit beyond which KV sharding stops reducing per-GPU footprint, preemption/recompute as the observable failure signal instead of OOM, the lossy nature of FP8/INT8 KV, the concrete evidence needed (config.json fields, engine-reported KV dtype and block count, measured HBM at known concurrency), and an explicit rollback gate (>15% divergence from the analytic value, or any nonzero preemption rate at target concurrency).
+- Status caveat: these outputs are PROVISIONAL teacher-B model review, not expert gold labels, and they say nothing about the domain capability of any trained model. They are one blind second opinion pending later independent agreement analysis against teacher-A.
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, listed, or grepped during this run; only research/ai-infra-expert/corpus/train.jsonl was consulted.
+
 ## Run 2026-08-17 batch 0065
 
 - Batch file: results/train-batch-0065.jsonl
