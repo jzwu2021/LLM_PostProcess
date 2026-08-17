@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0038
+
+- Batch file: results/train-batch-0038.jsonl
+- Corpus range: train.jsonl lines 371-380 (0-indexed 370-379), source IDs corpus-00412, corpus-00413, corpus-00414, corpus-00415, corpus-00416, corpus-00417, corpus-00418, corpus-00419, corpus-00420, corpus-00421 — strict corpus order, nothing skipped or reordered.
+- Progress: train 380/5399, validation 0/601, total 380/6000, remaining 5620
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify_batches.py reported train=380 validation=0 total=380, VERIFY_PASS) on first run.
+- Repairs performed: none required.
+- Final schema check: PASS — line-by-line JSONL parse, batch count 10, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique across all 38 batches, aggregated train sequence a strict prefix of train.jsonl.
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself; `sha256sum -c` passed with zero failures.
+- Technical topics covered: an all-NCCL block. Failure modes and trade-offs (silent NVLink/P2P fallback to SHM/PCIe under IOMMU or cross-root-complex topology and its size-dependent visibility; collective/timeout coupling where a straggler rank makes a victim rank report the abort; buffer/channel memory-vs-bandwidth trade-off via NCCL_BUFFSIZE x channels and SM contention; ring-vs-tree crossover shifting with world size and fabric latency; GPUDirect RDMA preconditions — nvidia_peermem, PCIe ACS, NCCL_NET_GDR_LEVEL — and host-staging fallback; RoCE PFC/DCQCN misconfiguration surfacing only under incast; duplicate device binding from missing LOCAL_RANK; watchdog timeout floor derived from measured p99). Latency/throughput/memory interaction (ring cost model 2(N-1)/N*S, LL/LL128/Simple protocol crossover, NVLS/CollNet in-switch reduction, NCCL buffers competing with KV cache outside the framework allocator, TP decode being latency-exposed with no compute to hide behind). Plus a full measurement plan for validating an NCCL configuration change on a serving workload: message sizes derived from hidden_size, fixed request trace, one-variable A/B with >=3 repetitions, KV-cache capacity accounting, Nsight attribution, and an acceptance/rollback gate.
+- Status: these outputs are PROVISIONAL teacher-B judgements from a single blind model pass. They are not expert gold labels, were produced without any access to teacher-A artifacts, have not been validated against ground truth, and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0037
 
 - Batch file: results/train-batch-0037.jsonl
