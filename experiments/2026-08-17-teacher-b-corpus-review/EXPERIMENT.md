@@ -5,6 +5,44 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0114
+
+- Batch file: results/train-batch-0114.jsonl
+- Corpus range: train.jsonl lines 1131-1140 (0-indexed 1130..1139)
+- Source IDs: corpus-01247, corpus-01248, corpus-01249, corpus-01252, corpus-01253,
+  corpus-01254, corpus-01255, corpus-01256, corpus-01257, corpus-01258
+- Progress: train 1140/5399, validation 0/601, total 1140/6000, remaining 4860
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (10/10 records, 12 required fields present, lane/model/
+  status/decision values correct, source_user and source_assistant byte-identical to
+  corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique,
+  aggregate train sequence is a strict prefix of train.jsonl)
+- Repairs: none required this run; verification passed on the first attempt
+- Final schema check: PASS (train 1140, validation 0, total 1140, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 195 files; `sha256sum -c` all OK
+- Topics covered: LLM serving evaluation methodology for a mixed short-prompt /
+  long-generation workload (variants 247-249, 252-258 across System Design,
+  Troubleshooting and Performance Analysis framings). The source assistant text is a
+  rubric stub, not an answer, so all ten were rewritten with a shared mechanism section
+  (TTFT = queue + schedule + prefill; TPOT bounded by HBM bandwidth and KV length;
+  throughput knee converting into queueing) but a distinct pre-registered falsifiable
+  hypothesis per item: chunked prefill token budget; KV-cache utilization vs
+  preemption/recompute rate; admission control and open-loop backpressure; tensor-parallel
+  degree vs replica count at fixed GPU budget (with NCCL all-reduce microbenchmark and
+  nvidia-smi topo -m evidence); speculative decoding acceptance rate and its inversion at
+  saturation; automatic prefix caching with hit rate as covariate; prefill/decode
+  disaggregation of the Mooncake / NVIDIA Dynamo class with RDMA KV transfer cost and
+  RoCE PFC/ECN verification; long-context attention scaling at pinned batch size;
+  multi-node collective interference on a shared RoCE fabric with PFC pause and
+  out-of-sequence counters; and FP8 weight+KV quantization gated on a paired quality eval.
+  Each rewrite carries an explicit measurement protocol (open-loop Poisson arrivals,
+  warmup discard, 5 restarted trials, bootstrap CIs on p99), a confounder list, and
+  rollback gates (>10% P99 regression, >1% preemption, >0.5% error rate during a 10%
+  canary).
+- Status: PROVISIONAL second-opinion review only. Not expert gold, not adjudicated
+  against teacher-A (this lane is blind by construction), and not evidence of any model
+  domain capability. Agreement analysis is a separate later step.
+
 ## Run 2026-08-17 batch 0113
 
 - Batch file: results/train-batch-0113.jsonl
