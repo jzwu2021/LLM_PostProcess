@@ -5,6 +5,40 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0123
+
+- Batch file: results/train-batch-0123.jsonl
+- Corpus range: train.jsonl lines 1221-1230 (0-indexed 1220..1229)
+- Source IDs: corpus-01350, corpus-01351, corpus-01352, corpus-01353, corpus-01355,
+  corpus-01356, corpus-01357, corpus-01358, corpus-01359, corpus-01361
+- Progress: train 1230/5399, validation 0/601, total 1230/6000, remaining 4770
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1230 aggregate records, 12 required fields per record,
+  lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1],
+  source_id globally unique, aggregate train sequence a strict prefix of train.jsonl,
+  validation sequence empty)
+- Repairs: none required; the first verification run passed.
+- Final schema check: PASS (same run as initial)
+- Manifest: MANIFEST.sha256 regenerated over 207 files; `sha256sum -c` all OK
+- Technical topics covered: this block is the long-context intermittent-OOM family
+  (scenario variants 50-61). Rewrites separate static weight memory from dynamic KV
+  and activation memory; give the explicit KV byte formula with GQA kv_heads; treat
+  prefill activation spikes, allocator fragmentation (reserved-vs-allocated gap) and
+  per-rank TP/NCCL overhead as distinct mechanisms with distinct refutations. Design
+  answers cover worst-case token-budget admission control with 429 shedding,
+  short/long-context replica isolation and gateway routing, prefill/decode
+  disaggregation (Mooncake-style shared KV pool, gated on measured interconnect
+  bandwidth), fp8 KV and weight-quantization economics gated on long-context task
+  evals rather than perplexity, 1s-resolution KV-pool-utilization telemetry with a
+  falsifiable lead-time claim before enabling auto-shedding, and a written capacity
+  model whose prediction error is itself the falsification test. Every item states
+  assumptions, a falsifiable hypothesis with its refutation condition, a one-variable
+  controlled experiment, expected confounders, required evidence and rollback
+  criteria. Source assistant turns are rubric stubs, not answers, hence rewrite=10.
+- Status: PROVISIONAL. These are second-opinion reviewer outputs from a blind lane,
+  NOT expert gold labels, and they say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0122
 
 - Batch file: results/train-batch-0122.jsonl
