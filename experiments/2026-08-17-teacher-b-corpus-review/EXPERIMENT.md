@@ -56,11 +56,69 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 30/5399; validation 0/601; total 30/6000; remaining 5970.
+Progress: train 40/5399; validation 0/601; total 40/6000; remaining 5960.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 — train-batch-0004.jsonl
+
+- Batch file: results/train-batch-0004.jsonl
+- Builder: scripts/build_train_batch_0004.py
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 31-40 (0-indexed 30-39)
+- Source IDs: corpus-00034, corpus-00035, corpus-00036, corpus-00037, corpus-00038,
+  corpus-00039, corpus-00040, corpus-00041, corpus-00042, corpus-00043
+  (corpus order preserved verbatim; nothing skipped or reordered)
+- Progress after this run: train 40/5399; validation 0/601; total 40/6000; remaining 5960
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run (scripts/verify_batches.py →
+  train=40/5399 validation=0/601 total=40/6000, VERIFY_PASS)
+- Repairs performed: none required
+- Final schema/ad-hoc check: PASS (identical output)
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself;
+  `sha256sum -c` reported all files OK
+- Blind-mode compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, grepped, or otherwise consulted while producing this batch. Only
+  source_user / source_assistant from the raw corpus were visible.
+
+Technical topics covered by this batch (all KV-cache themed, but three distinct
+instruction shapes):
+1. Training vs inference KV cache — parallelism/sharding view: per-GPU
+   kv_bytes = 2 * layers * seq_len * (kv_heads / TP) * head_dim * bytes_per_elem, and the
+   GQA/MQA regime where kv_heads < TP forces replication so extra TP stops reducing
+   per-GPU KV; pipeline parallelism dividing by layers/PP at the cost of bubbles;
+   pinned-cache implications for re-sharding and for disaggregated KV transfer
+   (Mooncake / NVIDIA Dynamo) over RDMA.
+2. Training vs inference KV cache — numerics view: why fp8 KV is a capacity lever
+   (halves kv_bytes, halves the bandwidth-bound TPOT floor) but carries error forward
+   for the life of a sequence, so equivalence must be tested at max served context with a
+   pre-registered token-match / task-metric criterion rather than bitwise identity.
+3. Misleading intuitions corrected: (a) "cache makes decode compute-cheap" — decode is
+   bandwidth-bound at ~1 MAC/byte with TPOT_floor ≈ kv_bytes / achievable_HBM_bandwidth;
+   (b) "KV is small next to weights" — per-sequence KV scales with concurrency × context
+   and drives replica count; (c) "prefix caching always helps" — bounded by
+   shared_prefix_tokens / total_prompt_tokens of prefill only, zero for decode, plus
+   cross-tenant block-reuse isolation and timing-side-channel risk; (d) "TP always splits
+   KV" — the kv_heads < TP replication knee; (e) "a cache hit is free" — hits convert
+   compute cost into pool residency and, when disaggregated, into an RDMA transfer on the
+   TTFT critical path, so admission control must key on occupancy and preemption rate,
+   not hit rate.
+4. Controlled experiment designs: decode bandwidth-floor sweep at batch size 1 against an
+   independently measured achievable bandwidth; pre-registered concurrency-ceiling ramp to
+   first preemption with fixed sequence length as the control; and an interleaved A/B for
+   KV quantisation gated on quality first, then capacity, with shadow → canary → rollout
+   staging.
+
+All ten source_assistant values were the same generic KV-cache definition regardless of
+what the prompt asked for, so every record scored instruction_coverage = 1 and was marked
+`rewrite`: the source text is not factually wrong, it is a topic-shaped non-answer.
+Confidence 0.72 reflects that the defect is unambiguous while the replacement answers
+carry unverified platform-specific assumptions.
+
+**These results are provisional.** They are one model's independent review pass, not
+expert gold labels, and they are NOT evidence of model domain capability. Agreement with
+teacher-A has not been computed and is out of scope for this lane.
 
 ### 2026-08-17 11:1x UTC — train-batch-0003.jsonl
 
