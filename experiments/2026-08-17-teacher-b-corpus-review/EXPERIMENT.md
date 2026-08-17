@@ -5,6 +5,61 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0120
+
+- Batch file: results/train-batch-0120.jsonl
+- Corpus range: train.jsonl lines 1191-1200 (0-indexed 1190..1199)
+- Source IDs: corpus-01317, corpus-01318, corpus-01319, corpus-01320, corpus-01321,
+  corpus-01322, corpus-01323, corpus-01324, corpus-01326, corpus-01327
+- Progress: train 1200/5399, validation 0/601, total 1200/6000, remaining 4800
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1200 aggregate records, exactly 12 required fields per
+  record, lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1],
+  source_id globally unique, aggregate train sequence is a strict prefix of
+  train.jsonl, validation sequence empty)
+- Repair actions: none required; the batch passed on first verification run.
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over all 208 files in this experiment
+  directory (excluding the manifest itself); `sha256sum -c` reported all OK.
+
+### Technical themes covered by this batch
+
+All ten items are variants of the same seed scenario: a long-context LLM serving
+deployment that hits intermittent OOM only after several concurrent requests, with the
+instruction requiring an explicit falsifiable hypothesis and a controlled experiment.
+The source assistant fields are rubric stubs ("answer should state ..."), not answers,
+so every item was marked `rewrite`.
+
+Each corrected_answer shares a common mechanism derivation — GPU memory decomposed into
+weights, CUDA/NCCL context, activation peak of the scheduled batch, and the paged KV
+pool, with the KV byte formula made explicit and GQA's effect on kv_heads noted — and
+then diverges into a distinct primary hypothesis so the batch spans the real diagnostic
+space rather than repeating one answer ten times:
+
+- 01317: concurrent long-prefill activation peaks vs KV exhaustion (chunked prefill arm)
+- 01318: KV pool sized from an under-concurrency profiling pass (re-profile arm)
+- 01319: unbounded client-supplied context length, i.e. no capacity model
+- 01320: caching-allocator fragmentation (largest-contiguous-free-block discriminator)
+- 01321: CUDA graph capture pools growing per newly observed batch shape
+- 01322: loss of device-level memory isolation / colocated ranks and NCCL buffers
+- 01323: preemption-with-recompute path itself allocating the failing peak
+- 01324: logits/sampling tensor scaling as batch*vocab (many-short vs few-long arm)
+- 01326: uptime-dependent leak outside the KV pool (fresh vs aged replica arm)
+- 01327: memory-unaware request routing producing per-replica occupancy imbalance
+
+Every answer carries mitigations ordered by cost and reversibility (admission control
+and context caps before pool resizing before chunked prefill before quantization),
+named confounders, the evidence artifacts that must exist before a permanent change,
+and an explicit rollback gate (24h canary, zero OOM, <10% p99 TTFT/TPOT regression,
+preemption rate <2%, unchanged frozen-eval quality for any numerics change).
+
+**Status caveat:** these outputs are *provisional* teacher-B review artifacts produced
+blind (teacher-A outputs were not read while generating this batch). They are not
+expert gold labels, they have not been validated against hardware, and they are not
+evidence of any model's domain capability. Agreement analysis against teacher-A is a
+separate, later step outside this worker's scope.
+
 ## Run 2026-08-17 batch 0119
 
 - Batch file: results/train-batch-0119.jsonl
