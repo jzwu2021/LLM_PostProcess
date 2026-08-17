@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0017
+
+- Batch file: results/train-batch-0017.jsonl
+- Corpus range: train.jsonl lines 161-170, source IDs corpus-00181 through corpus-00190 (contiguous)
+- Progress: train 170/5399, validation 0/601, total 170/6000, remaining 5830
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py -> VERIFY=PASS, train=170/5399, validation=0/601, total=170/6000)
+- Repairs applied: none required this run
+- Final schema check: PASS (all 12 required fields present and field count exactly 12; teacher_lane/teacher_model/calibration_status/decision values valid; source_user and source_assistant character-exact against the corpus; corrected_answer non-empty; confidence in [0,1]; quality_dimensions integers 1-5; risks and evidence_required string arrays; source_id globally unique; aggregated train sequence is a strict prefix of corpus order)
+- Manifest: MANIFEST.sha256 regenerated over all 37 files in this directory (excluding itself); `sha256sum -c` reports 0 failures
+- Generator script archived at scripts/gen_batch_0017.py
+- Lock: /tmp/teacher-b-corpus-review.lock acquired atomically at run start, released at run end
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened or grepped during this run
+
+Technical topics covered by this batch: all ten records concern **continuous batching**
+in two question shapes. (1) corpus-00181..00185 ask how continuous batching differs
+between training and inference; answered around the scheduling-unit contrast (mutable
+membership at iteration boundaries in inference versus membership frozen by the optimizer
+barrier in training), with the boundary condition that continuous batching cannot be
+ported to training because the backward pass needs the activation graph of exactly the
+forward-pass sequences and mutable membership would make the effective batch size, hence
+the gradient estimator and LR schedule, non-deterministic; the legitimate training analogue
+is sequence packing with a block-diagonal mask. Variant axes: scheduling unit, memory
+lifetime (activations/optimizer state known ahead of time versus KV occupancy drifting at
+runtime), NCCL synchronisation and straggler cost versus preemption/recompute, padding
+waste versus KV block fragmentation, and single-scalar MFU versus a two-sided
+throughput-at-fixed-p99-TTFT/ITL SLO. (2) corpus-00186..00190 ask for a misleading
+intuition plus correction; the five corrections cover: continuous batching does not reduce
+single-request latency (at concurrency 1 the schedulers must be indistinguishable, which is
+the falsifier); batch size did not disappear but moved to max_num_seqs plus the KV pool
+implied by gpu_memory_utilization; it removes batch-level but not prefill-level
+head-of-line blocking, so unchunked long prefills still spike ITL; it does not transfer to
+training; and nvidia-smi utilisation is not proof of useful work, with achieved HBM
+bandwidth against the ~933 GB/s A30 ceiling as the load-bearing metric. All answers carry an
+explicit A30 assumption frame, label estimates versus measured values, state the evidence
+required (separate TTFT/ITL percentile series, scheduler running/waiting/preempted counters,
+KV block utilisation, profiler bandwidth, kv_bytes_per_token read from the served checkpoint
+config, fixed-seed loss-curve diff for training-side changes), and end with an explicit
+rollback gate (revert if p99 ITL regresses more than 10 percent or preemption counts rise).
+
+These outputs are **provisional teacher-B review artifacts only**. They are not expert gold
+labels, they have not been validated by a human domain expert or against measured hardware
+data, and they say nothing whatsoever about the domain capability of any trained model. The
+teacher-A/teacher-B agreement analysis is a separate, later step and was deliberately not
+performed here.
+
 ## Run 2026-08-17 batch 0016
 
 - Batch file: results/train-batch-0016.jsonl
