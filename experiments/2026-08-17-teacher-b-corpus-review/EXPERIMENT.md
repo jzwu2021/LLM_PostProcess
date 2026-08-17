@@ -5,6 +5,51 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0124
+
+- Batch file: results/train-batch-0124.jsonl
+- Corpus range: train.jsonl lines 1231-1240 (0-indexed 1230..1239)
+- Source IDs: corpus-01362, corpus-01363, corpus-01364, corpus-01366, corpus-01367,
+  corpus-01368, corpus-01369, corpus-01370, corpus-01371, corpus-01372
+- Progress: train 1240/5399, validation 0/601, total 1240/6000, remaining 4760
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (1240 aggregate records over 124 batch files, 12 required
+  fields per record, teacher_lane/teacher_model/calibration_status/decision values
+  correct, source_user and source_assistant byte-identical to corpus, corrected_answer
+  non-empty, confidence in [0,1], quality_dimensions integers in 1-5, risks and
+  evidence_required string arrays, source_id globally unique, aggregate train sequence
+  a strict prefix of train.jsonl, validation sequence empty)
+- Repairs: none required; the first verification run passed. Note: this run used a
+  freshly written verify_run.py because cron sessions block execute_code; the batch
+  generator and verifier were written to disk and executed via terminal.
+- Final schema check: PASS (same run as initial)
+- Manifest: MANIFEST.sha256 regenerated over 209 files; `sha256sum -c` all OK
+- Technical topics covered: long-context intermittent-OOM family, scenario variants
+  62-72. The ten rewrites deliberately attack the problem from ten distinct angles
+  rather than restating one template: (62) steady-state KV capacity with the explicit
+  per-rank kv_bytes_per_token formula and a threshold-invariance hypothesis; (63) the
+  reservation-vs-occupancy scheduling bug, tested by clamping max_new_tokens under
+  closed-loop concurrency; (64) capacity-versus-leak discrimination via a two-hour
+  flat-memory soak; (66) term-scaling analysis separating O(batch*seq) KV from
+  O(batch*seq) fused-attention activations, with a superlinear knee as the refutation
+  signal for a kernel fallback; (67) incident-response ordering where the failing
+  allocation size in the OOM traceback discriminates fragmentation from capacity;
+  (68) per-rank TP asymmetry from kv_heads not dividing tp_degree, plus NCCL registered
+  buffers outside the framework allocator, with a failing-rank histogram as the test;
+  (69) prefill/decode interference and disaggregated serving (Dynamo/Mooncake-style),
+  including RDMA staging and pinned-host accounting and an explicit warning not to adopt
+  disaggregation for a problem admission control solves; (70) a cause-to-measurement
+  map that orders cheap tests before expensive ones; (71) cost/SLO framing of the three
+  levers (reduce demand, reduce footprint, add supply) with retry-amplification as a
+  named confounder; (72) an epistemic answer that refuses to name a root cause from the
+  reported symptom and instead pre-registers a classification rule over 20 captured
+  failures. Every record states assumptions, a falsifiable hypothesis with its explicit
+  refutation condition, a one-variable controlled experiment, expected confounders,
+  required evidence and rollback criteria with numeric thresholds.
+- Status: PROVISIONAL. These are second-opinion reviewer outputs from a blind lane,
+  produced without any access to teacher-A artifacts, and they are NOT expert gold
+  labels. They say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0123
 
 - Batch file: results/train-batch-0123.jsonl
