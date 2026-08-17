@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+"""Build teacher-B blind review batch 0013 (train corpus-00136..corpus-00145).
+
+BLIND: this script reads ONLY research/ai-infra-expert/corpus/train.jsonl.
+It never touches experiments/2026-08-14-teacher-a-corpus-calibration/.
+"""
+import json, os
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+SRC = os.path.join(ROOT, "research/ai-infra-expert/corpus/train.jsonl")
+OUT = os.path.join(ROOT, "experiments/2026-08-17-teacher-b-corpus-review/results/train-batch-0013.jsonl")
+START, COUNT = 120, 10  # 0-indexed line offset
+
+ASSUME = ("Assumption frame: single node, 8x NVIDIA A30 24 GB (HBM2, ~933 GB/s theoretical, "
+          "no NVLink bridge assumed, PCIe Gen4 x16), dense ~9B decoder in bf16 (~18 GB weights), "
+          "paged KV cache, continuous batching, vLLM-class server. All numeric values below are "
+          "ESTIMATES from the roofline model unless labelled MEASURED.")
+
+ANSWERS = {
+"corpus-00136": ASSUME + """
+
+Misleading intuition (variant 1): "Decode is compute-bound because it runs the same matmuls as prefill, so more FLOPS or a bigger GPU always speeds it up."
+
+Correction. In decode each step processes exactly one new token per sequence, so every weight matmul is a GEMV (batch=1 per sequence) rather than a GEMM. Arithmetic intensity is roughly 2*B FLOP per byte of weight read, where B is the number of sequences co-batched in the step. With B=1 and bf16 weights the step must stream ~18 GB from HBM to produce one token; at ~933 GB/s theoretical and a realistic 65-75% achieved bandwidth this floors the step at ~26-30 ms, i.e. ~33-38 tok/s, and no amount of extra FLOPS changes it. The concrete mechanism is HBM weight streaming plus KV re-read: per step the engine reads all weights once and reads the whole KV cache of every active sequence once.
+
+Boundary condition. The intuition stops being wrong once B is large enough that arithmetic intensity crosses the machine balance point (FLOPS/bandwidth ratio). For an A30 (~165 TFLOP/s bf16 dense, ~933 GB/s) the ridge point is ~177 FLOP/byte, so weight reads amortise around B in the low hundreds. Beyond that, and in long-context regimes where KV bytes dominate weight bytes (KV per token for a 9B-class model with GQA is on the order of a few tens of KB; at 32k context and B=64 the KV read per step can exceed the 18 GB weight read), the bottleneck moves back to bandwidth for a different reason - KV, not weights - and attention becomes the hot kernel.
+
+Falsifiable test. Sweep B from 1 to 256 at fixed 512-token context and plot tok/s per step. If decode were compute-bound, per-step latency would rise roughly linearly with B from B=1; the memory-bound prediction is that per-step latency is nearly flat until B reaches the tens, then rises.
+
+Evidence needed: nsight-systems or torch profiler kernel timeline showing DRAM read bytes per decode step, plus achieved-occupancy and dram__throughput counters from ncu on the MLP GEMV.
+
+Rollback gate: if a tuning change (raising max_num_seqs) improves throughput but pushes p95 inter-token latency above the SLO (e.g. 50 ms), revert to the prior max_num_seqs.""",
+
+"corpus-00137": ASSUME + """
+
+Misleading intuition (variant 2): "Decode latency scales linearly with context length, so doubling the prompt doubles per-token decode time."
+
+Correction. Per decode step the cost has two parts: a context-independent part (streaming ~18 GB of weights, plus kernel launch and scheduler overhead) and a context-dependent part (reading the KV cache of every active sequence for attention, which is linear in total cached tokens). Only the second part scales with context. The concrete mechanism: with GQA the per-token KV footprint is num_kv_heads * head_dim * 2 (K and V) * dtype_bytes * num_layers; for a 9B-class model with 8 KV heads, head_dim 128, 40 layers, bf16 that is 8*128*2*2*40 = ~164 KB/token. At B=1 and 2k context the KV read is ~0.33 GB against ~18 GB of weights, so doubling context to 4k changes step time by ~2%, not 100%.
+
+Boundary condition. Linearity does emerge once aggregate KV bytes dominate weight bytes, i.e. when B * context * 164 KB >> 18 GB, which for this shape is around B*context > ~110k tokens - e.g. B=32 at 4k context, or B=8 at 16k. In that regime per-step time really is close to linear in total cached tokens, and that is exactly the regime where paged KV, prefix sharing and KV offload (e.g. Mooncake-style disaggregated KV pools) pay off.
+
+Falsifiable test. Fix B=1 and sweep context 512/2k/8k/32k; predicted slope is nearly flat. Then fix context 8k and sweep B; predicted slope is clearly linear once KV bytes exceed weight bytes. If the B=1 sweep is already steeply linear, the hypothesis is wrong and the attention kernel is not bandwidth-optimal (suspect a non-paged or non-fused attention path).
+
+Evidence needed: per-step DRAM bytes read, KV cache utilisation from the server metrics endpoint, and attention-kernel time share from a profiler trace.
+
+Rollback gate: if enabling KV offload raises p95 TTFT or inter-token latency by more than 15% versus the baseline, disable it.""",
+
+"corpus-00138": ASSUME + """
+
+Misleading intuition (variant 3): "Tensor parallelism always makes decode faster, so scaling from TP=1 to TP=8 gives near-8x decode throughput."
+
+Correction. TP splits weight bytes across ranks, so the per-GPU weight stream drops ~8x and the memory-bound floor improves - but every transformer block inserts collectives. A standard Megatron-style TP block does one all-reduce after the attention output projection and one after the MLP down-projection, so 2 all-reduces per layer, ~80 all-reduces per decode step for a 40-layer model. Each all-reduce moves hidden_size * B * dtype_bytes and is latency-dominated at decode sizes: at B=8 and hidden 4096 in bf16 the payload is ~64 KB, far below the point where bandwidth matters, so the cost is essentially NCCL launch plus link latency. Over PCIe without NVLink, per-collective latency in the 20-60 us range means 80 collectives cost ~2-5 ms per step - a large fraction of a ~4-8 ms TP=8 step. The concrete mechanism is fixed-cost collective latency multiplied by layer count.
+
+Boundary condition. TP scaling is close to ideal when (a) the interconnect is NVLink/NVSwitch (sub-10 us small-message all-reduce), or (b) the model no longer fits per GPU so TP is mandatory regardless of efficiency. It degrades badly when TP crosses a PCIe or inter-node boundary; on 8x A30 without NVLink, expect TP=2 to be near-linear, TP=4 to give sub-linear gain, and TP=8 to be dominated by collectives. Prefer replica-parallel (8 independent TP=1 servers behind a router) for throughput-oriented workloads that fit in 24 GB.
+
+Falsifiable test. Measure single-stream decode tok/s at TP=1,2,4,8 at fixed B and context, and separately run nccl-tests all_reduce_perf at 64 KB to get per-collective latency. Predicted step time = weight_bytes/(TP * achieved_BW) + 2*L*latency_allreduce. If measured TP=8 step time is far above that prediction, suspect NCCL falling back to a bad algorithm - check NCCL_ALGO, NCCL_P2P_LEVEL and the topology in NCCL_DEBUG=INFO output.
+
+Evidence needed: nccl-tests small-message latency, NCCL_DEBUG=INFO ring/tree topology dump, nvidia-smi topo -m, per-TP-degree tok/s.
+
+Rollback gate: if raising TP degree does not improve tok/s per GPU by at least 20% over the lower degree, revert - the extra GPUs are better spent on replicas.""",
+
+"corpus-00139": ASSUME + """
+
+Misleading intuition (variant 4): "Because decode is memory-bound, quantising weights to INT4/FP8 gives a proportional end-to-end speedup - 4x fewer weight bytes means 4x more tokens per second."
+
+Correction. Weight-only quantisation reduces only the weight-streaming term. Per decode step the total bytes are weight_bytes + KV_bytes + activation traffic, and there is also a fixed overhead floor (kernel launches, sampling, Python/scheduler time, ~1-3 ms per step in many servers). Applying Amdahl to the memory term: if weights are 18 GB of a 20 GB per-step read at B=8/2k context, INT4 weights (~4.5 GB) cut total bytes to ~6.5 GB, a 3.1x improvement - not 4x - and after adding a 2 ms fixed overhead to a step that was ~28 ms the realised speedup lands near 2.5x. The concrete mechanism is dequantisation: INT4 kernels must dequantise to bf16 before the GEMV, adding ALU work and sometimes forcing a less efficient kernel, so achieved bandwidth utilisation typically drops relative to a pure bf16 GEMV.
+
+Boundary condition. The benefit collapses when KV bytes dominate (long context, large B) because weight quantisation does nothing for KV - you need separate KV-cache quantisation (FP8/INT8 KV) for that. It also collapses at large B, where the run is no longer weight-bandwidth-bound at all. And accuracy is a hard boundary: INT4 without a good calibration method can move task metrics materially, so a speedup claim is void without a paired quality measurement.
+
+Falsifiable test. Compare bf16 vs FP8 vs INT4 (AWQ/GPTQ) at identical B and context, recording tok/s AND a fixed eval set score. Predicted ordering of speedups: FP8 ~1.7-1.9x, INT4 ~2.2-2.8x at small B; both shrink toward 1.0x as B and context grow.
+
+Evidence needed: measured tok/s per config, measured DRAM bytes/step, and same-seed eval scores on a held-out set; note that A30 is Ampere and has no native FP8 tensor cores, so FP8 there is emulated/upconverted and may not speed anything up.
+
+Rollback gate: revert quantisation if the held-out eval score drops by more than the pre-agreed margin (e.g. 1 absolute point) or if p95 latency does not improve by at least 25%.""",
+
+"corpus-00140": ASSUME + """
+
+Misleading intuition (variant 5): "Higher decode throughput (tok/s) always means better user-visible performance, so tune max_num_seqs to the largest value that fits."
+
+Correction. Aggregate throughput and per-user inter-token latency (ITL) move in opposite directions under continuous batching. Each decode step serves all B active sequences, so step time grows with B while tokens produced per step also grows with B; aggregate tok/s rises sub-linearly and saturates, but each individual user's ITL equals the step time and rises monotonically. The concrete mechanism: at B=1 step time might be ~28 ms (ITL 28 ms, 36 tok/s total); at B=128 step time might be ~55 ms (ITL 55 ms, ~2300 tok/s total). Throughput improved 64x, per-user smoothness got ~2x worse - and once the queue is saturated, queueing delay adds on top, so p95 ITL degrades far faster than the mean.
+
+Boundary condition. The tradeoff only exists while the GPU is the bottleneck. Below saturation, raising max_num_seqs costs nothing because the extra slots stay empty. Above the KV-memory limit, raising it triggers preemption/recompute or swap, at which point BOTH throughput and latency get worse - a hard cliff, not a smooth tradeoff. Chunked prefill shifts the curve: it protects TTFT by slicing long prefills into decode steps, at the cost of a few ms added to every ITL.
+
+Falsifiable test. Run an open-loop load sweep at fixed request rate R, varying max_num_seqs, and plot p50/p95 ITL and TTFT against total tok/s. Prediction: a knee where p95 ITL rises steeply while tok/s gains under 10%. Choose the largest max_num_seqs left of the knee that meets the SLO.
+
+Evidence needed: open-loop (not closed-loop) benchmark output with per-request TTFT and ITL distributions, KV-cache utilisation and preemption counters from the server metrics endpoint.
+
+Rollback gate: revert any batching change that pushes p95 ITL above the SLO or that produces any nonzero preemption/recompute counter under the target load.""",
+
+"corpus-00141": ASSUME + """
+
+Controlled experiment for decode (variant 1): isolate the batch-size effect and test the memory-bound hypothesis.
+
+Hypothesis (falsifiable): decode step latency is approximately constant in batch size B until weight-byte amortisation is exhausted, i.e. T_step(B) ~ max(weight_bytes/BW_eff + B*KV_bytes_per_seq/BW_eff, fixed_overhead), so tok/s should scale nearly linearly with B in the small-B regime.
+
+Design. Independent variable: B in {1,2,4,8,16,32,64,128}. Controls held fixed: one GPU (TP=1, CUDA_VISIBLE_DEVICES pinned to a single A30), fixed input length 512 tokens, fixed output length 128 tokens, ignore_eos=True so every request emits exactly 128 tokens, greedy sampling (temperature 0) to remove sampling variance, fixed model revision and server flags, persistent clocks locked (nvidia-smi -lgc) to remove DVFS drift, closed-loop client with exactly B concurrent requests. Warm up with 2 discarded runs, then 5 measured repetitions per point; report median and interquartile range.
+
+Concrete mechanism under test: per-step HBM weight streaming. Predicted signature is T_step flat to within ~15% from B=1 to roughly B=16-32, then rising.
+
+Boundary condition. The experiment is only valid while KV memory is not the binding constraint. Before each point, check that B * 512 tokens of KV fits in the free HBM after weights; if the server reports any preemption or recompute event, that point is invalid and must be discarded rather than reported - preemption changes the workload, not just the timing.
+
+Evidence to collect: per-request TTFT and ITL, tok/s, nvidia-smi dmon utilisation and power, KV-cache utilisation gauge, preemption counter, and one ncu/nsys trace at B=1 and B=64 for DRAM throughput.
+
+Rollback/stop gate: abort the sweep if GPU temperature exceeds the throttle threshold or if run-to-run median tok/s varies by more than 5% at a repeated control point, since that invalidates the comparison.
+
+Explicitly out of scope: any claim about production capacity - this is a single-replica microbenchmark, not a capacity model.""",
+
+"corpus-00142": ASSUME + """
+
+Controlled experiment for decode (variant 2): isolate the context-length effect on decode step time.
+
+Hypothesis (falsifiable): at fixed B, decode step time grows linearly in cached tokens with slope B*KV_bytes_per_token/BW_eff and intercept weight_bytes/BW_eff, so at B=1 the slope is small enough that going 512 -> 8192 context changes step time by well under 10%.
+
+Design. Independent variable: prompt length in {512, 1024, 2048, 4096, 8192, 16384} tokens. Controls: B fixed at 1 for the intercept arm and repeated at B=32 for the slope arm, output length fixed at 64 tokens with ignore_eos=True, greedy decoding, same model and flags, prefix caching DISABLED (otherwise repeated prompts silently skip prefill and contaminate the measurement), unique prompt content per request to defeat any residual prefix reuse. Measure TTFT and ITL separately so prefill cost does not leak into the decode metric - report only the mean over tokens 8..64 to exclude the first-token and warm-up transient.
+
+Concrete mechanism under test: per-step KV cache re-read by the attention kernel.
+
+Boundary condition. Valid only while the attention implementation is bandwidth-optimal and paged. If a fallback path (e.g. non-flash, materialised attention matrix) is used, cost becomes quadratic in context and the linear model is refuted for the wrong reason - so record which attention backend the server selected before interpreting the slope.
+
+Evidence to collect: TTFT vs context (expected super-linear, prefill is compute-bound and quadratic in the attention term), ITL vs context (expected mildly linear), attention backend name from server logs, KV bytes allocated per request, DRAM read bytes per step from nsys.
+
+Rollback/stop gate: discard any point where the server logs a preemption, a cache eviction, or an OOM retry; do not report a fitted slope if R^2 of the linear fit is below 0.9 - investigate instead.
+
+This is a single-node microbenchmark and says nothing about multi-node or disaggregated serving behaviour.""",
+
+"corpus-00143": ASSUME + """
+
+Controlled experiment for decode (variant 3): A/B the effect of tensor-parallel degree on decode, separating compute gain from collective overhead.
+
+Hypothesis (falsifiable): T_step(TP) = weight_bytes/(TP * BW_eff) + 2 * num_layers * L_allreduce(payload) + overhead. On PCIe-connected A30s with L_allreduce ~30 us for small payloads, the collective term is ~2.4 ms for 40 layers, so TP=8 will deliver materially less than 8x step-time reduction and may be worse than TP=4.
+
+Design. Independent variable: TP in {1,2,4,8}. Controls: identical model, identical B (test at both B=1 and B=32), fixed 1024-token prompt, 128-token output, ignore_eos, greedy, same NCCL version and env, clocks locked. Crucially, run a SEPARATE calibration arm: nccl-tests all_reduce_perf at payload sizes {16 KB, 64 KB, 256 KB, 1 MB} on the same GPU sets, to obtain L_allreduce independently rather than inferring it from the end-to-end number. Also record nvidia-smi topo -m so the GPU sets used at TP=2 and TP=4 are topologically comparable (same PCIe switch vs crossing the host bridge) - otherwise TP degree is confounded with topology.
+
+Concrete mechanism under test: fixed-cost NCCL all-reduce latency per layer versus the reduced per-rank weight stream.
+
+Boundary condition. If the model did not fit in one GPU, TP=1 would be unavailable and the experiment could only measure relative scaling. Also, the model is only valid if NCCL selects the same algorithm across degrees - verify with NCCL_DEBUG=INFO that it is not silently switching ring vs tree, and check whether P2P is enabled at all.
+
+Evidence to collect: tok/s and ITL per TP degree, nccl-tests latency table, NCCL_DEBUG=INFO topology and algorithm lines, nvidia-smi topo -m, per-GPU utilisation (a large gap between ranks indicates imbalance, not collective cost).
+
+Rollback/stop gate: keep the lowest TP degree that meets the memory and latency SLO; revert any TP increase whose measured tok/s-per-GPU is worse than the incumbent.
+
+Result applies to this host's interconnect only; an NVLink or NVSwitch host would likely show a different crossover.""",
+
+"corpus-00144": ASSUME + """
+
+Controlled experiment for decode (variant 4): quantify the throughput/latency tradeoff of continuous batching under open-loop load.
+
+Hypothesis (falsifiable): under open-loop Poisson arrivals, aggregate decode throughput saturates and p95 inter-token latency rises steeply past a knee; the knee is where KV-cache utilisation approaches the point at which the scheduler begins preempting, and beyond it both latency and throughput degrade.
+
+Design. Independent variable: offered request rate R in {1, 2, 4, 8, 12, 16, 24} req/s, generated open-loop (arrivals do not wait for completions - a closed-loop client would silently self-throttle and hide the knee entirely, which is the single most common flaw in decode benchmarks). Controls: fixed max_num_seqs, fixed gpu_memory_utilization, prompt lengths sampled from a fixed seeded distribution (mean 1024, p95 4096), output lengths from a fixed seeded distribution (mean 256), same seed across all rates so the workload is identical, 5-minute steady-state window per rate with the first 60 s discarded as warm-up.
+
+Concrete mechanism under test: queueing plus KV admission control. Predicted signature is TTFT rising first (queueing at admission), then ITL rising (larger running batch), then preemption counters becoming nonzero at the cliff.
+
+Boundary condition. Only valid if the client can actually generate the offered rate - verify achieved arrival rate matches the target within 2%, otherwise the client, not the server, is the bottleneck. Also invalid if any request errors or times out; count them separately rather than dropping them.
+
+Evidence to collect: achieved vs offered rate, p50/p95/p99 TTFT and ITL, tok/s, running-batch-size and waiting-queue gauges over time, KV utilisation, preemption/recompute counters, error rate.
+
+Rollback/stop gate: define the serving capacity as the highest R meeting both TTFT and ITL SLOs at p95 with zero preemptions; any config change that lowers this number is reverted.
+
+Provisional and workload-specific: capacity measured on one prompt distribution does not transfer to another.""",
+
+"corpus-00145": ASSUME + """
+
+Controlled experiment for decode (variant 5): test whether speculative decoding actually helps for a given workload.
+
+Hypothesis (falsifiable): speculative decoding improves wall-clock decode latency only when (acceptance_rate * gamma) exceeds the per-step cost multiplier introduced by drafting and verification, i.e. speedup ~ (1 + accepted_tokens_per_step) / (1 + C_draft/C_target), and it degrades throughput at high batch sizes because the target model's verification step is no longer weight-bound and the wasted rejected tokens consume real compute.
+
+Design. Independent variables: draft length gamma in {1,2,4,6} and batch size B in {1,4,16,64}, plus a baseline arm with speculation off. Controls: same target model, same prompts (seeded, fixed distribution), greedy target sampling so output is token-identical to the baseline - this is the key correctness control: verify byte-identical outputs between spec-on and spec-off runs, because a speedup obtained with different outputs is not a speedup, it is a different model.
+
+Metrics: ITL, tok/s, and the acceptance rate reported per step (if the server does not expose it, instrument it - without acceptance rate the result is uninterpretable).
+
+Concrete mechanism under test: trading extra target-model compute (verifying gamma+1 positions in one forward) for fewer sequential HBM weight streams.
+
+Boundary condition. Speculation helps in the memory-bound regime (small B) and hurts in the compute-bound regime (large B), because at large B the target forward is already amortising weight reads and the extra verified positions cost proportional FLOPs. It also collapses when acceptance rate is low - out-of-domain prompts, high temperature, or a poorly matched draft model. Expect a crossover B beyond which speculation is a net loss.
+
+Evidence to collect: per-arm ITL and tok/s, measured acceptance rate per gamma, output-identity check versus baseline, GPU utilisation (rising utilisation with flat tok/s means wasted speculative work).
+
+Rollback/stop gate: disable speculation for any (gamma, B) region where measured tok/s or p95 ITL is worse than the baseline, and disable it entirely if output identity fails.
+
+All figures above are predictions from the roofline model, not measurements; the experiment exists precisely to falsify them.""",
+}
+
+DECISIONS = {k: "rewrite" for k in ANSWERS}
+
+QD = {
+ "corpus-00136": (2,2,3), "corpus-00137": (2,2,3), "corpus-00138": (2,2,3),
+ "corpus-00139": (2,2,3), "corpus-00140": (2,2,3), "corpus-00141": (2,1,3),
+ "corpus-00142": (2,1,3), "corpus-00143": (2,1,3), "corpus-00144": (2,1,3),
+ "corpus-00145": (2,1,3),
+}
+
+RISKS_COMMON = [
+ "source_assistant is a generic restatement of what decode is and does not answer the asked task",
+ "no units, no assumption frame, and no numeric bounds, so the claim is not falsifiable",
+ "no boundary condition given even though the prompt explicitly requires one",
+]
+RISKS_EXP = RISKS_COMMON + [
+ "no experimental design at all: no independent variable, no controls, no stopping rule",
+]
+RISKS_MIS = RISKS_COMMON + [
+ "no misleading intuition is identified and nothing is corrected, so the instruction is uncovered",
+]
+
+EV_MIS = [
+ "roofline calculation with the specific model's weight bytes, KV bytes per token and achieved HBM bandwidth",
+ "profiler trace (nsys/ncu) showing DRAM read bytes and kernel time share per decode step",
+ "batch-size and context-length sweeps with p50/p95 inter-token latency",
+]
+EV_EXP = [
+ "open-loop benchmark harness output with per-request TTFT and ITL distributions",
+ "server metrics: running batch size, waiting queue, KV cache utilisation, preemption/recompute counters",
+ "hardware/topology capture: nvidia-smi topo -m, locked clocks, driver and library versions",
+ "seeded fixed workload definition so runs are comparable across arms",
+]
+
+def main():
+    with open(SRC, encoding="utf-8") as f:
+        lines = f.readlines()[START:START+COUNT]
+    out = []
+    for line in lines:
+        d = json.loads(line)
+        sid = d["id"]
+        msgs = d["messages"]
+        user = next(m["content"] for m in msgs if m["role"] == "user")
+        asst = next(m["content"] for m in msgs if m["role"] == "assistant")
+        assert sid in ANSWERS, sid
+        is_exp = "controlled experiment" in user
+        tc, ic, os_ = QD[sid]
+        rec = {
+            "source_id": sid,
+            "teacher_lane": "teacher-B",
+            "teacher_model": "claude-opus-5-current",
+            "calibration_status": "provisional",
+            "decision": DECISIONS[sid],
+            "source_user": user,
+            "source_assistant": asst,
+            "corrected_answer": ANSWERS[sid],
+            "quality_dimensions": {
+                "technical_correctness": tc,
+                "instruction_coverage": ic,
+                "operational_safety": os_,
+            },
+            "risks": RISKS_EXP if is_exp else RISKS_MIS,
+            "evidence_required": EV_EXP if is_exp else EV_MIS,
+            "confidence": 0.72 if is_exp else 0.75,
+        }
+        out.append(rec)
+    with open(OUT, "w", encoding="utf-8") as f:
+        for r in out:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print("wrote", OUT, len(out))
+
+if __name__ == "__main__":
+    main()

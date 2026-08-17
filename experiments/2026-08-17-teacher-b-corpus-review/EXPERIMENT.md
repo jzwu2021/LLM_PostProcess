@@ -5,6 +5,63 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0013
+
+- Batch file: results/train-batch-0013.jsonl
+- Corpus range: train.jsonl lines 121-130 (0-indexed 120-129), source IDs corpus-00136 .. corpus-00145
+- Progress: train 130/5399, validation 0/601, total 130/6000, remaining 5870
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: FAIL at generation time - the batch script was first written with
+  START=130 instead of START=120, so it read corpus-00146.. and tripped the in-script
+  source_id assertion before writing anything. No bad output file was ever produced.
+- Repair action: corrected START to 120 in scripts/gen_batch_0013.py and regenerated. The
+  raw corpus and all previously committed batches were left untouched.
+- Final schema check: PASS (scripts/verify_batches.py -> VERIFY_PASS; JSONL parses line by
+  line, 10 records, all 12 required fields present, teacher_lane/teacher_model/
+  calibration_status/decision values valid, source_user and source_assistant byte-identical
+  to the raw corpus, corrected_answer non-empty, confidence in [0,1], source_id globally
+  unique, and the aggregated train sequence is an exact prefix of train.jsonl).
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except itself;
+  sha256sum -c reports OK for all entries.
+
+### Technical topics covered by this batch
+
+All ten records are Knowledge/Concept items on the decode phase of LLM inference, split into
+two task families. Records corpus-00136..00140 ask for a misleading intuition plus its
+correction; the rewrites target five distinct misconceptions: (1) decode is compute-bound
+and responds to more FLOPS, corrected via GEMV arithmetic intensity and the HBM weight-
+streaming floor with the roofline ridge point as the boundary; (2) decode latency scales
+linearly with context, corrected by separating the context-independent weight stream from
+the context-dependent KV re-read and giving the crossover in aggregate cached tokens;
+(3) tensor parallelism scales decode near-linearly, corrected with the per-layer NCCL
+all-reduce latency term and the PCIe-vs-NVLink boundary; (4) weight quantisation gives a
+proportional speedup, corrected with an Amdahl decomposition over weight/KV/fixed-overhead
+bytes plus the Ampere-has-no-native-FP8 caveat; (5) higher aggregate tok/s is always better,
+corrected by the throughput-versus-inter-token-latency tradeoff under continuous batching and
+the preemption cliff.
+
+Records corpus-00141..00145 ask for a small controlled experiment; the rewrites specify an
+independent variable, held-fixed controls, warm-up and repetition policy, the falsifiable
+prediction, the invalidating boundary condition, the evidence to capture, and a rollback or
+stop gate. They cover, respectively: a batch-size sweep testing the memory-bound hypothesis;
+a context-length sweep with prefix caching explicitly disabled to avoid silent prefill skip;
+a tensor-parallel degree A/B with an independent nccl-tests latency calibration arm and a
+topology control; an open-loop load sweep that locates the throughput/latency knee (with an
+explicit warning that a closed-loop client hides the knee); and a speculative decoding
+evaluation gated on measured acceptance rate and byte-identical output versus baseline.
+
+The source_assistant text is identical boilerplate across all ten records ("Decode generates
+one or a few tokens per step ..."), which is true but answers none of the ten distinct
+prompts, so every record was marked rewrite with instruction_coverage 1-2.
+
+### Status caveat
+
+These are PROVISIONAL teacher-B outputs from a blind second-opinion lane. They are not expert
+gold labels, they have not been checked against teacher-A (that comparison is a separate later
+step), and they are not evidence of any model's domain capability. All numeric values in the
+corrected answers are roofline estimates or worked examples under a stated assumption frame,
+not measurements from this host.
+
 ## Purpose
 
 Produce a second, INDEPENDENT provisional calibration of the same 6000 corpus
