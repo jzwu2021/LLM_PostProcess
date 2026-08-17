@@ -56,11 +56,62 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 10/5399; validation 0/601; total 10/6000; remaining 5990.
+Progress: train 20/5399; validation 0/601; total 20/6000; remaining 5980.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 11:0x UTC — train-batch-0002.jsonl
+
+- Batch file: results/train-batch-0002.jsonl
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 11-20
+- Source IDs: corpus-00013, corpus-00014, corpus-00015, corpus-00017, corpus-00018,
+  corpus-00019, corpus-00020, corpus-00021, corpus-00022, corpus-00023
+  (corpus ids remain non-contiguous in the raw file; line order preserved verbatim,
+  nothing skipped or reordered)
+- Progress after this run: train 20/5399; validation 0/601; total 20/6000; remaining 5980
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run (scripts/verify_batches.py)
+- Repairs performed: none required
+- Final schema/ad-hoc check: PASS (train=20/5399 validation=0/601 total=20/6000, VERIFY_PASS)
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself;
+  `sha256sum -c` reported all files OK
+- Blind-mode compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, or grepped while producing this batch. Only source_user and
+  source_assistant from the raw corpus were consulted.
+
+Technical topics covered by this batch: still the KV cache cluster (concepts=["kv_cache"],
+task_type=explanation), now spanning three prompt intents — (a) two failure modes / trade-offs
+(easy variants 3-5), (b) how KV cache interacts with latency, throughput or memory (medium
+variants 2-5), (c) a measurement plan validating whether KV cache helps a serving workload
+(medium variants 1-3). The rewrites cover: the per-sequence size model
+2 * layers * seq_len * num_kv_heads * head_dim * dtype_bytes with a worked 1.07 GB example
+stated as an assumption; decode as an HBM-bandwidth-bound regime and the
+max(compute, (weight_bytes + batch*kv_bytes)/BW) roofline with its throughput knee; paged
+allocation, internal vs. external fragmentation and block-table indirection; prefix-cache reuse
+correctness hazards under LoRA swap, KV-dtype change or position-offset change (silent wrong
+logits, no crash signal); preemption thrash with swap-over-PCIe vs. evict-and-recompute and the
+crossover between them; per-tenant KV quotas and p99 tail unfairness; the mitigation lever set
+(GQA/MQA, fp8/int8 KV, paging, prefix caching, disaggregated prefill/decode in the
+Dynamo/Mooncake style with KV transfer over RDMA/RoCE and GPUDirect RDMA); and multi-GPU
+behaviour where tensor parallelism shards the cache by TP degree but adds an NCCL collective
+latency floor that makes cross-node TP for decode normally the wrong choice, while pipeline
+parallelism does not shard KV within a stage at all. The measurement-plan records specify
+production-trace replay rather than fixed-length synthetic load, one-variable-at-a-time arms,
+closed-loop load generation, three repetitions with warm-up discarded, three-layer
+instrumentation (client / engine / DCGM GPU counters), cold-vs-warm prefix-cache reporting, a
+two-direction capacity perturbation to separate compute-bound from bandwidth-bound from
+capacity-bound behaviour, and pre-registered falsifiable thresholds with explicit rollback gates.
+
+Why every record was marked rewrite: the raw corpus again reuses one identical single-sentence
+assistant answer verbatim across all ten records and all three distinct prompt intents. The
+sentence is not false about caching and the memory-scaling factors, but it answers none of the
+asked questions — no enumerated failure modes, no latency/throughput/memory interaction, and
+no measurement plan whatsoever. It carries no units, no boundary condition, no falsifiable
+hypothesis, no required evidence and no rollback gate. instruction_coverage was scored 1/5 for
+all ten; technical_correctness 3/5 (non-false but under-specified); operational_safety 2/5
+(gives an operator nothing actionable and no blast-radius control).
 
 ### 2026-08-17 10:58 UTC — train-batch-0001.jsonl
 
