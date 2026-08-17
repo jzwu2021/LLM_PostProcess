@@ -5,6 +5,31 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0092
+
+- Batch file: results/train-batch-0092.jsonl
+- Corpus range: train.jsonl lines 911-920 (source IDs corpus-00999, corpus-01000, corpus-01001, corpus-01002, corpus-01004, corpus-01005, corpus-01006, corpus-01007, corpus-01009, corpus-01010 — corpus file order preserved exactly, no skips, no reordering; the gaps at corpus-01003 and corpus-01008 are pre-existing in the corpus and were NOT introduced by this lane)
+- Progress: train 920/5399, validation 0/601, total 920/6000, remaining 5080
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify_batches.py — 920 train records, 920 unique source_ids, batch size 10, all 12 required fields present, enum fields correct, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers in [1,5], risks/evidence_required string arrays, source_user/source_assistant byte-identical to corpus, aggregate train sequence a strict prefix of train.jsonl)
+- Repairs applied: none required. Both KV-cache byte counts were recomputed independently from the parsed parameters (2×48×1536×6×64×1 = 56623104 B = 0.052734 GiB; 2×56×2048×8×96×2 = 352321536 B = 0.328125 GiB) and matched the source values before writing.
+- Final schema check: PASS (VERIFY=PASS)
+- Manifest: MANIFEST.sha256 regenerated over 164 files (everything in this directory except MANIFEST.sha256); `sha256sum -c` reported all OK, exit 0
+- Technical topics covered: two per-request K/V cache sizing cases (INT8 and BF16/FP16 KV under GQA),
+  and eight serving-evaluation design/diagnosis/perf-analysis items on TTFT, TPOT, throughput,
+  queueing and P99 under a mixed short-prompt / long-generation workload. The eight evaluation items
+  share a templated source answer that is a rubric ("Answer should state...") rather than an answer;
+  each was rewritten into a concrete plan with an explicit falsifiable hypothesis (mixed traffic
+  degrades short-prompt P99 TTFT by >30% via batch-slot contention), three-arm controlled experiment
+  (short-only / long-only / mixed) with load sweep, warmup policy and randomized repeated trials,
+  phase-separated metrics (prefill-dominated TTFT vs decode-dominated TPOT), SLO goodput, queue-depth
+  and KV-utilization telemetry, named confounders (coordinated omission from closed-loop load
+  generation, prefix caching, chunked prefill, clock throttling, tokenizer mismatch), and a rollback
+  gate at >20% short-prompt P99 TTFT regression or >5% goodput loss.
+- Status: PROVISIONAL. Single-model blind second opinion, not expert gold, not adjudicated against
+  teacher-A (no teacher-A file was read during this run), and it says nothing about any model's
+  domain capability — it is corpus review output only.
+
 ## Run 2026-08-17 batch 0091
 
 - Batch file: results/train-batch-0091.jsonl
