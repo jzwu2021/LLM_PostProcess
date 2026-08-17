@@ -56,11 +56,60 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 90/5399; validation 0/601; total 90/6000; remaining 5910.
+Progress: train 100/5399; validation 0/601; total 100/6000; remaining 5900.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 — train-batch-0010.jsonl
+
+- Batch file: results/train-batch-0010.jsonl
+- Corpus range: train.jsonl lines 91–100 (strict corpus order, no skips, no reordering)
+- Source IDs: corpus-00103, corpus-00105, corpus-00106, corpus-00107, corpus-00108,
+  corpus-00109, corpus-00110, corpus-00111, corpus-00112, corpus-00113
+- Progress after this run: train 100/5399; validation 0/601; total 100/6000; remaining 5900.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on first run (JSONL line-parseable, 10 records, all 12
+  required fields present, teacher_lane/teacher_model/calibration_status/decision values
+  correct, source_user and source_assistant byte-identical to raw corpus, corrected_answer
+  non-empty, confidence within [0,1], source_id globally unique across all batches,
+  aggregated train sequence is an exact prefix of train.jsonl).
+- Repairs performed: none required.
+- Final schema check: PASS (train 100, validation 0, total 100, VERIFY_PASS).
+- Manifest: MANIFEST.sha256 regenerated over all 24 files in this directory except the
+  manifest itself; `sha256sum -c` reported 24 OK, 0 FAILED.
+
+#### Technical topics covered by this batch
+
+All ten records target the decode phase of LLM inference. The rewritten answers cover:
+autoregressive decode as a memory-bandwidth-bound regime and the HBM-floor latency bound
+t_step >= (W_bytes + KV_bytes)/BW_HBM instantiated on A30 (933 GB/s); KV cache sizing from
+n_layers/n_kv_heads/head_dim/dtype under GQA and the resulting concurrency ceiling on a
+24 GB card; KV cache versus naive O(N^2) attention recompute; static versus continuous
+(in-flight) batching and the mean_len/max_len slot-utilization argument; prefill/decode
+interference, chunked prefill token budgets, and prefill/decode disaggregation of the kind
+used by Mooncake- and NVIDIA Dynamo-style architectures including the KV-transfer break-even
+over NVLink or RDMA/RoCE with GPUDirect; speculative decoding acceptance-rate math and why
+its gain decays as batch size grows; paged attention block allocation, fragmentation bounds,
+and prefix sharing with copy-on-write; KV/weight quantization error compounding across
+generation steps; tensor-parallel all-reduce latency dominating decode at small batch; and
+straggler-induced tail amplification across TP ranks in multi-GPU/multi-node decode.
+
+Every source answer in this range was the same templated one-sentence definition of decode
+reused verbatim across ten different instructions (define / contrast-with-naive /
+list-two-failure-modes), so instruction coverage was scored 1–2 throughout and every record
+was marked `rewrite`. Each rewritten answer states an explicit mechanism, a boundary
+condition delimiting the regime in which the mechanism holds, at least one falsifiable
+claim, the measurements needed to test it, and a rollback gate.
+
+#### Status caveats
+
+These records are PROVISIONAL teacher-B review output produced blind by
+claude-opus-5-current. They are NOT expert gold labels, have NOT been validated against
+hardware measurements, and do NOT constitute evidence of any model's domain capability.
+No file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read while producing
+this batch; inter-teacher agreement remains a separate later analysis step.
 
 ### 2026-08-17 — train-batch-0009.jsonl
 
