@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0067
+
+- Batch file: results/train-batch-0067.jsonl
+- Corpus range: train.jsonl lines 661-670 (source IDs corpus-00732 … corpus-00741, contiguous; corpus order preserved exactly, no skips or reordering)
+- Progress: train 670/5399, validation 0/601, total 670/6000, remaining 5330
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (`verify_batches.py` reported `train: 670 records checked against corpus of 5399`, `validation: 0`, `unique source_ids: 670`, `VERIFY=PASS`). Checks covered line-by-line JSONL parse, 10 records in this batch, all 12 required fields, teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional, decision domain, character-exact source_user/source_assistant against corpus, non-empty corrected_answer, confidence in [0,1], quality_dimensions three integers 1-5, globally unique source_ids, and aggregated train sequence being an exact prefix of train.jsonl.
+- Repairs performed: none required; verification passed on first execution.
+- Final schema check: pass (670 records validated, 0 errors)
+- Independent arithmetic re-derivation: all ten byte totals and GiB values were recomputed from (layers, kv_heads, head_dim, seq_len, dtype) and compared to the source strings; all ten matched exactly (33554432 / 47185920 / 201326592 / 110100480 / 226492416 / 117440512 / 83886080 / 113246208 / 352321536 / 12582912 B). The rewrite decision reflects insufficiency of the source answer, not arithmetic error.
+- Manifest: MANIFEST.sha256 regenerated over all files except itself; `sha256sum -c` returned 118 OK lines and 0 failures.
+- Technical topics covered by this batch: single-request KV cache sizing for GQA/MQA transformers spanning BF16/FP16 and INT8 KV dtypes, 24-56 layers, 2-8 KV heads, head_dim 64-128, context 1024-4096. Each rewrite states the mechanism (KV grows linearly in generated tokens and in concurrency), the derived per-token byte rate as the real capacity-planning quantity, PagedAttention block padding at block_size 16, preallocated KV pool vs gpu_memory_utilization, the TP <= kv_heads sharding limit, preemption/recompute as the observable failure signal instead of CUDA OOM, the lossy nature of FP8/INT8 KV with an explicit accuracy-A/B gate and rollback condition, and the concrete evidence needed (config.json fields, engine-reported KV dtype/block_size/block count, measured HBM under a controlled concurrency ramp).
+- Status caveat: PROVISIONAL teacher-B model review, not expert gold labels, and no evidence about any trained model's domain capability. Blind: no teacher-A artifact was read while producing this batch. Agreement analysis remains a separate later step.
+
 ## Run 2026-08-17 batch 0066
 
 - Batch file: results/train-batch-0066.jsonl
