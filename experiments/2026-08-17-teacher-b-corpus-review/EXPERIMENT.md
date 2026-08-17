@@ -5,6 +5,40 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0057
+
+- Batch file: results/train-batch-0057.jsonl
+- Corpus range: train.jsonl 0-indexed lines 560-569, source IDs corpus-00623 through corpus-00632 (contiguous, strict corpus order preserved, nothing skipped or reordered).
+- Progress: train 570/5399, validation 0/601, total 570/6000, remaining 5430
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: FAIL. The batch generator extracted `messages[0]`/`messages[1]` as user/assistant, but corpus rows carry a leading `system` message, so all 10 rows had `source_user`/`source_assistant` mismatched against the corpus (20 verifier failures).
+- Repairs: fixed `scripts/gen_batch_0057.py` to select messages by `role` instead of positional index (this also corrected the parameter parsing, which had been reading layers/heads/dim/seq_len out of the wrong field), regenerated the batch, and re-ran verification. Only this run's own batch file and generator were changed. The original corpus, earlier batches, benchmark raw generations and all teacher-A artifacts were untouched; the teacher-A directory was not opened, read or grepped at any point (blind review).
+- Final schema check: PASS (train=570 validation=0 total=570; 10/10 rows parse as physical-newline JSONL, all 12 required fields present, teacher_lane=teacher-B / teacher_model=claude-opus-5-current / calibration_status=provisional / decision in {keep,rewrite,reject}, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, 570 globally unique source_ids, aggregated train sequence an exact prefix of train.jsonl, validation still empty).
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except the manifest itself; `sha256sum -c` reported OK with zero failures.
+
+Technical topics covered by this batch: single-request KV-cache memory sizing for
+transformer inference (Calculation cases 123-132). Parameter sweep: layers 24-56,
+KV heads 2-8, head dim 64-128, seq_len 1024-4096, dtypes BF16/FP16 and INT8.
+Each rewrite states the closed-form formula `2 x layers x seq_len x kv_heads x
+head_dim x bytes_per_value`, derives the per-token planning constant, and then
+makes the boundary conditions explicit: paged-attention block rounding (block_size
+16, exact rounding cost computed per case), the GQA/MQA distinction between
+num_kv_heads and num_attention_heads (the dominant real-world error mode),
+MLA latent KV and sliding-window attention as cases where the formula
+over-estimates, INT8/FP8 scale metadata that this arithmetic excludes, the fact
+that the KV pool is sized once at engine startup and does not grow, tensor-parallel
+sharding of KV heads (and replication when num_kv_heads is not divisible by TP),
+and disaggregated prefill/decode (Mooncake, NVIDIA Dynamo) where the same KV bytes
+exist on both sides during handoff and transfer time must be budgeted on measured
+RDMA/RoCE goodput with GPUDirect RDMA rather than on link line rate. Each record
+carries falsifiable predictions, the config/log/telemetry evidence needed to check
+them, and a rollback gate (>15% deviation from the estimate, or non-zero
+preemption/recompute counters, reverts max_model_len / max_num_seqs).
+
+These results are PROVISIONAL teacher-B output from a general-purpose model. They
+are not expert gold labels, they are not independently validated against running
+hardware, and they say nothing about the domain capability of any trained model.
+
 ## Run 2026-08-17 batch 0056
 
 - Batch file: results/train-batch-0056.jsonl
