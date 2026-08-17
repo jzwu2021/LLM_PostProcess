@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0015
+
+- Batch file: results/train-batch-0015.jsonl
+- Corpus range: train.jsonl lines 141-150 (0-indexed 140-149), source IDs corpus-00159 .. corpus-00168
+- Progress: train 150/5399, validation 0/601, total 150/6000, remaining 5850
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py -> VERIFY_PASS, train=150/5399, validation=0/601, total=150/6000)
+- Repairs applied: none required this run
+- Final schema check: PASS (VERIFY_PASS; all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values valid, source_user and source_assistant byte-equal to the corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique, aggregated train sequence is a strict prefix of corpus order)
+- Manifest: MANIFEST.sha256 regenerated over all 34 files in this directory (excluding itself); `sha256sum -c` reports 34 OK and 0 failures
+- Generator script archived at scripts/gen_batch_0015.py
+- Lock: /tmp/teacher-b-corpus-review.lock acquired atomically at run start, released at run end
+
+Technical topics covered by this batch: all ten records concern **continuous batching**
+in LLM serving, split into three sub-themes. (1) corpus-00159..00160 contrast continuous
+batching with naive request-level/static batching, covering iteration-boundary admission
+and retirement, useful-token efficiency mean(L)/max(L), and the separate paged-KV memory
+effect (contiguous max_seq_len reservation vs. per-page lazy allocation, internal
+fragmentation bounded by one page). (2) corpus-00161..00165 enumerate failure modes and
+trade-offs: preemption/recompute thrash under KV pressure, head-of-line interference and
+the throughput/tail-latency trade, CUDA-graph shape instability, fairness/starvation of
+long-context requests, prefill/decode interference and chunked prefill, goodput vs.
+throughput accounting divergence, over-admission on current rather than projected KV
+footprint, client retry amplification feedback loops, tensor-parallel collective coupling
+(2 all-reduces per layer, PCIe-only topology without NVLink), and bf16 reduction-order
+nondeterminism breaking eval reproducibility. (3) corpus-00166..00168 analyse the
+latency/throughput/memory interaction quantitatively via the roofline relation
+step_time = (W + sum_i KV_i)/BW_eff, the throughput knee at sum_i KV_i ~= W, the three
+coupled budgets (bandwidth, memory, latency), the TTFT/ITL decomposition that opposing
+effects can hide in an end-to-end average, and prefix-caching-induced benchmark inflation.
+
+Every source_assistant in this batch was the same single-sentence stub, which is why all
+ten decisions are `rewrite`: the stub states one mechanism but never supplies the boundary
+condition the prompt explicitly requests, and for corpus-00161..00165 it does not answer
+the asked question (failure modes) at all. instruction_coverage was scored 2-3 accordingly.
+
+**Status caveat (mandatory):** these corrected_answer texts are *provisional* teacher-B
+output produced blind by claude-opus-5-current. They are NOT expert gold, they have not
+been validated against MEASURED data from this cluster, and every quantitative figure in
+them (A30 933 GB/s peak, 0.65-0.75 achieved-bandwidth fraction, ~18 GB bf16 weights,
+~25 GB/s PCIe Gen4 x16, 16-token pages) is an explicitly labelled estimate under a stated
+assumption frame. This artifact says nothing about any model's domain capability; it is a
+review corpus only. Agreement analysis against teacher-A is a separate later step and was
+deliberately not performed here — no teacher-A file was read during this run, preserving
+the blind-review condition.
+
 ## Run 2026-08-17 batch 0014
 
 - Batch file: results/train-batch-0014.jsonl
