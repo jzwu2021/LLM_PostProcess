@@ -5,6 +5,43 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0050
+
+- Batch file: results/train-batch-0050.jsonl
+- Corpus range: train.jsonl lines 491-500 (0-indexed 490-499), source IDs corpus-00544, corpus-00545, corpus-00546, corpus-00547, corpus-00548, corpus-00549, corpus-00550, corpus-00554, corpus-00555, corpus-00556 — strict corpus order, nothing skipped or reordered (corpus-00551..corpus-00553 are absent from the corpus file itself).
+- Progress: train 500/5399, validation 0/601, total 500/6000, remaining 5500
+- Decisions: keep 10, rewrite 0, reject 0
+- Initial schema check: PASS on first run (10/10 rows parsed as physical-newline JSONL, exactly 12 required fields per record, teacher_lane=teacher-B / teacher_model=claude-opus-5-current / calibration_status=provisional / decision in {keep,rewrite,reject}, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, 500 globally unique source_ids, aggregated train sequence an exact prefix of train.jsonl).
+- Repairs: none required. No batch was rewritten; the original corpus, earlier batches, benchmark generations and all teacher-A artifacts were left untouched.
+- Final schema check: PASS (train=500 validation=0 total=500).
+- Manifest: MANIFEST.sha256 regenerated over all 97 files in this directory except the manifest itself; `sha256sum -c` reported 97/97 OK, exit 0.
+
+Independent arithmetic check: each of the ten byte counts was recomputed from
+2 x layers x seq_len x kv_heads x head_dim x bytes_per_value before review; all
+ten source figures matched exactly, so every item was a keep on correctness. The
+corrected answers add what the source omits: the GQA reason the count uses
+num_key_value_heads rather than query heads, the boundary conditions that make
+the formula valid (dense causal attention, no sliding-window, no MLA latent
+compression, uniform head_dim, no prefix sharing), the excluded terms that
+actually decide concurrency (paged-KV block rounding, pre-reserved KV pool,
+allocator fragmentation, TP KV-head replication when kv_heads is not divisible by
+the TP degree, and beam/speculative branch multiplication), a GiB-vs-GB unit
+disambiguation, a falsifiable single-request memory-delta prediction with the
+measurement procedure, the evidence needed (config.json fields, engine startup KV
+block log, TP topology, concurrency ramp), and an explicit rollback gate at
+70-80% of derived max concurrency keyed on p99 latency, preemption counters and
+OOM. The three INT8-KV cases (corpus-00546, corpus-00549, corpus-00555) were
+additionally marked down on operational_safety to 2 because the source presents
+INT8 as an exact 1 byte/value halving with no quantization scale/zero-point
+overhead and no accuracy gate; those records carry an extra risk entry and an
+extra evidence requirement for a fixed-eval accuracy comparison before the
+quantized path serves traffic.
+
+These outputs are PROVISIONAL teacher-B judgements produced blind, without any
+access to teacher-A artifacts during generation. They are not expert gold labels,
+they have not been validated against production telemetry, and they say nothing
+about the trained model's domain capability.
+
 ## Run 2026-08-17 batch 0049
 
 - Batch file: results/train-batch-0049.jsonl
