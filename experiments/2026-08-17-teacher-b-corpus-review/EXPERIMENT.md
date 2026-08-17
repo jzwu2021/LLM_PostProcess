@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0078
+
+- Batch file: results/train-batch-0078.jsonl
+- Corpus range: train.jsonl lines 771-780 (source IDs corpus-00849, corpus-00850, corpus-00851, corpus-00852, corpus-00853, corpus-00854, corpus-00855, corpus-00856, corpus-00857, corpus-00859 — corpus file order preserved exactly, no skips or reordering; note corpus-00858 is absent from the corpus itself, the gap is in the source data, not a skip)
+- Progress: train 780/5399, validation 0/601, total 780/6000, remaining 5220
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (ad-hoc verifier — JSONL line-parse, batch count 10, 12 required fields, teacher_lane/teacher_model/calibration_status/decision enums, quality_dimensions integers in 1-5, risks/evidence_required string arrays, source_user/source_assistant character-exact vs corpus, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness across all batches, train/validation aggregates are strict prefixes of their corpora)
+- Repairs performed: none required
+- Final schema check: PASS (train 780/5399, validation 0/601, total 780, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over all 140 files in this directory except itself; `sha256sum -c --quiet` all-pass, 0 failures
+- Technical topics covered: per-request KV cache sizing for GQA/MQA decoder stacks — layer counts 24-56, KV head counts 2-8, head dims 64-128, contexts 1024-4096, mixed BF16/FP16 (2 B/value) and INT8 (1 B/value) KV dtypes. All 10 source byte totals were independently recomputed from 2 x layers x seq_len x KV_heads x head_dim x bytes_per_value and matched exactly, so technical_correctness scored 4. All 10 were nevertheless marked `rewrite` for thin instruction coverage and operational safety: the source never states that KV_heads must be the post-GQA `num_key_value_heads` (using query heads is a silent 4-8x overestimate), ignores paged-allocator block-granularity round-up (vLLM/SGLang PagedAttention, TRT-LLM paged KV), ignores INT8 per-block scale/zero-point metadata (~1-3% on top), does not distinguish a per-request figure from an HBM capacity constraint (weights + activations + concurrency), does not address tensor-parallel KV sharding when kv_heads is not divisible by TP, and does not flag the architectures that break linear scaling (sliding-window attention, cross-layer KV sharing, MLA latent KV). The rewrites state each of these as explicit falsifiable assumptions, give a +5%/-0% predicted band against engine-reported KV occupancy, enumerate the evidence needed (config.json num_hidden_layers / num_key_value_heads / head_dim / torch_dtype, engine kv_cache_dtype and block_size, startup KV-blocks log line, nvidia-smi and torch.cuda.memory_summary at steady state, tensor_parallel_size), and define a rollback gate on KV-cache preemption or p99 TTFT SLO breach over two consecutive 5-minute windows.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, listed or searched during this batch. Only research/ai-infra-expert/corpus/train.jsonl source_user/source_assistant were consulted.
+- Status caveat: these results are PROVISIONAL teacher-B model output. They are not expert gold labels, have not been validated by a human domain expert, and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0077
 
 - Batch file: results/train-batch-0077.jsonl
