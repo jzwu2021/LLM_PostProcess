@@ -5,6 +5,47 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0016
+
+- Batch file: results/train-batch-0016.jsonl
+- Corpus range: train.jsonl lines 151-160 (0-indexed 150-159), source IDs corpus-00169, 00170, 00171, 00173, 00174, 00176, 00177, 00178, 00179, 00180
+- Progress: train 160/5399, validation 0/601, total 160/6000, remaining 5840
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py -> VERIFY_PASS, train=160/5399, validation=0/601, total=160/6000)
+- Repairs applied: none required this run
+- Final schema check: PASS (VERIFY_PASS; all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values valid, source_user and source_assistant byte-equal to the corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique, aggregated train sequence is a strict prefix of corpus order)
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory (excluding itself); `sha256sum -c` reports 0 failures
+- Generator script archived at scripts/gen_batch_0016.py
+- Lock: /tmp/teacher-b-corpus-review.lock acquired atomically at run start, released at run end
+
+Technical topics covered by this batch: all ten records again concern **continuous
+batching** in LLM serving, in three question shapes. (1) corpus-00169..00170 ask how
+continuous batching interacts with latency, throughput and memory, answered via the
+iteration-boundary admission/retirement mechanism, the coupled budget in which each
+admitted sequence simultaneously consumes KV blocks, adds bytes to every decode step and
+contributes tokens/s, and the roofline estimate step_time ~= (weights + sum_i KV_i)/BW_eff
+with BW_eff ~0.6-0.75 x 933 GB/s on A30. (2) corpus-00171, 00173, 00174 ask for a
+measurement plan, answered with pre-registered hypotheses and SLOs, production trace
+replay closed-loop over a QPS ladder, a three-arm design (static+contiguous KV, static+paged
+KV, continuous+paged KV) that separates the memory-fragmentation win from the scheduler
+win, goodput-at-SLO as the decision metric, locked clocks, warm-up discard and >=3 repeats.
+(3) corpus-00176..00180 ask what assumptions must be stated before a performance claim,
+answered with an explicit disclosure set (kv_bytes_per_token = 2 * n_layers * n_kv_heads *
+head_dim * dtype_bytes from the served checkpoint, weight bytes, max_model_len,
+gpu_memory_utilization, TP degree, chunked prefill, PCIe topology, clock-lock state, metric
+definition, repeat count) and a claim template whose every slot is falsifiable. Recurring
+boundary conditions: the gain is bounded by output-length dispersion (padded-slot waste
+~= 1 - mean(L)/max(L)) and vanishes when KV bytes rather than slots are binding; recurring
+failure mode: preemption/recompute thrash, where swap costs KV_bytes / ~25 GB/s realised
+PCIe Gen4 x16 each way and goodput collapses while GPU utilisation still reads high.
+Every source answer in this batch was the same single generic sentence about
+iteration-boundary retirement, off-task for the measurement-plan and assumption-list
+questions, hence 10 rewrites with instruction_coverage 1.
+
+These results are **provisional** teacher-B second opinions produced by a general-purpose
+model under blind review. They are NOT expert gold labels, have not been validated against
+measured hardware data, and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0015
 
 - Batch file: results/train-batch-0015.jsonl
