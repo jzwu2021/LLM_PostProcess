@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0076
+
+- Batch file: results/train-batch-0076.jsonl
+- Corpus range: train.jsonl lines 751-760 (source IDs corpus-00828, corpus-00829, corpus-00831, corpus-00832, corpus-00833, corpus-00834, corpus-00835, corpus-00836, corpus-00837, corpus-00838 — corpus file order preserved exactly, no skips or reordering)
+- Progress: train 760/5399, validation 0/601, total 760/6000, remaining 5240
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (ad-hoc verifier — JSONL line-parse, batch count 10, 12 required fields, teacher_lane/teacher_model/calibration_status/decision enums, source_user/source_assistant byte-exact vs corpus, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness, train/validation aggregate is a strict prefix of each corpus)
+- Repairs performed: none required
+- Final schema check: PASS (train=760/5399, validation=0/601, total=760)
+- Manifest: MANIFEST.sha256 regenerated over all 137 files in this directory; `sha256sum -c` all-pass
+- Technical topics covered: per-request KV cache sizing for GQA/MQA decoders across BF16/FP16 and INT8 KV dtypes. Every source answer applies the correct formula 2 x layers x seq_len x KV_heads x head_dim x bytes_per_value and every arithmetic result was independently re-derived and confirmed exact. All 10 were nonetheless marked `rewrite` because the source stops at a raw lower bound: it omits paged-allocator block round-up (ceil(S/block_size) internal fragmentation), prefix/radix cache sharing and beam-width multiplication, INT8 per-block scale/zero-point metadata, and the tensor-parallel distinction between KV sharding (KV_heads divisible by TP) and KV replication (KV_heads < TP). Rewrites add explicit assumptions, binary-unit reporting, a falsifiable allocator-delta prediction with a ~15% tolerance band, the evidence needed to confirm it (model config fields, kv_cache_dtype, block_size, TP degree, before/after allocator snapshot), and a capacity-planning rollback threshold at 20% measured-vs-predicted concurrency shortfall.
+- Status caveat: these results are PROVISIONAL teacher-B model output. They are not expert gold labels, have not been validated by a human domain expert, and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0075
 
 - Batch file: results/train-batch-0075.jsonl
