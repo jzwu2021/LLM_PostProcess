@@ -1,0 +1,234 @@
+import json, os
+
+CORPUS = "research/ai-infra-expert/corpus/train.jsonl"
+OUT = "experiments/2026-08-17-teacher-b-corpus-review/results/train-batch-0006.jsonl"
+LO, HI = 51, 60
+
+COMMON_RISKS_BASE = [
+    "source answer is a one-line definition with no arithmetic model, no boundary condition and no rollback gate, so it is not falsifiable",
+    "does not distinguish compute-bound prefill from bandwidth-bound decode, which drives opposite tuning decisions",
+]
+COMMON_EVIDENCE = [
+    "vLLM/SGLang or TensorRT-LLM metrics: time_to_first_token p50/p99, inter_token_latency p50/p99, num_requests_waiting, gpu_cache_usage_perc",
+    "Nsight Systems / torch profiler trace separating prefill GEMM kernels from decode attention kernels",
+    "DCGM: SM occupancy, achieved FLOP/s and HBM read bandwidth sampled separately during prefill and decode phases",
+    "input-length and output-length histograms from the production access log, not an average",
+]
+
+ANSWERS = {
+"corpus-00055": """Definition. Prefill is the first forward pass of an LLM request: the whole prompt of N tokens is pushed through every transformer layer in one shot, producing (a) the logits for the first generated token and (b) the key/value tensors for all N prompt positions, which are written into the KV cache for reuse by decode.
+
+Concrete mechanism. Because the prompt is fully known up front, causal self-attention over the prompt can be evaluated as batched GEMMs over an N x d activation matrix rather than N sequential steps. Arithmetic intensity is therefore high: for a dense model, prefill cost is approximately 2 * P * N FLOPs (P = active parameters, factor 2 = multiply-add), plus an attention term that scales as O(N^2 * layers * heads * head_dim) and becomes non-negligible past roughly 4k-8k tokens. Decode by contrast does ~2 * P FLOPs per token while re-reading the entire weight set and KV cache, so it is memory-bandwidth bound. Same weights, opposite bottleneck: that is the single reason prefill matters operationally. It sets time-to-first-token (TTFT), it sizes your compute headroom, and it is the phase that disaggregated stacks (NVIDIA Dynamo, Mooncake) split onto separate GPU pools so a long prefill cannot head-of-line-block cheap decode steps.
+
+Boundary condition. The "prefill is parallel and cheap per token" framing holds only while N is small enough that the O(N^2) attention term stays below the O(N * P) linear term, and while the prefill fits in one scheduler chunk. Past that point — long-context requests, or a server without chunked prefill — a single request monopolises the GPU for tens to hundreds of milliseconds and inflates inter-token latency for every co-resident decode request.
+
+Falsifiable hypothesis. On a fixed model and dtype, TTFT is approximately affine in prompt length with a super-linear term appearing only beyond some N*; measure TTFT at N in {128, 512, 2048, 8192, 32768} and fit. If the quadratic coefficient is statistically indistinguishable from zero at 32k, the attention term is not yet dominant on this stack.
+
+Rollback gate. If enabling chunked prefill raises TTFT p99 by more than 15% at the production input-length distribution, or if num_requests_waiting grows monotonically for over 60 s under steady load, revert the scheduler config to the previous chunk size and re-measure before touching anything else.""",
+
+"corpus-00057": """Contrast: with prefill vs. a naive implementation that has none.
+
+Naive baseline. Treat every token identically: to emit token N+1, run a forward pass over positions 1..N, then to emit N+2 run a forward pass over 1..N+1, recomputing all prior keys and values each time. This is functionally correct and numerically equivalent (modulo reduction order); it is simply the version that never materialises a cache and never batches the prompt.
+
+Concrete mechanism and cost delta. Prefill amortises the prompt into a single batched pass: one N x d activation tensor per layer, high arithmetic intensity, ~2 * P * N FLOPs for a dense model plus O(N^2) attention. The naive scheme instead performs N sequential passes to consume the same prompt, i.e. roughly sum_{i=1..N} 2 * P * i ~ P * N^2 FLOPs, and each pass re-reads the full weight set from HBM. For a 9B-class model with 8k prompt the weight-traffic term alone becomes the dominant cost: ~18 GB of fp16 weights re-read 8192 times is far past any GPU's bandwidth budget, so TTFT degrades from tens of milliseconds to minutes. The second, quieter win is that prefill writes K/V once and decode reads it, converting the steady-state decode step from O(L) recompute into O(L) cache reads.
+
+Boundary condition. Prefill's advantage is bounded by memory, not by FLOPs. The prompt's KV must fit alongside weights: bytes = 2 * layers * kv_heads * head_dim * N * dtype_bytes (2 = K and V). On a 24 GB A30 hosting a 9B fp16 model (~18 GB weights) only a few GB remain, so a single 32k-token prompt can exhaust the cache and force chunked prefill, KV quantization, or rejection. Where the prompt does not fit in one pass, prefill is not "free parallelism" — it is a scheduling problem, and the naive-vs-prefill comparison must be re-run per chunk size.
+
+Falsifiable hypothesis. TTFT_naive / TTFT_prefill grows approximately linearly in N. Measure at N in {128, 1024, 8192} with the cache disabled via an ablation flag; if the ratio is flat, the implementation is not actually recomputing and the ablation is invalid.
+
+Evidence and rollback gate. Confirm with a profiler trace that the naive run shows N attention-kernel launches per prompt versus one batched launch. Abort the ablation if gpu_cache_usage_perc exceeds 0.9 or any request is preempted, because at that point you are measuring eviction policy rather than prefill.""",
+
+"corpus-00059": """Contrast: prefill vs. a naive no-prefill implementation, from the scheduler's point of view.
+
+Mechanism. Prefill consumes the whole prompt in one batched forward pass and persists K/V for all N positions; the request then enters decode, where each step is a single-token pass that reads the cache. A naive implementation without prefill re-derives those keys and values on every step, so consuming an N-token prompt costs O(N) sequential passes and O(P * N^2) FLOPs instead of O(P * N), with the full weight set streamed from HBM once per pass. The practical consequence is a phase split: prefill is compute/GEMM-bound and saturates SMs at modest batch size, decode is bandwidth-bound and needs large batches to reach useful throughput. Continuous batching, chunked prefill, and prefill/decode disaggregation (NVIDIA Dynamo, Mooncake's KV-transfer path) all exist purely because these two phases want different hardware operating points; none of them are expressible without a prefill concept.
+
+Second-order difference. Prefill enables prefix caching: if two requests share a byte-identical prefix, the second can skip that portion of prefill entirely and inherit the K/V blocks. A naive implementation has nothing to share.
+
+Boundary condition. Reuse is valid only while the prefix is byte-identical and the positional scheme tolerates the offset (RoPE must be applied consistently); any divergence in tokenizer version, system prompt, sampling branch, or K/V dtype invalidates the block. Additionally, an unchunked prefill of a very long prompt blocks the GPU for its whole duration, so co-resident decode requests see an inter-token-latency spike proportional to the longest prefill in flight — a fairness failure the naive version does not have because it never has a long monolithic kernel.
+
+Falsifiable hypothesis. With chunked prefill enabled at chunk size C, the p99 inter-token latency of decode requests should become approximately independent of the longest co-resident prompt length, at the cost of a modest TTFT increase. Sweep C in {512, 2048, 8192} against a bimodal short/long workload to test it.
+
+Evidence and rollback gate. Require TTFT p50/p99, ITL p99, num_requests_waiting, and prefix cache hit rate, plus a profiler trace showing kernel counts per phase. Revert the chunk size if ITL p99 does not improve by at least 20% or if throughput drops more than 10%.""",
+
+"corpus-00060": """Contrast: prefill vs. a naive implementation, stated as an explicit cost model.
+
+Naive implementation. No KV cache and no batched prompt pass; every emitted token triggers a full forward over all preceding positions. Correct, trivially simple, and the reference against which any cache bug should be diffed — an exact-logits comparison between cached and uncached decoding is in fact the standard regression test for a KV-cache or paged-attention change.
+
+Mechanism and quantified delta. Let P be active parameters, N the prompt length, G generated tokens, dtype fp16. Prefill: ~2 * P * N FLOPs plus an O(N^2 * layers * heads * head_dim) attention term, executed as a handful of large GEMMs, so the GPU runs near its roofline compute limit. Decode with cache: ~2 * P FLOPs per token but ~(weights_bytes + kv_bytes) of HBM traffic per step, i.e. bandwidth-bound, typically at single-digit percent of peak FLOP/s. Naive: ~2 * P * (N+G)^2 / 2 FLOPs and (N+G) weight re-reads. The ratio is therefore roughly (N+G)/2 in FLOPs and much worse in wall-clock because each of the (N+G) passes pays kernel-launch and weight-streaming overhead.
+
+Boundary condition. The prefill/decode split only pays off while the KV cache fits in HBM. Cache bytes = 2 * layers * kv_heads * head_dim * (N+G) * batch * dtype_bytes. Concretely (assumption, not a platform-measured fact): 32 layers, 8 KV heads under GQA, head_dim 128, fp16 gives 128 KiB per token per sequence; 8k context at batch 16 is ~16 GiB, which does not coexist with an 18 GB fp16 9B model on a 24 GB A30. Beyond that point the naive scheme's memory advantage is real — it stores nothing — and the correct response is KV quantization, GQA/MQA, paged attention with a lower max-num-seqs, or offload, not a return to recompute.
+
+Falsifiable hypothesis. Cached and uncached decoding produce logits agreeing to within fp16 reduction noise (max abs delta < 1e-2 on the top-5 logits) for the same prompt and greedy sampling. A larger divergence indicates a positional-encoding or block-mapping bug, not a numerics artefact.
+
+Rollback gate. If enabling the cache changes greedy output tokens on a fixed 200-prompt regression set, revert the change and bisect; do not ship a serving-path cache that alters deterministic outputs.""",
+
+"corpus-00061": """Two failure modes / trade-offs of prefill.
+
+Failure mode 1 — head-of-line blocking by a long prompt. Mechanism: an unchunked prefill is scheduled as one indivisible unit of work occupying the GPU for its full duration. With continuous batching, co-resident decode requests cannot advance during that window, so their inter-token latency shows a spike whose magnitude tracks the longest prefill in flight. A single 32k-token prompt can stall dozens of cheap chat requests. Mitigation is chunked prefill (split the prompt into C-token chunks interleaved with decode steps) or prefill/decode disaggregation onto separate pools (NVIDIA Dynamo, Mooncake), which trades a small TTFT regression for a large ITL p99 improvement.
+
+Failure mode 2 — memory cliff from the KV the prefill produces. Mechanism: prefill materialises K/V for all N prompt positions at once. Bytes = 2 * layers * kv_heads * head_dim * N * dtype_bytes. The allocator must find that space before the request can start, so admission is gated on tail context length, not the mean. Exceeding it causes request preemption/recompute or outright OOM, and preemption is pathological: the evicted request's prefill is redone, adding load exactly when the system is already saturated.
+
+Boundary condition. Both failure modes are latent at short prompts. Below roughly a few hundred tokens, prefill is a rounding error against decode and neither chunking nor admission control earns its complexity; the trade-offs only bind once the input-length distribution has a heavy tail.
+
+Falsifiable hypothesis. Under a bimodal workload (90% 256-token prompts, 10% 16k-token prompts), decode ITL p99 is dominated by the long tail; enabling chunked prefill at C=2048 should cut ITL p99 by >=20% while raising TTFT p50 by <=15%. If TTFT rises more than that, C is too small for this stack.
+
+Evidence required. ITL p50/p99 bucketed by co-resident prompt length; num_preempted_requests; gpu_cache_usage_perc time series; input-length histogram; scheduler trace showing chunk boundaries.
+
+Rollback gate. Revert the scheduler change if num_preempted_requests > 0 in steady state, if gpu_cache_usage_perc p99 exceeds 0.9, or if end-to-end throughput drops more than 10%.""",
+
+"corpus-00062": """Two failure modes / trade-offs of prefill.
+
+Failure mode 1 — TTFT that degrades super-linearly at long context. Mechanism: prefill cost has two terms, a linear ~2 * P * N weight term and a quadratic O(N^2 * layers * heads * head_dim) attention term. At short prompts the linear term dominates and TTFT looks affine in N, which is what capacity plans usually assume. Past a crossover N* (stack-dependent; commonly somewhere in the several-thousand-token range for a 9B-class model with FlashAttention) the quadratic term takes over and TTFT grows faster than the plan predicts. Teams that sized on mean prompt length then miss their TTFT SLO the moment a long-context feature ships.
+
+Failure mode 2 — stale or incorrect prefix-cache reuse. Mechanism: prefix caching skips part of prefill by reusing K/V blocks from a byte-identical prefix. The reuse is only sound if the prefix bytes, tokenizer version, model weights, K/V dtype, and positional-offset handling all match. A silent mismatch — a system-prompt A/B test, a tokenizer bump, a K/V quantization rollout — yields no error, just quietly wrong attention over a wrong prefix, which surfaces as a quality regression rather than a crash. This is the more dangerous of the two because monitoring rarely covers it.
+
+Boundary condition. Prefix caching only pays when the prefix is genuinely shared and long relative to the unique suffix; with per-user unique prompts the hit rate collapses and the block-lookup overhead is pure loss.
+
+Falsifiable hypothesis. Fit TTFT = a + b*N + c*N^2 over N in {128, 512, 2048, 8192, 32768}. If c is statistically indistinguishable from zero at 32k, failure mode 1 is not active on this stack and the linear plan is safe up to that length.
+
+Evidence required. TTFT vs. N curve with confidence intervals; prefix cache hit rate and eviction count; a fixed regression set comparing greedy outputs with prefix caching on vs. off; cache-key definition reviewed to confirm it includes model revision, tokenizer revision and K/V dtype.
+
+Rollback gate. Disable prefix caching immediately if the greedy regression set diverges at all with caching enabled, and gate any tokenizer or K/V-dtype change on a full cache flush.""",
+
+"corpus-00063": """Two failure modes / trade-offs of prefill.
+
+Failure mode 1 — compute saturation, i.e. prefill starving decode of SM time. Mechanism: prefill is GEMM-heavy and reaches high arithmetic intensity, so a modest number of concurrent prefills already saturates the SMs. Decode, being bandwidth-bound, needs many concurrent sequences to reach useful throughput. On a shared GPU the two phases compete for the same SMs, and because prefill kernels are large and long-running, they win. Symptom: throughput looks healthy in tokens/s aggregate while decode ITL p99 quietly doubles. The structural fix is disaggregation — separate prefill and decode pools with KV transferred over the interconnect (NVIDIA Dynamo, Mooncake) — which converts an SM-contention problem into a network problem.
+
+Failure mode 2 — the KV transfer that disaggregation introduces. Mechanism: once prefill and decode live on different GPUs or nodes, the prompt's whole KV block set must move before decode can start. At 128 KiB per token per sequence (32 layers, 8 KV heads, head_dim 128, fp16 — an assumption, not a measured platform fact) an 8k prompt is ~1 GiB. Over a 200 Gb/s RoCE link at realistic ~80% efficiency that is ~50 ms of added TTFT, and it only works if GPUDirect RDMA is actually engaged; if the path silently falls back to a host-memory bounce, effective bandwidth drops several-fold and TTFT regresses instead of improving.
+
+Boundary condition. Disaggregation only wins when the KV transfer time is small relative to the prefill compute it offloads. At short prompts, transfer overhead and an extra scheduling hop dominate and colocated serving is strictly better.
+
+Falsifiable hypothesis. TTFT_disaggregated < TTFT_colocated only for N above some N_break; measure both across N in {256, 1024, 4096, 16384} and locate the crossover before committing a topology.
+
+Evidence required. NCCL/UCX transfer time per request; verification that GDR is active (e.g. NCCL_DEBUG=INFO showing a GPUDirect RDMA path rather than a host bounce, plus nvidia-peermem/DMA-BUF present); RoCE counters for PFC pause frames and ECN marks; per-phase SM occupancy from DCGM.
+
+Rollback gate. Revert to colocated serving if measured KV transfer p99 exceeds 25% of prefill compute time, or if RoCE pause-frame counters are non-zero in steady state, since a lossless-fabric misconfiguration will make the result unrepresentative.""",
+
+"corpus-00064": """Two failure modes / trade-offs of prefill.
+
+Failure mode 1 — admission control sized on mean rather than tail input length. Mechanism: a request cannot begin until the allocator can reserve KV space for its whole prompt: 2 * layers * kv_heads * head_dim * N * dtype_bytes. Schedulers admit on an estimate; if that estimate comes from the mean prompt length while the real distribution is heavy-tailed, the server periodically over-admits and then preempts. Preemption is self-amplifying — the evicted request's prefill is recomputed later, so load rises precisely under saturation, and the queue can enter a state where goodput falls while utilisation reads 100%.
+
+Failure mode 2 — chunked prefill mis-tuned. Mechanism: chunking splits a prompt into C-token pieces interleaved with decode steps, bounding the head-of-line blocking window. Too large a C leaves ITL spikes intact; too small a C shrinks the GEMMs below the size where the GPU is efficient, so the same prompt costs more total compute and TTFT regresses while achieving little ITL benefit. There is a genuine optimum and it depends on model shape, hardware and workload mix — it is not a universal constant.
+
+Boundary condition. Neither failure mode binds when the input distribution is narrow and short. They appear when p99 prompt length exceeds roughly 8-16x the median, which is the regime RAG and long-document workloads live in.
+
+Falsifiable hypothesis. There exists C* minimising a weighted objective of TTFT p99 and ITL p99; the curve is U-shaped, and sweeping C in {256, 512, 1024, 2048, 4096, 8192} at fixed load will exhibit an interior minimum. If the curve is monotone across that range, the true optimum lies outside it and the sweep must be extended before concluding.
+
+Evidence required. Per-C TTFT p50/p99, ITL p50/p99, output tokens/s, num_preempted_requests, gpu_cache_usage_perc; the production input-length histogram including p99 and max; three repeats per point with the first discarded as warm-up.
+
+Rollback gate. Revert to the previous C and re-measure if num_preempted_requests > 0 in steady state, if goodput falls more than 10% versus baseline, or if gpu_cache_usage_perc p99 exceeds 0.9 — past that threshold you are characterising the eviction policy, not the prefill schedule.""",
+
+"corpus-00065": """Two failure modes / trade-offs of prefill.
+
+Failure mode 1 — mis-attributing a bottleneck because the two phases were measured together. Mechanism: prefill is compute-bound (large GEMMs, high arithmetic intensity, ~2 * P * N FLOPs for a dense model), decode is memory-bandwidth-bound (~2 * P FLOPs per token but a full weight-set plus KV read per step). An aggregate "tokens/s" or an averaged SM-utilisation number blends the two and will point at the wrong fix: teams buy FLOPs to solve a bandwidth problem, or quantize weights to solve a queueing problem. Any prefill diagnosis that does not separate the phases in the profiler is not evidence.
+
+Failure mode 2 — tensor-parallel prefill amplifying interconnect sensitivity. Mechanism: prefill's large activation tensors mean the per-layer all-reduce under tensor parallelism moves substantially more bytes than in decode. If the TP group is not on a homogeneous high-bandwidth path — for example split across NVLink and PCIe, or across nodes on RoCE without correct lossless configuration — prefill exposes that asymmetry first. Symptom: TTFT scales poorly or negatively with TP degree while decode looks fine. NCCL will silently choose a slower ring rather than fail.
+
+Boundary condition. Both are latent at small N and TP=1. Failure mode 2 in particular only appears once activation bytes per all-reduce exceed the point where the collective stops being latency-dominated, so a short-prompt benchmark will not reproduce it.
+
+Falsifiable hypothesis. TTFT at fixed N should improve sub-linearly but monotonically with TP degree in {1, 2, 4, 8} on a homogeneous NVLink domain. A non-monotone curve implies an interconnect or NUMA/affinity problem rather than a model-parallel scaling limit.
+
+Evidence required. Phase-separated Nsight Systems trace; DCGM achieved FLOP/s and HBM bandwidth sampled inside prefill and inside decode separately; nvidia-smi topo -m to confirm the TP group's link types; NCCL_DEBUG=INFO to record the selected algorithm, protocol and whether a GPUDirect RDMA path is in use; nccl-tests all-reduce bus bandwidth at the actual message size; RoCE PFC/ECN counters for multi-node.
+
+Rollback gate. Do not accept any prefill tuning result if the measured all-reduce bus bandwidth is below ~70% of the nccl-tests figure for the same message size, or if RoCE pause-frame counters are non-zero; fix the fabric first, since every downstream number will otherwise be unrepresentative.""",
+
+"corpus-00067": """How prefill interacts with latency, throughput and memory.
+
+Latency. Prefill is essentially the entirety of TTFT. Cost is ~2 * P * N FLOPs for a dense model of P active parameters plus an O(N^2 * layers * heads * head_dim) attention term, so TTFT is affine in prompt length at moderate N and super-linear once the quadratic term crosses over. Decode contributes nothing to TTFT and everything to inter-token latency. The two are traded against each other by the scheduler: chunked prefill interleaves prefill chunks with decode steps, cutting decode ITL p99 (no long indivisible prefill blocking the GPU) at the price of some TTFT.
+
+Throughput. Prefill is compute-bound and saturates SMs at small batch; decode is bandwidth-bound and needs large batch to approach the roofline. A single colocated pool therefore cannot sit at both optima at once, which is the entire motivation for prefill/decode disaggregation (NVIDIA Dynamo, Mooncake): size the prefill pool for FLOPs, the decode pool for HBM bandwidth and capacity, and move KV between them. That trade replaces SM contention with an interconnect dependency — the KV transfer must ride GPUDirect RDMA over RoCE/IB, and a silent fallback to a host-memory bounce buffer will erase the gain.
+
+Memory. Prefill materialises K/V for all N prompt positions in one shot: bytes = 2 * layers * kv_heads * head_dim * N * batch * dtype_bytes. Assumption, not a measured platform fact: 32 layers, 8 KV heads under GQA, head_dim 128, fp16 gives 128 KiB per token per sequence, so an 8k prompt is ~1 GiB per request. On a 24 GB A30 already holding ~18 GB of fp16 9B weights, that bounds concurrency to a handful of long requests and makes admission control the binding constraint.
+
+Boundary condition. This whole framing assumes the prefill fits in one scheduling unit and its KV fits in HBM. Once either fails, behaviour is governed by the chunk size and the eviction policy, and the clean "prefill = compute, decode = bandwidth" model no longer predicts observed latency.
+
+Falsifiable hypothesis. At fixed load, enabling chunked prefill at C=2048 reduces ITL p99 by >=20% while increasing TTFT p50 by <=15%, and leaves total output tokens/s within 10% of baseline.
+
+Evidence required. TTFT and ITL p50/p99 measured separately; output tokens/s; gpu_cache_usage_perc and num_preempted_requests; phase-separated profiler trace; input/output length histograms; for disaggregated topologies, per-request KV transfer time and confirmation that GDR is active.
+
+Rollback gate. Revert the scheduler or topology change if preemptions appear in steady state, if gpu_cache_usage_perc p99 exceeds 0.9, or if goodput regresses more than 10%.""",
+}
+
+PER_ITEM = {
+"corpus-00055": ("rewrite", 3, 1, 2, 0.76,
+    ["source answer never defines the KV write-out that is prefill's actual product, so a reader cannot connect it to decode",
+     "no O(N^2) attention term, so long-context TTFT will be under-planned",
+     "no head-of-line-blocking or admission-control warning; a naive deployment will miss ITL SLOs"]),
+"corpus-00057": ("rewrite", 3, 1, 2, 0.75,
+    ["source answer does not contrast anything; it restates a definition and ignores the question's comparative framing",
+     "omits the HBM weight-re-read term that dominates the naive cost in wall-clock",
+     "no memory bound stated, so the reader may assume prefill is unconditionally free"]),
+"corpus-00059": ("rewrite", 3, 1, 2, 0.74,
+    ["source answer omits the scheduler consequences (continuous batching, chunked prefill, disaggregation) that make the contrast operationally meaningful",
+     "no mention of prefix-cache validity conditions, a known silent-correctness hazard",
+     "unchunked long prefill degrades co-resident request latency; source gives no warning"]),
+"corpus-00060": ("rewrite", 3, 1, 2, 0.74,
+    ["source answer gives no cost model, so the naive-vs-prefill gap cannot be quantified or falsified",
+     "omits that the uncached path is the correct reference oracle for KV-cache regression testing",
+     "no KV sizing arithmetic, so OOM risk on a 24 GB-class GPU is invisible"]),
+"corpus-00061": ("rewrite", 3, 1, 2, 0.77,
+    ["source answer names zero failure modes despite the question asking for two",
+     "no preemption/recompute amplification warning, which is the main saturation pathology",
+     "admission control sized on mean rather than tail prompt length leads to OOM in production"]),
+"corpus-00062": ("rewrite", 3, 1, 2, 0.73,
+    ["source answer names zero failure modes and zero trade-offs",
+     "silent prefix-cache key mismatch causes a quality regression with no error signal; entirely unmentioned",
+     "linear TTFT extrapolation to long context will breach SLOs once the quadratic attention term dominates"]),
+"corpus-00063": ("rewrite", 3, 1, 2, 0.72,
+    ["source answer names zero failure modes; no phase-contention or disaggregation discussion",
+     "silent GPUDirect RDMA fallback to a host bounce buffer can make disaggregation slower than colocation",
+     "RoCE lossless misconfiguration (PFC/ECN) invalidates any KV-transfer measurement"]),
+"corpus-00064": ("rewrite", 3, 1, 2, 0.75,
+    ["source answer names zero failure modes and gives no tuning guidance",
+     "preemption feedback loop under over-admission can collapse goodput while utilisation reads 100%",
+     "chunk-size sweep can terminate at a boundary and be mistaken for an optimum"]),
+"corpus-00065": ("rewrite", 3, 1, 2, 0.73,
+    ["source answer names zero failure modes",
+     "aggregate throughput metrics that blend prefill and decode lead to spending on the wrong resource",
+     "tensor-parallel prefill silently degrades on heterogeneous interconnect paths without raising an error"]),
+"corpus-00067": ("rewrite", 3, 2, 2, 0.76,
+    ["source answer addresses only compute utilisation and ignores the memory and throughput axes the question asks about",
+     "no KV sizing, so the concurrency limit on a 24 GB A30 is not derivable",
+     "no rollback gate for scheduler or topology changes"]),
+}
+
+
+def main():
+    rows = []
+    for i, line in enumerate(open(CORPUS), 1):
+        if i < LO:
+            continue
+        if i > HI:
+            break
+        d = json.loads(line)
+        sid = d["id"]
+        msgs = d["messages"]
+        su = next(m["content"] for m in msgs if m["role"] == "user")
+        sa = next(m["content"] for m in msgs if m["role"] == "assistant")
+        dec, tc, ic, os_, conf, risks = PER_ITEM[sid]
+        rows.append({
+            "source_id": sid,
+            "teacher_lane": "teacher-B",
+            "teacher_model": "claude-opus-5-current",
+            "calibration_status": "provisional",
+            "decision": dec,
+            "source_user": su,
+            "source_assistant": sa,
+            "corrected_answer": ANSWERS[sid],
+            "quality_dimensions": {
+                "technical_correctness": tc,
+                "instruction_coverage": ic,
+                "operational_safety": os_,
+            },
+            "risks": COMMON_RISKS_BASE + risks,
+            "evidence_required": COMMON_EVIDENCE,
+            "confidence": conf,
+        })
+    assert len(rows) == 10, len(rows)
+    with open(OUT, "w") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print("WROTE", OUT, len(rows))
+
+
+main()

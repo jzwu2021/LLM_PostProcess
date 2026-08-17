@@ -56,11 +56,64 @@ Same 12 required fields as teacher-A so the two lanes are directly comparable:
 
 ## Status
 
-Progress: train 50/5399; validation 0/601; total 50/6000; remaining 5950.
+Progress: train 60/5399; validation 0/601; total 60/6000; remaining 5940.
 
 Runs are appended below, newest first.
 
 ## Run log (newest first)
+
+### 2026-08-17 — train-batch-0006.jsonl
+
+- Batch file: results/train-batch-0006.jsonl
+- Builder: scripts/gen_train_batch_0006.py
+- Corpus range: research/ai-infra-expert/corpus/train.jsonl lines 51-60 (0-indexed 50-59)
+- Source IDs: corpus-00055, corpus-00057, corpus-00059, corpus-00060, corpus-00061,
+  corpus-00062, corpus-00063, corpus-00064, corpus-00065, corpus-00067
+- Records this run: 10
+- Progress after run: train 60/5399; validation 0/601; total 60/6000; remaining 5940.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on first run of scripts/verify_batches.py
+  (`train=60/5399 validation=0/601 total=60/6000` then `VERIFY_PASS`).
+- Repairs performed: none required this run.
+- Final schema check: PASS (same invocation; no re-run needed since the first check passed).
+- Manifest: MANIFEST.sha256 regenerated over all 17 files in this directory except
+  the manifest itself; `sha256sum -c MANIFEST.sha256 --quiet` returned clean (MANIFEST_OK).
+
+Technical topics covered by this batch. All ten records are `Knowledge/Concept`
+items on the concept **prefill**, spanning four question shapes: define-and-motivate
+(corpus-00055), contrast-with-naive-implementation (corpus-00057, 00059, 00060),
+enumerate-two-failure-modes (corpus-00061 through 00065), and
+interaction-with-latency/throughput/memory (corpus-00067). Every source answer was
+the same single generic sentence ("prefill processes the prompt and is generally
+parallel across prompt tokens..."), which is directionally true but answers none of
+the four question shapes — hence 10/10 `rewrite` and an `instruction_coverage` score
+of 1 on nine of ten records.
+
+The rewritten answers develop: the prefill/decode roofline split (prefill ~2*P*N
+FLOPs, compute-bound; decode ~2*P FLOPs/token but HBM-bandwidth-bound); the O(N^2)
+attention term and the crossover N* that breaks linear TTFT capacity plans; KV cache
+sizing arithmetic (2 * layers * kv_heads * head_dim * N * dtype_bytes, worked through
+for a GQA 9B-class model on a 24 GB A30); head-of-line blocking by unchunked prefill
+and the chunked-prefill chunk-size trade-off (U-shaped TTFT/ITL objective); admission
+control on tail rather than mean input length and the self-amplifying
+preemption/recompute loop; prefix-cache reuse validity conditions (byte-identical
+prefix, tokenizer/model revision, K/V dtype, RoPE offset handling) as a silent
+correctness hazard; prefill/decode disaggregation via NVIDIA Dynamo and Mooncake,
+with the KV-transfer cost model and the GPUDirect RDMA over RoCE dependency
+(including silent host-bounce fallback and PFC/ECN pause-frame counters as
+invalidating conditions); and tensor-parallel prefill exposing heterogeneous
+interconnect paths that NCCL will route around silently rather than fail on.
+
+Each rewritten answer states an explicit falsifiable hypothesis, the evidence needed
+to test it (phase-separated Nsight/DCGM traces, TTFT/ITL percentiles,
+gpu_cache_usage_perc, num_preempted_requests, nccl-tests bus bandwidth,
+NCCL_DEBUG=INFO transport selection), and a numeric rollback gate.
+
+Caveat. These outputs are **provisional** teacher-B review labels. They are not
+expert gold, they have not been validated against a running system, and they are not
+evidence of any model's domain capability. Numeric examples are flagged in-text as
+assumptions rather than measured platform facts. Agreement with teacher-A has not
+been computed and was not consulted while producing this batch (blind lane).
 
 ### 2026-08-17 — train-batch-0005.jsonl
 
