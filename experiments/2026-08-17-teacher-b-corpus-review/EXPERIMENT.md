@@ -5,6 +5,28 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0090
+
+- Batch file: results/train-batch-0090.jsonl
+- Corpus range: train.jsonl lines 891-900 (source IDs corpus-00976, corpus-00977, corpus-00979, corpus-00980, corpus-00981, corpus-00982, corpus-00983, corpus-00984, corpus-00985, corpus-00987 — corpus file order preserved exactly, no skips, no reordering; the gaps at corpus-00978 and corpus-00986 are pre-existing in the corpus and were NOT introduced by this lane)
+- Progress: train 900/5399, validation 0/601, total 900/6000, remaining 5100
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (ad-hoc verifier /tmp/tb_verify.py — 900 train records, 900 unique source_ids, batch size 10, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision enums correct, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers in [1,5], risks/evidence_required string arrays, source_user/source_assistant byte-identical to corpus, aggregate train sequence a strict prefix of train.jsonl)
+- Repairs applied: none required (first-run pass). Arithmetic in each rewritten answer was cross-checked against the byte count asserted in the source record before the batch was written.
+- Final schema check: PASS
+- Manifest: MANIFEST.sha256 regenerated over 161 files (everything in this experiment directory except MANIFEST.sha256 itself); `sha256sum -c` reported all OK, exit 0
+- Technical topics covered: per-request K/V cache sizing under grouped-query / multi-query attention
+  (Calculation generator cases 476-487), spanning layers 24/32/40/48/56, kv_heads 2/4/6/8,
+  head_dim 64/96/128, sequence length 1024-4096, and both BF16/FP16 and INT8 KV dtypes. Each
+  rewrite adds the GQA materialisation mechanism, a per-token planning constant, paged-allocator
+  block-rounding effects, tensor-parallel sharding vs replication when kv_heads < TP, INT8 scale
+  metadata overhead, a falsifiable linear-scaling prediction with a ~10% deviation tolerance,
+  the evidence needed (config.json fields, engine KV-pool accounting, torch.cuda
+  allocated-vs-reserved, actual kv_cache_dtype), and a rollback threshold (any KV OOM/preemption
+  or >20% p99 TTFT regression reverts max_num_seqs / max_model_len).
+- Status caveat: these teacher-B outputs are PROVISIONAL model-generated second opinions, not
+  expert gold labels, and they say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0089
 
 - Batch file: results/train-batch-0089.jsonl
