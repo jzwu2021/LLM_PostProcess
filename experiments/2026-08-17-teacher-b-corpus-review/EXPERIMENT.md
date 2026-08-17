@@ -5,6 +5,39 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0014
+
+- Batch file: results/train-batch-0014.jsonl
+- Corpus range: train.jsonl lines 131-140 (0-indexed 130-139), source IDs corpus-00146 .. corpus-00158
+- Progress: train 140/5399, validation 0/601, total 140/6000, remaining 5860
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py -> VERIFY_PASS, train=140/5399)
+- Repairs applied: none required this run
+- Final schema check: PASS (VERIFY_PASS, all 12 fields, source_user/source_assistant byte-equal to corpus, source_id globally unique, train sequence is a strict prefix of corpus order)
+- Manifest: MANIFEST.sha256 regenerated over all 32 files in this directory; `sha256sum -c` reports 0 failures
+- Lock: /tmp/teacher-b-corpus-review.lock acquired atomically at run start, released at run end
+
+Technical topics covered by this batch: decode-phase runbook triage (3 records) and
+continuous batching (7 records: 5 definition-style, 2 contrast-with-naive-static-batching).
+The decode records were rewritten to supply the per-step byte model
+(step_time ~= (weight_bytes + sum of resident KV bytes) / achieved_HBM_bandwidth), the
+GEMV-vs-GEMM arithmetic-intensity argument that makes decode memory-bandwidth-bound rather
+than FLOP-bound, the bandwidth-to-compute knee as an explicit boundary condition, and the
+no-NVLink A30 caveat where PCIe-resident tensor-parallel all-reduce becomes the limiter
+instead of HBM. The batching records were rewritten to add the admission half of the
+iteration-level scheduling loop, paged KV block allocation as the enabling mechanism, the
+mean_len/max_len slot-utilisation argument for why the gain tracks output-length skew, and
+the failure boundary where KV-pool saturation causes evict-and-recompute preemption thrash
+that can drive throughput below a conservative static batch. Every record carries an explicit
+assumption frame (8x A30 24 GB, ~9B bf16 dense, paged KV), falsifiable hypotheses, an
+evidence list, and a rollback gate keyed on p95 TTFT/ITL regression, preemption rate, and
+greedy-decode output equivalence.
+
+Status caveat: these outputs are PROVISIONAL teacher-B model review under blind conditions.
+They are NOT expert gold labels, they have not been validated against measurements on this
+hardware, and they say nothing about any model's domain capability. No teacher-A artifact was
+read, opened, or grepped while producing this batch.
+
 ## Run 2026-08-17 batch 0013
 
 - Batch file: results/train-batch-0013.jsonl
