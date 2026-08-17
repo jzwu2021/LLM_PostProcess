@@ -5,6 +5,56 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0045
+
+- Batch file: results/train-batch-0045.jsonl
+- Corpus range: train.jsonl lines 441-450 (0-indexed 440-449), source IDs corpus-00490 through corpus-00499 — contiguous, strict corpus order, nothing skipped or reordered.
+- Progress: train 450/5399, validation 0/601, total 450/6000, remaining 5550
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (ad-hoc verifier — JSONL line-parse, batch count 10, all 12 required fields present and no extras, enum values for teacher_lane/teacher_model/calibration_status/decision, exact character-level source_user/source_assistant equality against the original corpus, non-empty corrected_answer, quality_dimensions integers in 1-5, risks/evidence_required string arrays, confidence in [0,1], globally unique source_id across train+validation, and both aggregates strictly a prefix of their corpus).
+- Repairs: none required. No re-verification loop was needed this run.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except the manifest itself; `sha256sum -c` returned OK for all 88 entries, 0 mismatches.
+- Final schema check: PASS (train 450/5399, validation 0/601, total 450, 0 errors).
+
+Technical topics covered by this batch: ten further speculative-decoding items,
+sharing one identical stub assistant answer and differing only in the user
+instruction, which splits them into three sub-clusters. (1) corpus-00490 asks for
+a misleading intuition plus its correction; the rewrite targets the common belief
+that speculation approaches draft-model latency, and shows why it cannot — the
+target weight stream is read once per verification pass regardless of acceptance,
+so the ceiling is (target step cost)/E[n] with E[n] <= k+1, and the drafter adds
+resident weights and speculated KV slots that reduce admitted concurrency.
+(2) corpus-00491..00495 ask for a small controlled experiment; the rewrites give a
+factorial design over speculation on/off x k in {1,2,4,8} x offered concurrency,
+with explicitly held-fixed build/weights-hash/TP-PP/clocks/scheduler, replayed
+identical production traces rather than synthetic uniform prompts, warmup
+discard, A/B/B/A interleaving against cluster drift, >=3 repeats per cell, and a
+residual check of measured speedup against the model S ~= E[n]/(1 + k*c_draft/c_target
++ overhead) so that a numeric win is not shipped with a wrong mechanism story.
+(3) corpus-00496..00499 ask for a runbook entry; the rewrites give an ordered
+diagnostic that classifies the bandwidth-bound vs. compute-bound regime from a
+profiler trace BEFORE any config change, measures the acceptance histogram and
+c_draft/c_target instead of tuning k blindly, treats a TPOT win that costs
+admitted concurrency as a capacity regression, and escalates tokenizer/vocab
+mismatch between drafter and target as a correctness incident rather than a
+performance issue.
+Across all three sub-clusters the shared boundary condition is the crossover:
+E[n] = (1 - a^(k+1))/(1 - a), and speculation turns negative once the server is
+compute-bound at high concurrency, or when a is depressed by domain mismatch or
+high sampling temperature, or when c_draft/c_target is not small. Rollback
+thresholds are stated explicitly (p99 TPOT regression at production concurrency,
+KV-pressure preemption increase, admitted concurrency below the queueing SLO, or
+quality drift under any non-lossless acceptance rule). All ten source answers
+were scored instruction_coverage 1 because the stub supplies neither the requested
+mechanism nor a boundary condition; technical_correctness 4 because what it does
+say is true but incomplete; operational_safety 2 because it invites unconditional
+performance claims.
+
+These results are PROVISIONAL teacher-B output from a blind review pass. They are
+not expert gold, they have not been reconciled with teacher-A (whose outputs were
+not read during this batch), and they say nothing about any model's domain
+capability.
+
 ## Run 2026-08-17 batch 0044
 
 - Batch file: results/train-batch-0044.jsonl
