@@ -5,6 +5,44 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0054
+
+- Batch file: results/train-batch-0054.jsonl
+- Corpus range: train.jsonl 0-indexed lines 530-539, source IDs corpus-00590 through corpus-00599 (contiguous, strict corpus order preserved, nothing skipped or reordered).
+- Progress: train 540/5399, validation 0/601, total 540/6000, remaining 5460
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (10/10 rows parsed as physical-newline JSONL, exactly the 12 required fields per record, teacher_lane=teacher-B / teacher_model=claude-opus-5-current / calibration_status=provisional / decision in {keep,rewrite,reject}, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, 540 globally unique source_ids, aggregated train sequence an exact prefix of train.jsonl, validation still empty).
+- Repairs: none required. Original corpus, earlier batches, benchmark raw generations and all teacher-A artifacts untouched; the teacher-A directory was not opened, read or grepped during this run (blind review).
+- Final schema check: PASS (train=540 validation=0 total=540).
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except the manifest itself; `sha256sum -c` reported all entries OK, zero failures.
+
+Technical topics covered by this batch: single-request KV-cache memory sizing for
+transformer inference (Calculation cases 90-99). Parameter sweep: layers 24-56,
+KV heads 2-8, head dimension 64-128, sequence length 1024-4096, KV dtype
+BF16/FP16 (2 B) and INT8 (1 B). Each byte count was recomputed independently as
+2 x layers x seq_len x kv_heads x head_dim x bytes_per_value with the GiB
+conversion checked against 2^30; all ten source arithmetic results matched an
+independent recomputation (asserted programmatically at generation time), so the
+arithmetic itself is sound. The decision is `rewrite` rather than `keep` because
+the source answers stop at the raw byte count and omit what an infrastructure
+engineer needs to act: the per-token KV cost that governs admission control and
+max_num_seqs, the GQA/MQA mechanism making the cache scale with kv_heads rather
+than query heads, paged-attention block rounding (block_size 16 internal
+fragmentation), INT8/FP8 KV scale/zero-point overhead making bytes_per_value=1 a
+lower bound, prefix-caching/beam-search sharing effects, and the fact that the
+formula does not hold for MLA latent KV or sliding-window attention. Each
+rewrite adds a falsifiable prediction (linear KV growth in concurrency within
++/-5%), the evidence needed before use in capacity planning (config.json fields,
+effective kv_cache_dtype, engine-reported block count/block_size, measured GPU
+memory at known concurrency) and an explicit rollback threshold (>15% deviation
+or preemption/recompute events -> reduce max_num_seqs/max_model_len and
+re-measure).
+
+These results are PROVISIONAL second-opinion review output from a single model
+lane. They are NOT expert gold labels, have NOT been validated by a human domain
+expert or by execution against real serving stacks, and they say nothing about
+any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0053
 
 - Batch file: results/train-batch-0053.jsonl
