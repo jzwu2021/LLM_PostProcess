@@ -5,6 +5,45 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0106
+
+- Batch file: results/train-batch-0106.jsonl
+- Corpus range: train.jsonl lines 1051-1060 (source IDs corpus-01157, corpus-01158, corpus-01159, corpus-01160, corpus-01161, corpus-01162, corpus-01164, corpus-01165, corpus-01168, corpus-01169 — corpus file order preserved exactly, no skips, no reordering; corpus-01163, corpus-01166, corpus-01167 are absent from the corpus file itself, so the ID gaps are a source property, not an omission here)
+- Progress: train 1060/5399, validation 0/601, total 1060/6000, remaining 4940
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema/prefix check: PASS (verify_batches.py, first run, no repairs needed)
+- Repairs performed: none
+- Final schema/prefix check: PASS (1060 train records, 0 validation, TOTAL 1060, VERIFY=PASS)
+- Manifest: MANIFEST.sha256 regenerated over 180 files (all files in this directory except MANIFEST.sha256 and scripts/__pycache__); `sha256sum -c` PASS
+- Blindness: teacher-A directory (experiments/2026-08-14-teacher-a-corpus-calibration/) was not read, opened, or grepped at any point in this run.
+
+Technical topics covered by this batch: all ten items are the "mixed short-prompt /
+long-generation serving evaluation plan" template, so the rewrites differentiate by
+mechanism rather than by prompt. Shared spine: pinned build/clock/tokenizer state,
+open-loop Poisson arrivals (with an explicit argument for why closed-loop harnesses
+delete the tail samples), frozen TTFT/TPOT/queue-delay/goodput definitions, per-stratum
+P99 from raw records, load ladder past saturation, and pre-committed rollback gates.
+Per-item hypotheses: 01157 chunked prefill vs head-of-line blocking (with a chunk=512
+monotonicity check as the mechanism test); 01158 queueing-vs-service-time differential
+diagnosis with four competing signatures; 01159 decode as an HBM-bandwidth roofline
+claim tested by decoupled SM/memory clock manipulation; 01160 prefill/decode
+disaggregation where the KV handover budget over achieved (not line-rate) RDMA/RoCE
+bandwidth decides feasibility, including PFC/ECN evidence; 01161 KV-preemption vs code
+regression separated by a mixture x commit 2x2 replay; 01162 speculative decoding with
+the closed-form acceptance/break-even model and the win-to-loss batch crossover;
+01164 rolling-deploy tail as cold prefix cache vs balancer imbalance, tested by
+affinity routing; 01165 KV capacity arithmetic with FP8 KV vs matched-capacity context
+reduction as two implementations of one mechanism, gated on output quality; 01168
+TP=8 decode as communication-bound, checked against isolated all-reduce latency and
+nvidia-smi topo -m; 01169 SLO-aware admission control under overload with per-stratum
+starvation gates and an adversarial under-declared-length arm.
+
+Status caveat: these outputs are PROVISIONAL teacher-B review artifacts produced by a
+single model in one pass. They are not expert gold labels, they have not been validated
+against hardware, and they are not evidence about any trained model's domain capability.
+Agreement analysis against teacher-A is a separate, later step and is deliberately not
+performed here.
+
 ## Run 2026-08-17 batch 0105
 
 - Batch file: results/train-batch-0105.jsonl
