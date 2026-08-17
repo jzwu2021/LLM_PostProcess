@@ -5,6 +5,36 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0055
+
+- Batch file: results/train-batch-0055.jsonl
+- Corpus range: train.jsonl 0-indexed lines 540-549, source IDs corpus-00600, corpus-00601, corpus-00602, corpus-00603, corpus-00604, corpus-00605, corpus-00606, corpus-00608, corpus-00609, corpus-00611 (strict corpus order preserved; the ID gaps are gaps in the corpus itself, nothing was skipped or reordered).
+- Progress: train 550/5399, validation 0/601, total 550/6000, remaining 5450
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (10/10 rows parsed as physical-newline JSONL, all 12 required fields present, teacher_lane=teacher-B / teacher_model=claude-opus-5-current / calibration_status=provisional / decision in {keep,rewrite,reject}, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, 550 globally unique source_ids, aggregated train sequence an exact prefix of train.jsonl, validation still empty).
+- Repairs: none required. Original corpus, earlier batches, benchmark raw generations and all teacher-A artifacts untouched; the teacher-A directory was not opened, read or grepped during this run (blind review).
+- Final schema check: PASS (train=550 validation=0 total=550).
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except the manifest itself; `sha256sum -c` reported 105 entries OK, zero failures.
+
+Technical topics covered by this batch: single-request KV-cache memory sizing for
+transformer inference (Calculation cases 100-111). Parameter sweep: layers 24-56,
+KV heads 2-8, head_dim 64/96/128, sequence length 1024-4096, dtype INT8 (1 B/value)
+and BF16/FP16 (2 B/value). Every source arithmetic result was independently
+recomputed and matched, so all rewrites are coverage/safety rewrites rather than
+arithmetic corrections. Each corrected answer adds: explicit assumptions, the
+per-token KV cost as the admission-control planning number, the GQA/MQA reason
+kv_heads (not num_attention_heads) enters the formula, concurrency scaling, and
+boundary conditions where the formula breaks (MLA latent KV, sliding-window
+attention, paged-attention block rounding, INT8/FP8 scale metadata, prefix-cache
+sharing). Each also states a falsifiable prediction (free-KV-block delta and a
+5-10% memory agreement band), the evidence needed to confirm it, and a rollback
+gate (>15% overshoot at target concurrency or <10% free-block headroom -> reduce
+max_num_seqs / max_model_len or revert the KV dtype change).
+
+These results are PROVISIONAL teacher-B model output. They are not expert gold
+labels, have not been validated by a human domain expert, and say nothing about
+any model's domain capability.
+
 ## Run 2026-08-17 batch 0054
 
 - Batch file: results/train-batch-0054.jsonl

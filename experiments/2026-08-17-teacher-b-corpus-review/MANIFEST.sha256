@@ -1,6 +1,6 @@
 ed6937c77afafe5c35d0fa19ec067c1fdf6a3ea42f328a2d9364315ab07a7224  ./agreement_report.json
 e110647a4e70206046794d2ebcc19160f52de6a4e3d99b6d97f9252685f8846a  ./environment.txt
-8d3651fa5932b6431bcce465690f088f31a6439af87ff72cded0b7932f239030  ./EXPERIMENT.md
+2edb90c7809fc29cd7db1236d8fbf54d018dc46b9daba5454cac01b8d6d291e8  ./EXPERIMENT.md
 2ac2635879e006ce78db2d7b8843f5400f28c8262cc6f42199325535b818fba0  ./results/train-batch-0001.jsonl
 baa4d2adc39351168681db1e8725c476643d78384f9da616f7c435637cb88d64  ./results/train-batch-0002.jsonl
 c89c19d7b6f05f219792edcebe18fb935a17fb9644ebc1c76725465f7b3c2758  ./results/train-batch-0003.jsonl
@@ -55,6 +55,7 @@ abce76601254702e7cdf0437125567e3bf2ea92fc8d27e8b677eebdd0737aed3  ./results/trai
 561b2ed3a62866bec4e3ccc5c8da716a38816f76e8bc398595d4081c52a4e51b  ./results/train-batch-0052.jsonl
 43f9d4ac80a59beba739171f63b3282aaebdf1900f0e7831a21ea4bdcb02b8e1  ./results/train-batch-0053.jsonl
 91142fca436937036015b0899735f3a69045d799ba1df8e166258a96f3c69783  ./results/train-batch-0054.jsonl
+faa3f444394f7e8794ba589ff198d70f1778e43b86b98707ce36beff19e25a68  ./results/train-batch-0055.jsonl
 303f94e5b0f65038e2a49e67f4c73aabce7de86aa991b33ab41f0b9dcdd35226  ./scripts/agreement_analysis.py
 827ffceee3e968eb1bc79b29522b93bbcc1e9360e05738b5e65359da60e58b01  ./scripts/build_batch_0020.py
 51dd29a33668c27c93baf86233a1171fe06b458aa74d81a3bf984b7c150cf36d  ./scripts/build_batch_0029.py
@@ -99,6 +100,6 @@ e39fe3898d76095e7a709e1fe3f8b7ca63fc8e8528cd5765dccaf4db9cfa5fcd  ./scripts/peek
 6dcbc6cb8d5ee5c37f1ea1c7b62288dd86bfc03eba08589d958dca93ad3b75e3  ./scripts/__pycache__/gen_train_batch_0041.cpython-311.pyc
 b396dd9a00661ce6fab84bd3dc0783aec7903df6cde524b3202ad158692d224b  ./scripts/__pycache__/peek.cpython-311.pyc
 76bdb2231eb68bea4f704480bf82410d82b5252084f0cccbe10f077441f83b87  ./scripts/state.py
-92366a6ad9bb20ac74903d01a32e0792185da31d7e5cfc79cd3a79a9874f9980  ./scripts/verify_batches.py
+6ab402e43c06ee27cdc771b96a62842f2b2cd8b45014308710a739908df2542b  ./scripts/verify_batches.py
 c43fdc36fd86175132e7be226476da3028a91c605f34c83f76fdf3858236c975  ./verify_batches.py
 e2a47a66bdc01d1431f9217a4a907393bcc11c77636f6a1e717d95d49cb1709d  ./verify.py
