@@ -5,6 +5,42 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0053
+
+- Batch file: results/train-batch-0053.jsonl
+- Corpus range: train.jsonl 0-indexed lines 520-529, source IDs corpus-00578 through corpus-00589 (corpus-00580 and corpus-00582 absent from the train split; strict corpus order preserved, nothing skipped or reordered by this worker).
+- Progress: train 530/5399, validation 0/601, total 530/6000, remaining 5470
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (10/10 rows parsed as physical-newline JSONL, exactly the 12 required fields per record, teacher_lane=teacher-B / teacher_model=claude-opus-5-current / calibration_status=provisional / decision in {keep,rewrite,reject}, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, 530 globally unique source_ids, aggregated train sequence an exact prefix of train.jsonl, validation still empty).
+- Repairs: none required. Original corpus, earlier batches, benchmark raw generations and all teacher-A artifacts untouched; the teacher-A directory was not opened, read or grepped during this run (blind review).
+- Final schema check: PASS (train=530 validation=0 total=530).
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except the manifest itself; `sha256sum -c` reported 103/103 OK, zero failures.
+
+Technical topics covered by this batch: single-request KV-cache memory sizing for
+transformer inference (Calculation cases 78-89). Parameter sweep: layers 24-56,
+KV heads 2-8, head dimension 64-128, sequence length 1024-4096, KV dtype
+BF16/FP16 (2 B) and INT8 (1 B). Every byte count was recomputed independently as
+2 x layers x seq_len x kv_heads x head_dim x bytes_per_value with the GiB
+conversion checked against 2^30; all ten source arithmetic results matched, so
+the arithmetic itself is sound. The decision is nevertheless `rewrite` rather
+than `keep` because the source answers stop at the raw byte count and omit the
+quantities an infrastructure engineer actually needs: the per-token KV cost that
+governs admission control and max_num_seqs, the GQA/MQA mechanism that makes the
+cache scale with kv_heads rather than query heads, paged-attention block
+rounding (block_size 16 internal fragmentation), INT8/FP8 KV scale/zero-point
+overhead, prefix/radix cache sharing, and speculative-decoding or beam-search
+branch multiplication. Each corrected answer adds a falsifiable concurrency
+prediction (free KV bytes = N x per-request bytes should admit ~N sequences,
++/-1 block), the evidence needed to confirm it (config.json head counts, engine
+startup '# GPU blocks' log line, torch.cuda.memory_summary / nvidia-smi
+steady-state, load-test preemption counters), and an explicit rollback
+threshold (>10% deviation of measured bytes/token, or any non-zero
+preemption/swap counter at planned concurrency, blocks the config rollout).
+
+These outputs are provisional teacher-B second opinions produced by an LLM
+reviewer. They are NOT expert gold labels, have not been validated on hardware,
+and say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0052
 
 - Batch file: results/train-batch-0052.jsonl
