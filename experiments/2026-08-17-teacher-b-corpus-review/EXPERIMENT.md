@@ -5,6 +5,19 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0039
+
+- Batch file: results/train-batch-0039.jsonl
+- Corpus range: train.jsonl lines 381-390 (0-indexed 380-389), source IDs corpus-00423, corpus-00424, corpus-00425, corpus-00426, corpus-00428, corpus-00430, corpus-00431, corpus-00432, corpus-00434, corpus-00435 — strict corpus order, nothing skipped or reordered.
+- Progress: train 390/5399, validation 0/601, total 390/6000, remaining 5610
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (ad-hoc verifier reported train=390, validation=0, TOTAL 390, VERIFY=PASS).
+- Repairs performed: none required.
+- Final schema check: PASS — line-by-line JSONL parse, batch count 10, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, risks/evidence_required string arrays, source_id globally unique across all 39 batches, aggregated train sequence a strict prefix of train.jsonl.
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except itself (77 entries); `sha256sum -c` passed with zero failures.
+- Technical topics covered: an all-NCCL block on measurement discipline and regime separation. (a) Measurement plans for validating whether an NCCL change helps a serving workload — deriving all-reduce message size from batch*hidden*dtype under tensor parallelism, the latency-bound (<~256 KB/rank) vs bandwidth-bound (>~4-16 MB/rank) crossover that decides which knob can matter, profiler attribution of ncclKernel share as the hard ceiling on end-to-end gain, one-variable A/B with a concurrency ladder, pre-registered effect sizes, >=5 repeats and second-node reproduction; plus the disaggregated prefill/decode (Mooncake / NVIDIA Dynamo style) KV-transfer variant covering GPUDirect RDMA preconditions (nvidia_peermem, GPU-NIC PCIe affinity), RoCE PFC/ECN counters as a co-tenant externality check, and NCCL_IB_HCA pinning. (b) The assumption set that must precede any NCCL performance claim — topology and per-peer transport selection, collective type/size/rank count, algbw vs busbw (a 2x reporting error if conflated), NCCL/CUDA/driver/NIC-firmware version matrix, GDR and NUMA affinity state, clock/power capping, fabric isolation, warmup and repeat discipline, and the overlap question that determines whether a collective-time reduction can produce any end-to-end gain at all. (c) Training-vs-inference divergence — gradient bucketing pushing training into the bandwidth-bound regime with comm/compute overlap, versus per-layer per-token decode all-reduces in the latency-bound regime where CUDA graph capture typically beats NCCL env tuning; communicator lifetime and the gang-scheduling constraint that makes a TP group an atomic scheduling and failure unit; NCCL buffer VRAM competing directly with KV cache and therefore with max concurrency; and opposite-signed timeout policy (patient watchdog plus checkpoint restart for training, fast detection plus TP-group eviction and N+1 headroom for serving), with SIGSTOP fault injection as the falsification test for detection latency.
+- Status: these outputs are PROVISIONAL teacher-B judgements from a single blind model pass. They are not expert gold labels, were produced without any access to teacher-A artifacts, have not been validated against ground truth, and say nothing about any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0038
 
 - Batch file: results/train-batch-0038.jsonl
