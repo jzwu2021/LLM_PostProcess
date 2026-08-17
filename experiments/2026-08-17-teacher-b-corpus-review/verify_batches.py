@@ -1,6 +1,8 @@
 import json,glob,os,sys
 BASE='/home/johnson/workspace/LLM_PostProcess'
-RES=os.path.join(BASE,'experiments/2026-08-17-teacher-b-corpus-review/results')
+# results/ is resolved relative to this script so the verifier can be exercised
+# against a sandboxed copy (negative control); corpus stays canonical via BASE.
+RES=os.path.join(os.path.dirname(os.path.abspath(__file__)),'results')
 err=[]
 def corpus(name):
     return [json.loads(l) for l in open(os.path.join(BASE,'research/ai-infra-expert/corpus',name))]

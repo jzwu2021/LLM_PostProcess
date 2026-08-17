@@ -12,9 +12,9 @@ is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 - Progress: train 430/5399, validation 0/601, total 430/6000, remaining 5570
 - Decisions: keep 0, rewrite 10, reject 0
 - Initial schema check: PASS (ad-hoc verifier — JSONL line-parse, batch count 10, all 12 required fields, enum values for teacher_lane/teacher_model/calibration_status/decision, exact source_user/source_assistant equality against corpus, non-empty corrected_answer, confidence in [0,1], globally unique source_id, train/validation aggregate strictly a prefix of each corpus).
-- Repairs: none required; the batch passed on first verification.
-- Final schema check: PASS (train 430/5399, validation 0/601, total 430, 0 errors).
+- Repairs: none required for the batch data itself; it passed on first verification. Follow-up repair to the tooling: an ad-hoc negative control (7 injected defects — dropped field, wrong lane, invalid decision, blank corrected_answer, out-of-range confidence, one-character source_user drift, out-of-range quality dimension) showed `verify_batches.py` hard-coded an absolute results/ path, so a sandboxed copy silently re-verified the pristine originals. Fixed by resolving results/ relative to the script (corpus path stays canonical). After the fix all 7 mutations are caught and the real batches still PASS.
 - Manifest: MANIFEST.sha256 regenerated over all files in the experiment directory (excluding the manifest itself); `sha256sum -c` returned OK for every entry.
+- Final schema check: PASS (train 430/5399, validation 0/601, total 430, 0 errors), re-run after the verifier fix.
 
 Technical topics covered by this batch: ten speculative-decoding items in three
 sub-clusters. (1) corpus-00468..00470 — "how speculative decoding interacts with
