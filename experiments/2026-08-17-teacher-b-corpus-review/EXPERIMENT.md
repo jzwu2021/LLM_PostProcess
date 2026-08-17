@@ -5,6 +5,22 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0032
+
+- Batch file: results/train-batch-0032.jsonl
+- Corpus range: train.jsonl lines 311-320 (0-indexed 310-319), source IDs corpus-00342, corpus-00343, corpus-00344, corpus-00346, corpus-00347, corpus-00348, corpus-00350, corpus-00351, corpus-00352, corpus-00353 (strict corpus order; nothing skipped or reordered — corpus-00345 and corpus-00349 do not appear at these positions in the corpus)
+- Progress: train 320/5399, validation 0/601, total 320/6000, remaining 5680
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS (verify.py VERIFY_PASS on first run; train=320/5399 validation=0/601 total=320)
+- Repairs performed: none
+- Final schema check: PASS (JSONL parseable line-by-line, 10 records, all 12 required fields, teacher_lane/teacher_model/calibration_status/decision values valid, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique, train sequence a strict prefix of train.jsonl)
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except itself; `sha256sum -c` passed (70 entries, MANIFEST_OK)
+- Technical topics covered: two families. Items 1-7 (corpus-00342 … corpus-00350) are Mixture-of-Experts, split between controlled-experiment design and runbook authoring. The rewrites supply the mechanisms the one-line source omits: top-k routing with capacity factor C and the dispatch/combine all-to-all as a *synchronizing* collective whose step time tracks the max-loaded expert rank rather than the mean; the training-versus-inference inversion from load-balanced-by-loss (auxiliary balance loss, token dropping allowed) to load-balanced-by-luck (frozen router, small correlated decode batches, drop-less serving); active-versus-total parameter accounting (active = shared + k·expert drives FLOPs, total = shared + E·expert drives HBM residency, so sizing on active params underestimates memory by ~E/k); router collapse as a positive-feedback failure mode with router z-loss and logit norms as the earliest actionable signal; expert replication versus expert parallelism as the lever that removes the collective from the decode path; and prefill/decode disaggregation (Dynamo/Mooncake-style) so all-to-all cost lands where batches amortize it. Items 8-10 (corpus-00351 … corpus-00353) are quantization: weight-only int4 with group-wise scales as an HBM-traffic (not arithmetic) optimization, hence large decode gains and small prefill gains; KV-cache quantization arithmetic (2·layers·kv_heads·head_dim·bytes/token) with the asymmetry that K error is amplified through the softmax exponential while V error averages out; and post-training calibration, where scales fitted on unrepresentative data cause targeted per-slice regressions that aggregate benchmark scores hide.
+- Each rewritten answer states an explicit boundary condition (batch-1 decode being HBM-weight-load bound so routing skew is nearly free; validity only while the all-to-all is on the critical path; token-budget-per-expert floors below which one measures undertraining rather than capacity; KV quantization buying nothing when weights dominate HBM; missing fused kernels for a given format/architecture), a falsifiable hypothesis, the evidence required to believe it, and a rollback gate.
+- Why all ten were marked `rewrite`: every source_assistant is one of two identical generic sentences (MoE routing/capacity/all-to-all, or quantization precision/accuracy) reused verbatim across case variants. None performs the requested task (design an experiment, write a runbook entry, define with one mechanism), and none supplies the boundary condition the instruction explicitly demands.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, or searched at any point during this batch.
+- Status caveat: these are **provisional** teacher-B blind-review outputs produced by an LLM reviewer. They are NOT expert gold labels, have not been validated by a human domain expert, and constitute no evidence about any model's domain capability.
+
 ## Run 2026-08-17 batch 0031
 
 - Batch file: results/train-batch-0031.jsonl
