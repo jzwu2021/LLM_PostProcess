@@ -5,6 +5,20 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0084
+
+- Batch file: results/train-batch-0084.jsonl
+- Corpus range: train.jsonl lines 831-840 (source IDs corpus-00914 … corpus-00923, corpus file order preserved exactly, no skips, no reordering)
+- Progress: train 840/5399, validation 0/601, total 840/6000, remaining 5160
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (ad-hoc verifier scripts/verify_batches.py — per-line JSONL parse, batch count 10, the 12 required fields, enum values for teacher_lane / teacher_model / calibration_status / decision, quality_dimensions integers 1-5, risks and evidence_required as string arrays, character-exact source_user and source_assistant against research/ai-infra-expert/corpus/train.jsonl, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness across all 84 batches, contiguous batch numbering, and strict train/validation corpus-prefix ordering)
+- Repairs performed: none required. No corpus file, no earlier batch, no benchmark generation and no teacher-A artifact was read or modified.
+- Final schema check: PASS (train 840 records prefix-checked, validation 0, total 840, VERIFY=PASS)
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except itself; `sha256sum -c` reported 151 OK lines and 0 failures.
+- Technical topics covered: single-request K/V cache sizing for GQA/MQA decoder stacks — layer depths 24/32/40/48/56, KV head counts 2/4/6/8, head dims 64/96/128, contexts 1024-4096 tokens; seven BF16/FP16 rows (2 B/value) and three INT8 rows (corpus-00915, corpus-00918, corpus-00921, 1 B/value). Every source byte total and GiB value was independently recomputed from 2 x layers x seq_len x kv_heads x head_dim x bytes_per_value before writing; all ten matched the source exactly, so no row was rejected. All ten are nonetheless `rewrite` because the source stops at formula-plus-number with one boilerplate caveat. Each rewrite adds: the meaning of the leading factor 2 (K and V tensors, not batch); per-token marginal bytes as the quantity that composes into paged-attention block-pool sizing and max_num_seqs; GiB (2^30) vs GB (10^9) disambiguation with both numbers shown; the GQA/MQA rule that kv_heads rather than query heads sets retained width; the architectures that break the uniform-layer assumption (sliding-window, MLA/latent-KV, cross-attention, hybrid SSM); the INT8 scale/zero-point metadata the payload-only formula omits; paged-allocator block round-up as ceil(S/block_size) x block_size x per-token bytes plus block-table metadata; the distinction between prompt length and total live context; the capacity composition (HBM minus weights, activations/workspace, fragmentation headroom, divided by per-request KV); an explicit evidence list (model config fields, engine startup log for cache dtype and block size, measured device memory at fixed concurrency, KV utilization and preemption counters); and a rollback gate — roll back max_num_seqs / max_model_len to the last validated values on preemption/recompute events, KV utilization above ~90%, or p99 TTFT SLO regression.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, listed, grepped or searched at any point in this run. The only inputs were source_user and source_assistant from research/ai-infra-expert/corpus/train.jsonl.
+- Status caveat: PROVISIONAL teacher-B model output. Not expert gold labels, not human-validated, and not evidence of any trained model's domain capability.
+
 ## Run 2026-08-17 batch 0083
 
 - Batch file: results/train-batch-0083.jsonl
