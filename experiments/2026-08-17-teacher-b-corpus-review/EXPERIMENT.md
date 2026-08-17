@@ -5,6 +5,65 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0110
+
+- Batch file: results/train-batch-0110.jsonl
+- Corpus range: train.jsonl lines 1091-1100 (0-indexed 1090..1099)
+- Source IDs: corpus-01201, corpus-01202, corpus-01203, corpus-01205, corpus-01206,
+  corpus-01207, corpus-01208, corpus-01209, corpus-01210, corpus-01211
+  (原始 corpus 顺序，无跳过无重排；corpus-01204 在原始 train.jsonl 中不存在)
+- Progress: train 1100/5399, validation 0/601, total 1100/6000, remaining 4900
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_teacher_b.py, 首次运行即通过)
+- Repairs: 无。本轮未修改原始 corpus、未修改既有批次、未触碰 teacher-A 产物
+- Final schema check: PASS — train=1100/5399 validation=0/601 total=1100/6000 VERIFY_PASS
+  覆盖项：逐行 JSONL 解析、批内条数=10、12 字段齐全、lane/model/status/decision 取值、
+  source_user 与 source_assistant 与原始 corpus 逐字符相等、corrected_answer 非空、
+  confidence ∈ [0,1]、source_id 全局唯一、聚合序列严格是 train corpus 前缀
+- Manifest: MANIFEST.sha256 已重新生成（191 个文件），sha256sum -c 全部通过
+
+### 本批技术主题
+
+本批 10 条全部是同一族的 "mixed short-prompt / long-generation 服务评测方案"
+题目（scenario variant 201-211），按 category 分为三种评审框架：
+
+- Performance Analysis (01201, 01207, 01210)：可证伪假设 H-P —— 开启 chunked
+  prefill (chunk=512) 在固定 QPS 下将短 prompt 的 TTFT P99 降低 ≥25%，同时
+  output-token throughput 退化 ≤5%。机制：分块限制单次 prefill 占用调度步的长度，
+  减少对短请求的 head-of-line blocking；代价是调度迭代变多、prefill 算术强度下降。
+  边界条件：prompt 全短时效应应趋近于零，若短 prompt-only cell 也改善则机制判定被证伪。
+- System Design (01202, 01205, 01208, 01211)：可证伪假设 H-S —— 在等 GPU 数下把
+  prefill / decode 拆到独立副本池（P:D 比按实测 token 比例调）使生产混合负载的
+  端到端 P99 降低 ≥20%，且 KV 传输开销占 TTFT ≤15%。显式给出 KV 传输字节量
+  公式 2 * layers * kv_heads * head_dim * dtype_bytes * prompt_tokens，并要求验证
+  跨节点路径确实走 RDMA (RoCE/IB) + GPUDirect RDMA（NCCL_DEBUG=INFO 中的 GDRDMA、
+  NCCL_NET_GDR_LEVEL、PCIe 亲和性），涉及 NIXL/Mooncake 类传输引擎与 NVIDIA Dynamo
+  的 disaggregated router。边界条件：短 prompt 与窄互联下 disaggregation 会输，
+  必须通过 prompt 长度扫描复现 crossover 点。
+- Troubleshooting (01203, 01206, 01209)：按成本从低到高排列的四条机制假设
+  H-T1 排队受限、H-T2 KV 耗尽/抢占、H-T3 prefill/decode 干扰、H-T4 硬件与集合通信
+  (throttle reasons、TP>1 的 NCCL allreduce 方差、topo/功耗上限)，每条给出独立
+  signature 与单变量证伪实验，并要求记录负结果。
+
+三种框架共享同一套硬性内容：指标定义歧义消除（TTFT 含排队并可分解为
+queue_wait + prefill_compute + network；TPOT 报分布不报全局均值；throughput 同时报
+output-token / total-token / requests 三种）、prefill 计算受限 vs decode
+显存带宽与 KV 容量受限的机制区分与干扰项 I = P99(C) - max(P99(A),P99(B))、
+warmup 丢弃规则、开环 Poisson 与闭环并发双扫描、≥5 次独立试验且每 cell
+≥3000 次完成、bootstrap CI、混杂因素（热/功耗降频、邻居噪声、客户端瓶颈、
+tokenizer 差异、prefix caching 命中、输出长度方差）、所需证据清单，以及
+promotion/rollback 门槛（P99 不退化 >5%、TTFT P95 不退化 >10%、吞吐 ≥+10%、
+无抢占/超时增加、显存 headroom ≥5%；canary ≤5% 流量 ≥30 分钟）。
+
+原始 source_assistant 全部是评分 rubric（"Answer should state ..."）而非答案本身，
+因此 10 条一律判 rewrite；quality_dimensions 统一为 technical_correctness=3、
+instruction_coverage=2、operational_safety=3，confidence=0.62。
+
+**结果性质声明**：本批结果是 provisional teacher-B 盲审输出，由当前对话模型
+(claude-opus-5-current) 独立写出，未查看 teacher-A 的任何产物。它不是 expert gold，
+未经领域专家复核，也不代表任何模型的领域能力；其中所有性能数字阈值都是待验证的
+假设门槛，而非实测结论。
+
 ## Run 2026-08-17 batch 0109
 
 - Batch file: results/train-batch-0109.jsonl
