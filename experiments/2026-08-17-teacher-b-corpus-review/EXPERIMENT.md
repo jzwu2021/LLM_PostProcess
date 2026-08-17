@@ -5,6 +5,45 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0113
+
+- Batch file: results/train-batch-0113.jsonl
+- Corpus range: train.jsonl lines 1121-1130 (0-indexed 1120..1129)
+- Source IDs: corpus-01235, corpus-01236, corpus-01237, corpus-01238, corpus-01239,
+  corpus-01240, corpus-01241, corpus-01243, corpus-01244, corpus-01246
+- Progress: train 1130/5399, validation 0/601, total 1130/6000, remaining 4870
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (10/10 records, 12 required fields present, lane/model/
+  status/decision values correct, source_user and source_assistant byte-identical to
+  corpus, corrected_answer non-empty, confidence in [0,1], source_id globally unique,
+  aggregate train sequence is a strict prefix of train.jsonl)
+- Repairs: none required this run; verification passed on the first attempt
+- Final schema check: PASS (train 1130, validation 0, total 1130, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 194 files; `sha256sum -c` all OK
+- Topics covered: LLM serving evaluation methodology for a mixed short-prompt /
+  long-generation workload. All ten items reuse the same scenario template with variant
+  numbers 235-241, 243, 244, 246 across System Design, Troubleshooting and Performance
+  Analysis framings, so each rewrite was given a distinct falsifiable hypothesis and
+  controlled experiment rather than a shared boilerplate: chunked prefill token budget
+  vs default scheduling; head-of-line blocking caused by long prefills; KV-cache block
+  pressure and preemption/recompute as the throughput-limiting resource rather than SM
+  compute; open-loop Poisson load generation versus closed-loop coordinated omission and
+  its effect on P99; automatic prefix caching as a confound that fabricates TTFT gains on
+  repetitive synthetic prompts; tensor-parallel degree sweeps where decode becomes NCCL
+  all-reduce latency bound and tokens/s/GPU falls; disaggregated prefill/decode pools
+  (NVIDIA Dynamo / Mooncake style) with KV transfer over RDMA and a KV-transfer share of
+  the TTFT budget as the go/no-go gate; warmup, CUDA graph capture and clock/thermal
+  drift as stationarity requirements; two-class SLO-tiered admission control and batch
+  starvation limits; and speculative decoding whose TPOT benefit inverts below a draft
+  acceptance rate of roughly 0.6 at large batch sizes. Every rewrite states assumptions
+  with units, separates prefill from decode mechanism, lists expected confounders,
+  enumerates the required per-request traces and DCGM telemetry, and gives explicit
+  canary/rollback thresholds.
+- Status caveat: these teacher-B outputs are PROVISIONAL. They are one model's blind
+  independent review, not expert gold labels, and they are not evidence of any model's
+  domain capability. Agreement analysis against teacher-A is a separate later step and
+  no teacher-A artifact was read while producing this batch.
+
 ## Run 2026-08-17 batch 0112
 
 - Batch file: results/train-batch-0112.jsonl
