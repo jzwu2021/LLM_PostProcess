@@ -5,6 +5,44 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0064
+
+- Batch file: results/train-batch-0064.jsonl
+- Corpus range: train.jsonl lines 631-640 (source IDs corpus-00699 through corpus-00708, contiguous)
+- Progress: train 640/5399, validation 0/601, total 640/6000, remaining 5360
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: pass (verify_batches.py reported `train 640 validation 0 total 640` then `PASS`; all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision values valid, source_user and source_assistant character-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5, source_id globally unique across all 640 records, train sequence an exact prefix of train.jsonl, validation still empty)
+- Repairs performed: none required (verification passed on first execution)
+- Final schema check: pass (640 records validated, 0 errors)
+- Independent arithmetic re-derivation: all ten source byte totals were recomputed from (layers, kv_heads, head_dim, seq_len, dtype) parsed out of the prompt; all ten matched the source figure exactly (75497472 / 440401920 / 75497472 / 58720256 / 377487360 / 201326592 / 22020096 / 75497472 / 251658240 / 125829120 B). The rewrite decision is therefore about insufficiency, not arithmetic error.
+- Manifest: MANIFEST.sha256 regenerated over all files in the experiment directory except MANIFEST.sha256 itself; `sha256sum -c` reported all OK, 0 failures
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, listed, or grepped during this run; only research/ai-infra-expert/corpus/train.jsonl was consulted.
+
+Technical topics covered: single-request KV cache byte sizing for GQA/MQA serving
+across BF16/FP16 and INT8 KV dtypes (Calculation cases 199-208). The source
+answers give the right closed form and the right number but stop there, so each
+was rewritten rather than kept: the corrected answers add explicit falsifiable
+assumptions (standard non-MLA attention, KV cost driven by KV heads not query
+heads, 1 GiB = 2^30 B, no prefix sharing), a derived per-token byte rate which is
+the quantity actually used to size max_num_seqs x max_model_len against free HBM,
+the mechanism by which KV rather than weights caps concurrency (linear growth in
+generated tokens and in batch, with exhaustion surfacing as preemption/recompute
+throughput cliffs and ITL tail spikes rather than clean OOM), boundary conditions
+the closed form does not model (PagedAttention block-size rounding, preallocated
+pool under gpu_memory_utilization, fragmentation, CUDA graph and prefill
+workspace, MLA/latent-KV, sliding-window and hybrid SSM layers, speculative
+decoding and beam search multiplying live KV copies), the uncounted INT8 scale/
+zero-point metadata plus the accuracy cost of INT8 KV on long context, an
+evidence list (config.json fields, engine startup KV/block log line, measured HBM
+delta, long-context eval when KV is quantized) and an explicit rollback gate
+(>=20% headroom; revert max_model_len / max_num_seqs if p99 ITL or preemption
+counters regress in canary before touching quantization).
+
+These results are provisional teacher-B second opinions produced by a single
+model under blind review. They are NOT expert gold labels, have not been
+validated against hardware measurements, and say nothing about any trained
+model's domain capability.
+
 ## Run 2026-08-17 batch 0063
 
 - Batch file: results/train-batch-0063.jsonl
