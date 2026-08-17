@@ -5,6 +5,60 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0018
+
+- Batch file: results/train-batch-0018.jsonl
+- Corpus range: train.jsonl lines 171-180, source IDs corpus-00191, corpus-00192, corpus-00193, corpus-00194, corpus-00195, corpus-00197, corpus-00199, corpus-00200, corpus-00201, corpus-00202 (corpus order preserved exactly; the gaps at 00196 and 00198 are gaps in the corpus file itself, not skips by this worker)
+- Progress: train 180/5399, validation 0/601, total 180/6000, remaining 5820
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_batches.py -> VERIFY=PASS, train=180/5399, validation=0/601, total=180/6000)
+- Repairs applied: none required this run
+- Final schema check: PASS (12 required fields present and field count exactly 12; teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional, decision in keep/rewrite/reject; source_user and source_assistant character-exact against the corpus; corrected_answer non-empty; confidence in [0,1]; quality_dimensions integers 1-5; risks and evidence_required string arrays; source_id globally unique; aggregated train sequence is a strict prefix of corpus order)
+- Manifest: MANIFEST.sha256 regenerated over all 40 files in this directory (excluding itself); `sha256sum -c` reports 40 OK, 0 failures
+- Generator script archived at scripts/gen_train_batch_0018.py
+- Lock: /tmp/teacher-b-corpus-review.lock acquired atomically at run start, released at run end
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened or grepped during this run
+
+Technical topics covered by this batch: three question shapes over two concepts.
+(1) corpus-00191..00195 ask for a *small controlled experiment* on continuous batching.
+Every source answer is the same single definitional sentence, which is technically true
+but answers a different question than the one asked, so all five were rewritten with
+distinct experimental designs: single-factor A/B at swept offered load; paired trace
+replay with a signed-rank test to remove arrival-process variance; a 2x3 factorial
+crossing scheduler with output-length dispersion (CV 0.1/0.8/2.0) so the straggler-
+displacement mechanism becomes falsifiable via the interaction term; a saturation sweep
+comparing goodput at a fixed p99 SLO instead of peak throughput; and an ablation
+separating retire-early from chunked-prefill interference. Shared across all five: the
+boundary condition that the benefit vanishes at near-uniform output lengths or once KV
+cache is the binding constraint, an explicit rollback gate (revert on >20% p99 TTFT
+regression, >1% preemption rate, or any OOM/KV-eviction failure), and a stated
+falsification threshold (<5% throughput gain at matched p99 rejects the hypothesis).
+(2) corpus-00197, 00199, 00200 ask for a *runbook entry*; the source answers are again
+the definitional sentence and give an on-call engineer no ordered procedure. Rewrites
+supply numbered diagnostics: confirm the scheduler config actually in force rather than
+assuming defaults; sample /metrics at 1 s resolution; classify the regime as
+scheduler-limited (waiting>0, KV<80%) versus memory-limited (KV>95% with rising
+preemptions); decompose admission versus prefill versus decode latency, since blaming
+"batching" without that split is the standard misdiagnosis; correlate TPOT spikes with
+prefill admissions before lowering batch size; and check GPU exclusivity and clock
+stability. (3) corpus-00201..00202 ask for a definition of tensor parallelism. The
+source answers are directionally correct but abstract, so the rewrites add the
+Megatron-style mechanism (column-parallel first MLP GEMM, row-parallel second, roughly
+two all-reduces per transformer layer moving batch x seq x hidden x dtype_bytes), the
+interconnect boundary condition (NVLink/NVSwitch amortizes the collective; PCIe or
+cross-node RoCE can make TP=8 slower than TP=2 because the per-collective latency floor
+lands on the decode critical path), the head-count divisibility constraint, an A30-24GB
+sizing sketch marked explicitly as an estimate from parameter counts rather than a
+measurement, and the required evidence (nvidia-smi topo -m, nccl-tests all_reduce_perf
+at the real message sizes, per-token latency at TP in {1,2,4,8}).
+
+These outputs are **provisional** teacher-B review artifacts. They are not expert gold
+labels, they have not been validated by a human domain expert or by execution against
+real hardware, and they say nothing about any model's domain capability. Every numeric
+claim in the rewrites is labelled as an estimate unless it is accompanied by a stated
+measurement procedure. Agreement analysis against teacher-A is a separate, later step
+and was deliberately not performed here.
+
 ## Run 2026-08-17 batch 0017
 
 - Batch file: results/train-batch-0017.jsonl
