@@ -5,6 +5,54 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0159
+
+- Batch file: results/train-batch-0159.jsonl
+- Corpus range: train.jsonl lines 1581-1590 (positional), ten consecutive rows, order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01742, corpus-01743, corpus-01744, corpus-01746, corpus-01748, corpus-01749,
+  corpus-01750, corpus-01751, corpus-01752, corpus-01753. The gaps (01745, 01747) are absent from
+  the corpus file itself; positional order is contiguous, so this is missing IDs in the source, not
+  a skip by this worker.
+- Progress: train 1590/5399, validation 0/601, total 1590/6000, remaining 4410
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on the first run of scripts/adhoc_verify_batch_0159.py. The verifier
+  was written fresh for this batch, imports nothing from the generator, and re-derives
+  source_user/source_assistant directly from research/ai-infra-expert/corpus/train.jsonl.
+  scripts/__pycache__ was removed before the run so no stale bytecode could be executed.
+- Repair actions: none required (first run passed).
+- Final schema check: PASS - 10 records; newline-terminated JSONL with no CR characters, every line
+  individually parseable; all 12 required fields present and no extra fields; teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional, decision in
+  {keep,rewrite,reject}; source_user and source_assistant exactly equal to the corpus strings;
+  corrected_answer non-empty, >400 chars, never equal to source_assistant, and sha256-unique within
+  the batch (anti-template assertion, 10/10 distinct); confidence float in [0,1];
+  quality_dimensions has exactly the three required integer 1-5 keys; risks and evidence_required
+  non-empty string arrays; source_id globally unique across all 159 batches (1590 records);
+  aggregated train sequence is a strict prefix of train.jsonl and validation is still empty.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself,
+  and `sha256sum -c` re-verified all entries OK.
+- Blind-review discipline: nothing under experiments/2026-08-14-teacher-a-corpus-calibration/ was
+  read, opened, grepped or listed at any point during this run. Only source_user and source_assistant
+  from the corpus were visible. Agreement analysis remains a separate later step.
+- Technical topics covered: all ten rows are rubric-style "multi-GPU job hangs during collective
+  initialization" prompts (NCCL startup, variants 142-153). Because the source assistant text is an
+  identical grading rubric in every row, every record was rewritten and each was assigned a distinct
+  primary mechanism so the batch is not ten paraphrases of one answer: CPU/NUMA affinity misbinding
+  starving the bootstrap thread; container /dev/shm undersizing blocking the SHM transport;
+  ECMP/LAG hash collapse onto a single physical link; GPUDirect RDMA silently disabled with a host
+  bounce-buffer fallback; MTU mismatch causing PMTU black-holing; PFC/ECN misconfiguration producing
+  a RoCE pause-storm deadlock; asymmetric collective call order (application-side deadlock);
+  cgroup/MIG device-inventory mismatch against nproc_per_node; rendezvous-backend credential/lease
+  expiry and clock skew; and a silent single-GPU Xid/ECC fault freezing one rank. Each answer states
+  assumptions, an ordered triage sequence, one falsifiable hypothesis with a prediction, a
+  single-variable controlled experiment, expected confounders, concrete measurements with units and
+  commands, and an explicit numeric rollback gate.
+- Status: PROVISIONAL. These are teacher-B second-opinion labels produced by a general-purpose model
+  under a blind protocol. They are NOT expert gold, have NOT been validated against real hardware or
+  real NCCL logs, and they say nothing about any trained model's domain capability. They are input
+  to a later teacher-A/teacher-B agreement analysis, not a result.
+
 ## Run 2026-08-18 batch 0158
 
 - Batch file: results/train-batch-0158.jsonl
