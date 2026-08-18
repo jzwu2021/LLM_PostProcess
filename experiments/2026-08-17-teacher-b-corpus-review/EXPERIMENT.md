@@ -5,6 +5,49 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0153
+
+- Batch file: results/train-batch-0153.jsonl
+- Corpus range: train.jsonl lines 1521-1530 (0-indexed 1520-1529)
+- Source IDs: corpus-01679 through corpus-01688 (contiguous in corpus order)
+- Progress: train 1530/5399, validation 0/601, total 1530/6000, remaining 4470
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on first run of scripts/adhoc_verify_batch_0153.py
+- Repair actions: none
+- Final schema check: PASS - 10 records, all 12 required fields present, teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional, decision in {keep,rewrite,reject},
+  source_user/source_assistant byte-identical to research/ai-infra-expert/corpus/train.jsonl,
+  corrected_answer non-empty, confidence in [0,1], quality_dimensions integers 1-5,
+  source_id globally unique across all batches, train aggregate is a strict prefix of the train corpus,
+  batch numbering contiguous 0001-0153.
+- Manifest: MANIFEST.sha256 regenerated after this EXPERIMENT.md edit; `sha256sum -c` all OK.
+
+### Technical topics covered by this batch
+
+All ten items are the same rubric-style prompt ("multi-GPU job hangs during collective
+initialization", scenario variants 79-88) with a stub source_assistant that only lists what an
+answer *should* contain. Every item was therefore rewritten, and each variant was assigned a
+distinct causal mechanism so the batch does not collapse into ten paraphrases:
+
+- 01679 TCPStore/rendezvous shortfall; gloo-backend control run as the discriminator.
+- 01680 Locating the singleton straggler rank via py-spy/gdb stack partitioning.
+- 01681 NCCL_SOCKET_IFNAME selection divergence across docker0/cni0/data-plane NICs.
+- 01682 Minimal reproducer and world-size bisection (1-node -> 2-node -> full world).
+- 01683 Intra-node P2P: IOMMU passthrough, PCIe ACS redirection, /dev/shm sizing.
+- 01684 RoCE/RDMA transport: HCA and GID index selection, ib_write_bw as an independent probe.
+- 01685 Slow-start vs deadlock; NCCL/CUDA/image version skew across ranks.
+- 01686 Collective ordering desync and process-group construction order (TORCH_DISTRIBUTED_DEBUG=DETAIL).
+- 01687 Phase-boundary localisation from per-rank NCCL_DEBUG_SUBSYS=INIT,GRAPH,NET logs.
+- 01688 Cost-ordered debugging plan: information per GPU-hour, bounded stopping rules.
+
+Cross-cutting operational-safety point recorded in every record: NCCL_P2P_DISABLE /
+NCCL_IB_DISABLE / NCCL_SHM_DISABLE are bisection instruments, not fixes; leaving them set
+silently demotes NVLink to PCIe or RDMA to TCP on every subsequent job.
+
+Status caveat: these results are **provisional** teacher-B output produced by a blind review lane.
+They are NOT expert gold labels, they have not been validated against teacher-A (which remains
+unread by this lane by design), and they say nothing about any model's domain capability.
+
 ## Run 2026-08-18 batch 0152
 
 - Batch file: results/train-batch-0152.jsonl
