@@ -5,6 +5,55 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0178
+
+- Batch file: results/train-batch-0178.jsonl
+- Corpus range: train.jsonl positional lines 1771-1780, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered.
+- Source IDs: corpus-01951, corpus-01952, corpus-01953, corpus-01954, corpus-01955, corpus-01956,
+  corpus-01957, corpus-01958, corpus-01959, corpus-01960.
+- Progress: 1780/2500 train records (71.2%). Remaining: 720. The 2500 denominator is the
+  user-set staged target adopted on 2026-08-18, replacing the original 6000-record figure.
+  Validation target is 0 for this stage; zero validation-batch files exist and none were created.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: pass (0 errors) on first run of the ad-hoc verifier.
+- Repair actions: none required for the batch output. One generator-script syntax error
+  (mismatched closing paren in the stance table) was fixed before the batch was ever written,
+  so no corpus, no prior batch, and no frozen artifact was touched.
+- Final schema check: pass. Checks run: per-line JSONL parse, batch count == 10, all 12 required
+  fields present, teacher_lane/teacher_model/calibration_status/decision value constraints,
+  byte-exact equality of source_user and source_assistant against research/ai-infra-expert/corpus/train.jsonl,
+  non-empty corrected_answer, confidence within [0,1], quality_dimensions integers in [1,5],
+  risks/evidence_required string arrays, global source_id uniqueness across all 178 batches,
+  and strict-prefix equality of the aggregated 1780-ID sequence against train.jsonl.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself;
+  sha256sum -c passes for all entries.
+- Technical topics covered: all ten rows are variants 51-60 of the same weight-only-quantization
+  fair-comparison stem, with an identical grading-rubric source_assistant, so every row is `rewrite`.
+  The ten rewritten answers use ten distinct, non-overlapping analytical stances: (51) contract-first,
+  writing a signed acceptance contract to prevent post-hoc goalpost movement; (52) baseline-integrity-first,
+  requiring the BF16 control to be swept to its own efficient frontier so the delta is frontier-to-frontier;
+  (53) numerics-first, treating WOQ as error propagation with per-layer activation-divergence measurement
+  and outlier-channel/group-size sensitivity as first-order; (54) concurrency-regime-first, separating
+  memory-bound decode from compute-bound prefill and requiring the gain to decay monotonically with batch
+  size as a falsifier; (55) serving-stack-boundary-first, applying an Amdahl bound on the weight-GEMM
+  fraction as a go/no-go gate before spending budget; (56) fleet-economics-first, converting results into
+  integer replica counts so sub-replica gains are treated as accounting noise; (57) longitudinal-first,
+  adding a second-checkpoint repeatability arm and pricing the recurring per-release calibration gate;
+  (58) instrumentation-validity-first, requiring an A/A control to establish the noise floor plus TTFT/TPOT
+  hook and clock-skew validation; (59) adversarial-review-first, pre-registering five named attacks
+  including arm-order swap, cross-node replay, second rubric, worst-case slice, and silent-kernel-fallback
+  audit; (60) decision-boundary-first, pre-committing an indifference zone so an ambiguous result ends
+  the study rather than extending it. Every numeric statement is explicitly tagged ESTIMATE or MEASURED
+  with its derivation inline (Amdahl arithmetic, bandwidth-roofline ceiling, sweep-grid run counts,
+  integer replica granularity, release-cadence arithmetic); no measured figure is claimed for this
+  hardware or checkpoint, and kernel efficiency plus calibration sensitivity are declared MEASURED-only
+  unknowns that will not be guessed.
+- Status: these outputs are PROVISIONAL teacher-B blind-review artifacts. They are not expert gold,
+  they have not been adjudicated against teacher-A (whose artifacts remain unread in this lane), and
+  they say nothing about any model's domain capability. Blind lane isolation held: no file under
+  experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened, or grepped during this run.
+
 ## Run 2026-08-18 batch 0177
 
 - Batch file: results/train-batch-0177.jsonl
