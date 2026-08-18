@@ -5,6 +5,61 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0157
+
+- Batch file: results/train-batch-0157.jsonl
+- Corpus range: train.jsonl lines 1561-1570 (0-indexed 1560-1569)
+- Source IDs: corpus-01721 through corpus-01731. NOTE: corpus-01726 does not exist in
+  train.jsonl - this is a pre-existing gap in the corpus ID sequence, not a skip. The batch
+  covers ten consecutive *positional* corpus rows; positional order is preserved exactly and
+  nothing was reordered or omitted. The original corpus was not modified.
+- Progress: train 1570/5399, validation 0/601, total 1570/6000, remaining 4430
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on the first run of
+  scripts/adhoc_verify_batch_0157.py (verifier written fresh for this batch and independent of
+  the generator: it re-derives source_user/source_assistant from research/ai-infra-expert/corpus/
+  rather than importing anything from gen_train_batch_0157.py).
+- Repair actions: none required.
+- Final schema check: PASS - 10 records; file is CR-free and newline-terminated; every record has
+  exactly the 12 required fields and no extras; teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional, decision in
+  {keep,rewrite,reject}; source_user and source_assistant byte-identical to the corpus;
+  corrected_answer non-empty, >800 chars, and sha256-unique within the batch (anti-template
+  assertion); confidence a float in [0,1]; quality_dimensions exactly the three required keys with
+  integer values 1-5; risks and evidence_required non-empty string arrays; source_id globally
+  unique across all 157 batches (1570 records); train batch numbering contiguous from 0001;
+  train aggregate is a strict positional prefix of the train corpus; validation aggregate empty
+  (a valid prefix) and correctly not started while train is incomplete.
+- Manifest: MANIFEST.sha256 regenerated after this EXPERIMENT.md edit; `sha256sum -c` all OK.
+- Technical topics covered: all ten items are rubric-style "multi-GPU job hangs during collective
+  initialization" variants (121-131). The source assistant turn is a grading rubric describing what
+  an answer *should* contain, not an answer, so all ten were rewritten. To prevent template
+  memorisation each variant was assigned a distinct root-cause mechanism, a distinct falsifiable
+  hypothesis, and a distinct single-variable control experiment: (121) asymmetric
+  NCCL_SOCKET_IFNAME so rank 0 advertises a bootstrap address some peers cannot route to;
+  (122) c10d TCPStore listener/start-order race, with a shortened store timeout used to convert a
+  hang into an attributable missing-rank list; (123) HCA port not ACTIVE / invalid GID so QP
+  transition to RTR stalls, with NCCL_IB_DISABLE=1 as the diagnostic contrast; (124) participation
+  shortfall where live process count is below world_size because of trimmed CUDA_VISIBLE_DEVICES
+  or a driver-removed GPU; (125) container /dev/shm exhaustion on the SHM transport, with ACS/IOMMU
+  called out as the likely upstream cause that a shm resize would mask; (127) RLIMIT_MEMLOCK
+  ceiling blocking ibv_reg_mr, read from the training PID rather than an interactive shell;
+  (128) RoCE path-MTU blackhole diagnosed by a message-size sweep cliff plus per-hop drop counters;
+  (129) missing or version-skewed nvidia_peermem stalling GPUDirect registration, with
+  NCCL_NET_GDR_LEVEL=0 as the single-variable probe; (130) partitioned barrier from two concurrent
+  rendezvous backends (PMI/PMIx vs c10d TCPStore); (131) inconsistent NCCL topology graphs from
+  container /sys masking or a non-bijective rank-to-GPU map, verified by device UUID rather than
+  index. Every rewritten answer states the mechanism, an explicit falsifiable prediction and its
+  negation, the measurements to collect, named confounders that produce a similar signature,
+  scale/placement boundary conditions under which the fault will not reproduce, the evidence needed
+  to close, and a concrete rollback gate (bus bandwidth within 5 percent of a recorded baseline,
+  soak-period counter checks, and explicit refusal to ship diagnostic settings such as
+  NCCL_IB_DISABLE=1 or NCCL_NET_GDR_LEVEL=0 as permanent fixes).
+- Status: these records are PROVISIONAL teacher-B second-opinion output produced by a language
+  model under blind review. They are NOT expert gold labels, have NOT been validated against real
+  hardware, and say nothing about any trained model's domain capability. No teacher-A artifact was
+  read while producing this batch; the agreement analysis is a separate, later step.
+
 ## Run 2026-08-18 batch 0156
 
 - Batch file: results/train-batch-0156.jsonl
