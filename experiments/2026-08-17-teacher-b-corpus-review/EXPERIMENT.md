@@ -5,6 +5,45 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0173
+
+- Batch file: results/train-batch-0173.jsonl
+- Corpus range: train.jsonl positional lines 1721-1730, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01896, corpus-01897, corpus-01898, corpus-01899, corpus-01902, corpus-01903,
+  corpus-01904, corpus-01905, corpus-01906, corpus-01907 (corpus ID numbering has gaps at 01895 and
+  01900-01901; the positional sequence is contiguous and this worker skipped nothing).
+- Progress: 1730/2500 train (69.2%). Remaining 770. Validation target is 0 and no validation batch
+  file was created or exists in results/.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on first run (independent ad-hoc verifier written to /tmp, executed,
+  then deleted so it does not enter the manifest). Checks: per-line JSON parse, batch count = 10,
+  all 12 required fields, teacher_lane/teacher_model/calibration_status/decision value constraints,
+  byte-exact equality of source_user and source_assistant against the corpus, non-empty
+  corrected_answer, confidence in [0,1], quality_dimensions integers in 1-5, risks and
+  evidence_required as string arrays, globally unique source_id across all 173 batches, and the
+  aggregate train sequence being a strict prefix of train.jsonl (1730 records verified).
+- Repairs: none required.
+- Final schema check: PASS (1730 records, 173 batches, 0 errors).
+- Manifest: MANIFEST.sha256 regenerated over all 314 files in the experiment directory excluding
+  MANIFEST.sha256 itself; scripts/__pycache__ removed before regeneration; `sha256sum -c` passed
+  for every entry.
+- Technical topics covered by this batch: two homogeneous rubric lanes. (a) NCCL collective
+  initialization hangs (variants 296-299), reviewed with a distinct primary mechanism per variant so
+  the batch is not templated - rendezvous/c10d store asymmetry, network interface selection
+  divergence across nodes, RDMA/RoCE GID and PFC misconfiguration with ib_write_bw isolation, and
+  collective signature mismatch (op/shape/dtype/group) diagnosed via a minimal all_reduce control.
+  (b) Weight-only quantization fair comparison (variants 2-7), split across paired A/B design,
+  separating kernel dequant overhead from KV-cache capacity effects, generative task-matched quality
+  evaluation with a baseline-vs-baseline noise floor, calibration-seed reproducibility spread,
+  SLO-constrained cost-per-1M-token accounting including replica ceil() effects, and tail/soak
+  failure-mode plus rollback-drill comparison. Every numeric claim is labelled ESTIMATE with its
+  arithmetic derivation, or flagged as MEASURED-to-collect; no platform-specific figure is asserted.
+- Status: these outputs are PROVISIONAL teacher-B blind review artifacts. They are not expert gold
+  labels, they have not been validated by a human domain expert, and they say nothing about any
+  model's domain capability. Agreement analysis against teacher-A is a separate later step; no
+  teacher-A file was read, opened or searched during this run.
+
 ## Run 2026-08-18 batch 0172
 
 - Batch file: results/train-batch-0172.jsonl
