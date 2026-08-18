@@ -5,6 +5,42 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0186
+
+- Batch file: results/train-batch-0186.jsonl
+- Corpus range: train.jsonl positional lines 1851-1860, ten physically consecutive rows, original
+  corpus order preserved, nothing skipped or reordered. Selection by line position, not ID arithmetic
+  (the window contains an ID gap: corpus-02046 is absent from the corpus).
+- Source IDs: corpus-02041, 02042, 02043, 02044, 02045, 02047, 02048, 02049, 02050, 02051.
+- Progress: 1860/2500 train records (74.4%). Remaining: 640. The 2500 denominator is the user-set
+  staged target adopted on 2026-08-18, replacing the original 6000-record figure. Validation target
+  is 0 for this stage; zero validation-batch files exist and none were created (verifier asserts it).
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on the first run of scripts/tb_verify_batch_0186.py (derived from the
+  batch-0185 verifier by literal 0185->0186 substitution, not rewritten). No repair actions needed.
+- Final schema check: PASS. Aggregate = 1860 source_ids, globally unique, and a strict prefix of
+  train.jsonl in original order.
+- Manifest: MANIFEST.sha256 regenerated over every file in this experiment directory except itself;
+  `sha256sum -c` reports all entries OK.
+- Topics covered: this window is another rubric-identical variant family (weight-only quantization
+  fair-comparison design, scenario variants 141-151). All ten source_assistant values are the same
+  grading rubric, so ten distinct analytical stances were written to avoid template collapse:
+  calibration-set provenance and its ablation; activation-outlier concentration and layer-wise
+  sensitivity sweeps; null-result pre-registration discipline; engine-scheduler interaction and batch
+  composition; tail-latency (p99 TTFT/TPOT) versus mean; multi-GPU tensor-parallel topology and NCCL
+  collective interaction shrinking quantization headroom; structured-output and tool-call compliance
+  as a hard parser contract; fleet capacity-realisation reconciliation; dual-path operational burden
+  and rehearsed time-to-safe; and comparison against cheaper non-numeric alternatives (scheduler
+  tuning, chunked prefill, KV policy, prefix caching, parallel-layout right-sizing). Falsifiable
+  hypotheses H31-H40 are unique across this batch and do not reuse H1-H30 from earlier batches.
+  Every numeric statement is labelled ESTIMATE or MEASURED with its derivation inline.
+- Blind-review integrity: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was
+  read, opened, grepped or listed during this run. Only research/ai-infra-expert/corpus/train.jsonl
+  was consulted for source_user and source_assistant.
+- Status: PROVISIONAL. These are teacher-B second-opinion rewrites, not expert gold labels, and they
+  do not constitute or demonstrate any model domain capability. Agreement analysis against teacher-A
+  is a separate, later step and is deliberately out of scope here.
+
 ## Run 2026-08-18 batch 0185
 
 - Batch file: results/train-batch-0185.jsonl
