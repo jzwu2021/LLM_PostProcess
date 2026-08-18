@@ -1,0 +1,293 @@
+import json
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+OUT = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review/results/train-batch-0204.jsonl"
+START, N = 2030, 10  # 0-indexed positional slice -> lines 2031..2040
+
+COMMON = (
+"Common frame (applies to every stance below).\n"
+"Assumptions (must be restated by the answering engineer, not inherited silently):\n"
+"A1. Single node, 8 GPUs, NVLink/NVSwitch intra-node; inter-node paths only appear where a stance says so explicitly.\n"
+"A2. Decode-dominant, latency-sensitive serving: the SLO is TTFT p95 and TPOT (inter-token latency) p95, never a mean.\n"
+"A3. Model weights fit in aggregate HBM with at least 20% KV-cache headroom at target concurrency.\n"
+"A4. Exactly one variable moves per arm: no simultaneous change of quantization, batching policy, or speculative decoding.\n"
+"Mechanism, stated plainly:\n"
+"- Tensor parallelism (TP) shards every layer's GEMMs. Each transformer block needs two all-reduces (after attention "
+"out-projection and after the MLP down-projection), so decode carries L * 2 * allreduce_latency of synchronous cost, "
+"where L is the layer count. TP is latency-additive in collectives but capacity- and bandwidth-multiplying: per-GPU "
+"weight bytes and per-GPU KV bytes both fall by the TP degree.\n"
+"- Pipeline parallelism (PP) shards layers into stages. Per token it adds only (PP-1) small point-to-point hidden-state "
+"sends, which are cheap, but a single request serializes through all stages and the bubble fraction is "
+"(PP-1)/(micro_batches + PP-1). At low concurrency there are too few in-flight micro-batches to fill the pipeline, so PP "
+"loses badly on single-request latency.\n"
+"Boundary conditions that flip the answer:\n"
+"- B1. On NVLink-class fabric, small-message all-reduce latency is in the single-digit microseconds and TP up to 8 is "
+"normally latency-viable. Over PCIe-only or across nodes on RoCE/IB the same collective's latency floor rises roughly an "
+"order of magnitude and TP stops paying past TP=2 (ESTIMATE; derivation: decode all-reduce payload is "
+"hidden_size * dtype_bytes per token per layer, which is small, so the collective is latency-bound rather than "
+"bandwidth-bound and the per-hop latency floor dominates).\n"
+"- B2. If the model cannot fit on one GPU, sharding is mandatory and the question reduces to which axis, not whether.\n"
+"- B3. Under high, steady concurrency the PP bubble amortizes and PP becomes competitive on throughput per GPU while "
+"still losing on single-request latency.\n"
+"Default recommendation: use TP inside the node up to the point where collective cost stops being repaid by reduced "
+"per-GPU memory traffic; use PP only to cross a node boundary or to fit a model TP alone cannot fit. PP is not a latency "
+"optimization.\n"
+"Measurement and evidence policy: every number below that was not produced by a run on this hardware is labelled "
+"ESTIMATE and carries its derivation. Only values read out of named benchmark artifacts may be labelled MEASURED. This "
+"review reports no MEASURED values, because no benchmark was executed for it.\n"
+)
+
+STANCES = [
+ ("Stance 40 - Attention head and hidden-dimension divisibility set the legal TP degrees before any performance argument.",
+  "Start from what is even constructible. TP shards attention heads and the MLP intermediate dimension, so the legal TP "
+  "degrees are constrained by head count, key/value head count under grouped-query attention, and intermediate-size "
+  "divisibility. A model with 40 query heads and 8 KV heads cannot be cleanly sharded at TP=6, and at TP=16 the KV heads "
+  "must be replicated, which silently multiplies KV-cache bytes rather than dividing them. This is the failure mode that "
+  "turns an expected memory win into a memory regression. Falsifiable hypothesis H40: at TP degrees exceeding the KV-head "
+  "count, measured per-GPU KV-cache bytes per token stop falling and flatten, so achievable concurrency at fixed HBM stops "
+  "improving (ESTIMATE; derivation: replicated KV heads mean each rank stores the same KV tensors, so per-GPU KV bytes "
+  "become independent of TP beyond that point). Controlled experiment: sweep TP over the legal divisors only, and at each "
+  "point record per-GPU KV bytes per token reported by the engine plus the maximum concurrency admitted before "
+  "preemption. Evidence required: the model config's head counts and intermediate size, the engine's per-rank KV "
+  "allocation log, and a padding report if the engine pads to make the shard legal. Rollback gate: reject any TP degree "
+  "that requires padding or KV replication unless the memory report proves the win survives it.",
+  ["Illegal or padded TP degrees can be accepted silently by the engine and degrade both memory and compute efficiency.",
+   "Grouped-query attention makes KV-head replication the dominant hidden cost of high TP.",
+   "Divisibility constraints are model-specific, so a TP recommendation transferred between models can be invalid."],
+  ["Model config head counts, KV head counts, and intermediate size.",
+   "Per-rank KV-cache allocation and padding logs from the serving engine.",
+   "Maximum admitted concurrency before preemption at each legal TP degree."]),
+
+ ("Stance 41 - Treat the decision as an availability and capacity-planning problem across replicas, not within one replica.",
+  "Zoom out from a single replica. A fleet serving an SLO has a replica count, a per-replica GPU count, and a headroom "
+  "policy. TP and PP both consume GPUs inside one replica, and every GPU spent on shrinking one replica's latency is a "
+  "GPU not spent on an additional independent replica. The correct objective is SLO-attaining capacity per GPU across the "
+  "fleet at the planned failure budget, including the N-1 case where one replica is draining. Falsifiable hypothesis H41: "
+  "at fixed total GPUs, the configuration with the smaller per-replica GPU count sustains higher SLO-attaining fleet "
+  "throughput whenever single-replica latency already meets the SLO with margin, because extra replicas buy queueing "
+  "headroom more cheaply than extra shards buy service time (ESTIMATE; derivation: once service time is inside the SLO, "
+  "marginal latency reduction has no value while marginal capacity still reduces queueing delay). Controlled experiment: "
+  "hold total GPU count fixed and compare few-large-replicas against many-small-replicas at identical offered load, "
+  "including a drain of one replica mid-run. Evidence required: fleet-level SLO attainment rate, per-replica p95 under "
+  "N-1, and the autoscaler's observed reaction time. Rollback gate: revert any topology whose N-1 SLO attainment falls "
+  "below the declared availability target.",
+  ["Optimizing one replica's latency can reduce total fleet capacity at fixed GPU budget.",
+   "N-1 behaviour is frequently untested, so a topology that passes steady-state can fail during a drain or node loss.",
+   "Autoscaling reaction time interacts with replica size and can dominate the observed tail."],
+  ["Fleet-level SLO attainment under steady load and under an induced replica drain.",
+   "Per-replica p95 TTFT and TPOT in the N-1 condition.",
+   "Total GPU count and replica topology for each arm, held constant across the comparison."]),
+
+ ("Stance 42 - Kernel and library maturity, not theory, often decides which axis wins in practice.",
+  "The theoretical model assumes each axis is implemented equally well; it usually is not. Fused attention kernels, "
+  "communication-overlapped GEMMs, and custom all-reduce paths are typically far better optimized for common TP degrees "
+  "than pipeline schedulers are for decode, and an unfused or fallback path can cost more than the entire parallelism "
+  "effect being studied. Falsifiable hypothesis H42: for at least one arm of the comparison the engine silently selects a "
+  "fallback kernel or a non-overlapped collective, and forcing the optimized path changes the arm's TPOT by more than the "
+  "measured gap between TP and PP (ESTIMATE; derivation: fallback attention and non-overlapped collectives commonly cost "
+  "tens of percent of step time, which is the same magnitude as the topology effect being measured). Controlled "
+  "experiment: capture the kernel selection log and a profiler trace for both arms, confirm the same attention backend "
+  "and the same collective implementation, then re-run. Evidence required: engine version and build flags, kernel "
+  "selection or autotuning logs, and per-kernel profiler timelines for both arms. Rollback gate: no topology conclusion "
+  "is accepted until both arms are shown to be running their intended optimized kernels.",
+  ["A parallelism comparison can measure kernel maturity rather than parallelism.",
+   "Silent kernel fallbacks are common and are not surfaced in throughput metrics.",
+   "Engine version differences between arms invalidate the comparison entirely."],
+  ["Engine version, build flags, and attention backend selection for both arms.",
+   "Kernel selection or autotuning logs showing no fallback path was taken.",
+   "Per-kernel profiler timelines separating GEMM, attention, and collective time."]),
+
+ ("Stance 43 - Long-context regimes move the bottleneck from weights to KV, changing which axis matters.",
+  "Short-context reasoning about weight sharding does not transfer to long context. As sequence length grows, KV-cache "
+  "bytes and attention's memory traffic grow linearly with context while weight traffic stays fixed, so the decode step "
+  "becomes KV-bandwidth-bound rather than weight-bandwidth-bound. TP divides KV bytes per GPU (subject to the KV-head "
+  "limit) and therefore keeps helping in long context; PP does not divide KV per token for a single request, it only "
+  "spreads different layers' KV across stages, which helps capacity but not the per-token traffic on the critical path. "
+  "Falsifiable hypothesis H43: the TP advantage in TPOT widens monotonically with context length across the tested range, "
+  "while the PP arm's TPOT degrades at least as fast (ESTIMATE; derivation: attention reads the whole KV history each "
+  "step, so per-step KV traffic scales with context and is divided by TP but not by PP for one request). Controlled "
+  "experiment: fix concurrency and sweep context length across at least four points spanning an order of magnitude, "
+  "reporting TPOT and achieved memory bandwidth at each. Evidence required: per-step KV bytes read, context-length-"
+  "resolved TPOT curves, and the KV-cache paging or eviction counters. Rollback gate: a topology validated only at short "
+  "context must not be promoted for long-context traffic without re-running this sweep.",
+  ["Conclusions drawn at short context do not transfer to long-context serving.",
+   "KV-head replication caps the long-context benefit of high TP.",
+   "Paging or eviction of KV under long context can dominate and mask the topology effect."],
+  ["Context-length-resolved TPOT and TTFT curves at fixed concurrency.",
+   "Per-step KV bytes read and achieved HBM bandwidth at each context point.",
+   "KV-cache paging, eviction, and preemption counters for each arm."]),
+
+ ("Stance 44 - Energy and thermal behaviour is a real constraint that silently reshapes the latency comparison.",
+  "Power and thermals are not a footnote at 8 GPUs in one chassis. TP keeps all ranks busy simultaneously on the same "
+  "token, producing synchronized power spikes and higher sustained board power, which can push clocks into a lower "
+  "sustained state. PP staggers work across stages, spreading power in time. A topology that wins in a cold ten-second "
+  "run can lose after thermal steady state is reached. Falsifiable hypothesis H44: TPOT measured in the first minute of a "
+  "run differs from TPOT after fifteen minutes of sustained load by an amount comparable to the topology gap, and the "
+  "difference correlates with reported clock throttling reasons (ESTIMATE; derivation: sustained multi-GPU load commonly "
+  "moves boost clocks to a lower steady state, and decode latency scales inversely with clock). Controlled experiment: "
+  "run each arm to thermal steady state, discard the warmup window, and report both the cold and steady-state numbers "
+  "with clock and power telemetry aligned in time. Evidence required: per-GPU clock, power draw, temperature, and "
+  "throttle-reason telemetry sampled through the run, plus a stated warmup discard policy. Rollback gate: reject any "
+  "result whose measurement window is shorter than the time to thermal steady state.",
+  ["Short benchmark runs measure boost clocks rather than sustained serving behaviour.",
+   "Power capping and thermal throttling can invert a topology comparison.",
+   "Chassis-level cooling differences make results non-portable between otherwise identical hosts."],
+  ["Per-GPU clock, power, temperature, and throttle-reason telemetry over the full run.",
+   "Stated warmup discard policy and measurement window length.",
+   "Cold-start and thermal-steady-state metrics reported separately for each arm."]),
+
+ ("Stance 45 - Request heterogeneity and scheduling fairness, not average behaviour, expose the difference.",
+  "A production trace is not one workload. It mixes short prompts with long ones, streaming clients with batch clients, "
+  "and cancellations with completions. TP and PP differ in how badly a long request harms a short one: in PP a long "
+  "request occupies stages and interacts with micro-batch scheduling, while in TP all ranks progress in lockstep on the "
+  "same batch so head-of-line effects come from batching policy instead. The honest metric is per-cohort tail latency, "
+  "not a global percentile that hides cohort-level unfairness. Falsifiable hypothesis H45: under a mixed trace, the "
+  "short-prompt cohort's p99 TTFT degrades more in the PP arm than in the TP arm at equal offered load, even where global "
+  "p95 looks similar (ESTIMATE; derivation: pipeline occupancy couples requests across stages, so a long resident request "
+  "delays micro-batch admission for others). Controlled experiment: replay one recorded production trace, unchanged, "
+  "against both arms and report latency percentiles bucketed by prompt-length cohort and by client class. Evidence "
+  "required: the trace definition, per-cohort percentile tables, cancellation and timeout counts, and the scheduler's "
+  "admission and preemption logs. Rollback gate: revert if any cohort's SLO attainment regresses, regardless of the "
+  "aggregate number.",
+  ["Global percentiles hide per-cohort regressions that users actually experience.",
+   "Synthetic uniform-length benchmarks systematically favour whichever topology handles uniform batches best.",
+   "Cancellation and timeout behaviour differs between topologies and is rarely instrumented."],
+  ["A recorded production trace replayed identically against both arms.",
+   "Latency percentiles bucketed by prompt-length cohort and client class.",
+   "Scheduler admission, preemption, cancellation, and timeout counters."]),
+
+ ("Stance 46 - Startup, load, and reconfiguration cost belongs in the decision, not just steady-state latency.",
+  "Steady-state TPOT is only part of the operational cost. Changing the shard axis changes weight-loading time, "
+  "checkpoint layout, warmup and autotuning duration, and how long a replica takes to become healthy after a restart. A "
+  "topology that is two percent faster per token but takes several minutes longer to reach readiness worsens every "
+  "deploy, every crash recovery, and every autoscale event. Falsifiable hypothesis H46: time-from-process-start to "
+  "first-token-within-SLO differs materially between the arms, and that difference dominates the steady-state latency gap "
+  "when weighted by the observed frequency of restarts and scale events (ESTIMATE; derivation: weight loading and warmup "
+  "are one-time per replica but recur at deploy and autoscale frequency, so their weighted cost scales with churn rate, "
+  "not with request rate). Controlled experiment: measure cold-start to healthy-and-within-SLO for both arms, repeated at "
+  "least five times, including one forced mid-load kill to measure recovery. Evidence required: readiness-probe "
+  "timestamps, weight-load and warmup durations, checkpoint shard layout, and the historical restart and scale-event "
+  "rate. Rollback gate: reject a topology whose recovery time exceeds the declared error budget for a single replica "
+  "loss.",
+  ["Steady-state-only comparisons ignore deploy, crash-recovery, and autoscale costs.",
+   "Checkpoint shard layout tied to one topology makes rollback slow or impossible in an incident.",
+   "Warmup and autotuning time can be mistaken for a performance regression after a deploy."],
+  ["Cold-start to healthy-and-within-SLO timings, repeated, for both arms.",
+   "Weight-load, warmup, and autotune duration breakdown.",
+   "Checkpoint shard layout and the historical restart and autoscale event rate."]),
+
+ ("Stance 47 - Observability adequacy is a precondition: if you cannot attribute the time, you cannot choose the axis.",
+  "Before arguing topology, verify the instrumentation can even distinguish the hypotheses. A decision between TP and PP "
+  "requires separating collective wait time, pipeline bubble idle time, GEMM time, attention time, and scheduler queueing "
+  "time. If the only available signals are end-to-end latency and coarse device utilization, every explanation is "
+  "unfalsifiable and the team will rationalize whatever number appears. Falsifiable hypothesis H47: with the current "
+  "instrumentation, at least one of collective wait, pipeline idle, and scheduler queueing cannot be quantified per step, "
+  "so at least two competing explanations of the observed gap remain equally consistent with the data (ESTIMATE; "
+  "derivation: coarse utilization metrics are duty-cycle measures and cannot separate synchronous wait from useful work). "
+  "Controlled experiment: instrument one arm first, confirm that the sum of attributed components reconciles with "
+  "end-to-end step time inside a stated tolerance, and only then run the comparison. Evidence required: a time-attribution "
+  "budget that reconciles to total step time, per-rank collective wait histograms, and queueing time measured at "
+  "admission. Rollback gate: no topology change is approved while the attribution budget fails to reconcile.",
+  ["Coarse device utilization is a duty-cycle metric and misattributes synchronous waiting as useful work.",
+   "Unfalsifiable explanations get adopted as fact when attribution is missing.",
+   "Per-rank skew is invisible in aggregated metrics and can be the real cause of the gap."],
+  ["A per-step time-attribution budget reconciling to end-to-end step time within a stated tolerance.",
+   "Per-rank collective wait histograms, not just averages.",
+   "Admission-time queueing measurements separated from execution time."]),
+
+ ("Stance 48 - Portability and lock-in: the topology choice constrains future hardware and model changes.",
+  "Treat the decision as a commitment with a lifetime, not a point optimization. A TP-heavy design assumes a high-"
+  "bandwidth intra-node fabric will keep existing; a PP-heavy design assumes stage boundaries remain valid as model depth "
+  "and layer cost change. Migrating a fleet later costs checkpoint resharding, re-tuning, and a full re-validation, so "
+  "the cheap decision today can be the expensive one within a hardware generation. Falsifiable hypothesis H48: the "
+  "candidate topology's advantage does not survive a change in either accelerator generation or model architecture, "
+  "meaning the decision must be re-derived rather than inherited (ESTIMATE; derivation: the TP-versus-PP crossover is set "
+  "by the ratio of collective latency to per-GPU memory traffic, and both terms change with fabric and with model shape). "
+  "Controlled experiment: re-run the same comparison harness on a second hardware profile or a second model size and "
+  "check whether the ranking is preserved. Evidence required: results from at least two hardware or model profiles using "
+  "the identical harness, plus the checkpoint resharding cost measured for a hypothetical migration. Rollback gate: do "
+  "not encode a topology assumption into checkpoints or serving contracts unless resharding has been demonstrated end to "
+  "end.",
+  ["Topology assumptions baked into checkpoints and serving contracts create migration lock-in.",
+   "A crossover point measured on one fabric or model shape does not transfer to another.",
+   "Re-validation cost after a hardware or model change is routinely omitted from the decision."],
+  ["Identical-harness results on at least two hardware profiles or model sizes.",
+   "Measured checkpoint resharding time and correctness check for a migration path.",
+   "An explicit statement of which topology assumptions are encoded in stored artifacts."]),
+
+ ("Stance 49 - Statistical adequacy: most reported TP-versus-PP gaps are inside the noise band.",
+  "Refuse to interpret a gap before establishing the noise floor. Serving latency at a percentile is a noisy statistic: "
+  "run-to-run variation from placement, clocks, background traffic, and scheduler nondeterminism routinely produces "
+  "differences that are indistinguishable from a real topology effect. Reporting a single run per arm, or a mean without "
+  "a dispersion estimate, is not evidence. Falsifiable hypothesis H49: repeating the identical configuration against "
+  "itself produces a p95 spread of the same order as the claimed TP-versus-PP gap, which would make the reported gap "
+  "uninterpretable without more repeats (ESTIMATE; derivation: an A/A comparison isolates run-to-run variance with the "
+  "topology effect held at exactly zero, so any spread observed there is pure noise). Controlled experiment: run an A/A "
+  "test first, at least five repeats per arm on separate process launches, then run A/B and report confidence intervals "
+  "and the pre-registered equivalence margin. Evidence required: A/A dispersion results, per-run raw percentiles rather "
+  "than summaries, the number of repeats, and the equivalence margin fixed before the run. Rollback gate: if the "
+  "confidence interval of the difference crosses the equivalence margin, declare no difference and keep the incumbent.",
+  ["Single-run comparisons cannot distinguish a topology effect from run-to-run noise.",
+   "Reporting means without dispersion invites false-positive topology conclusions.",
+   "Process placement and background load vary between launches and are rarely controlled."],
+  ["A/A repeat results establishing the run-to-run noise floor for the primary metric.",
+   "Per-run raw percentile values with the repeat count stated.",
+   "A pre-registered equivalence margin and the confidence interval of the measured difference."]),
+]
+
+CRITIQUE = (
+"Critique of the source item: the prompt is a legitimate infrastructure question and does ask for assumptions, a "
+"falsifiable hypothesis, measurements, confounders and rollback criteria, but the corpus pair is degenerate - the "
+"assistant turn contains only a rubric describing what an answer should contain, not an answer. There is therefore no "
+"substantive content to keep, and the item is rewritten into a complete response that supplies the mechanism, the "
+"boundary conditions that flip the recommendation, an explicit falsifiable hypothesis, a single-variable controlled "
+"experiment, the evidence artifacts required to adjudicate it, and a rollback gate. Every quantitative claim is labelled "
+"ESTIMATE and carries its derivation; no value here is MEASURED, because no benchmark run was performed for this review. "
+"This output is provisional teacher-B review material, not expert gold, and it is not evidence about any model's domain "
+"capability."
+)
+
+
+def main():
+    with open(CORPUS) as f:
+        lines = f.readlines()[START:START + N]
+    assert len(lines) == N, len(lines)
+    out = []
+    for i, line in enumerate(lines):
+        d = json.loads(line)
+        m = {x["role"]: x["content"] for x in d["messages"]}
+        su, sa = m["user"], m["assistant"]
+        title, body, risks, ev = STANCES[i]
+        ca = (f"Analytical stance under test: {title}\n\n{COMMON}\n{body}\n\n{CRITIQUE}")
+        out.append({
+            "source_id": d["id"],
+            "teacher_lane": "teacher-B",
+            "teacher_model": "claude-opus-5-current",
+            "calibration_status": "provisional",
+            "decision": "rewrite",
+            "source_user": su,
+            "source_assistant": sa,
+            "corrected_answer": ca,
+            "quality_dimensions": {
+                "technical_correctness": 3,
+                "instruction_coverage": 2,
+                "operational_safety": 2,
+            },
+            "risks": [
+                "Source pair is degenerate: the assistant turn is a grading rubric rather than an answer.",
+                "A bare TP-versus-PP verdict without interconnect, context length and concurrency context is not decidable.",
+            ] + risks,
+            "evidence_required": [
+                "Interconnect topology dump and NCCL transport selection log for every arm of the comparison.",
+                "Concurrency-resolved p50/p95/p99 TTFT and TPOT curves rather than mean end-to-end latency.",
+            ] + ev,
+            "confidence": 0.62,
+        })
+    with open(OUT, "w") as f:
+        for r in out:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print("wrote", OUT, len(out))
+
+
+main()
