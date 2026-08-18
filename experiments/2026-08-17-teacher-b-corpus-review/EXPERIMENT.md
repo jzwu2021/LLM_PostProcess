@@ -5,6 +5,46 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0170
+
+- Batch file: results/train-batch-0170.jsonl
+- Corpus range: train.jsonl positional lines 1691-1700, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01860, corpus-01861, corpus-01862, corpus-01864, corpus-01865, corpus-01866,
+  corpus-01867, corpus-01868, corpus-01869, corpus-01870. corpus-01863 is absent from the source file
+  at this position — an ID gap in the corpus itself, not a skip by this worker; positional contiguity
+  is what the prefix check enforces.
+- Progress: 1700/2500 train (68.0%). Remaining 800. Validation target is 0 and no validation batch
+  file was created.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on first run (scripts/adhoc_verify_batch_0170.py). No repairs were needed.
+- Repairs: none.
+- Final schema check: PASS — JSONL parses line by line, 10 records, all 12 required fields present,
+  teacher_lane/teacher_model/calibration_status/decision values correct, source_user and
+  source_assistant byte-identical to the corpus, corrected_answer non-empty, confidence within [0,1],
+  source_id globally unique across all 170 batches, and the aggregated train sequence is a strict
+  prefix of train.jsonl (1700 rows). No validation-batch files exist.
+- Manifest: MANIFEST.sha256 regenerated over all 304 files in the experiment directory (excluding the
+  manifest itself); sha256sum -c returned OK for all 304 entries.
+- Technical topics covered: all ten prompts are variants of "multi-GPU job hangs during collective
+  initialization", so each record was assigned a distinct root-cause mechanism to avoid a template
+  batch — rendezvous timeout consumed by cold container image pull; CUDA context creation blocked by a
+  pending ECC/row-remap state; undersized /dev/shm starving the NCCL SHM transport; RoCE PFC/ECN
+  asymmetry on a single leaf switch causing silent drops instead of pause frames; split-horizon DNS
+  making MASTER_ADDR unreachable by name; rank-to-GPU binding collision under scheduler device
+  isolation (duplicate GPU UUIDs); NCCL net-plugin version skew across nodes; cgroup memory limit
+  killing a rank during pinned-memory registration for the GDR/IB path; topology discovery wedged on an
+  unresponsive NVML/PCIe query; and clock skew / expired lease breaking the rendezvous control plane.
+  Every answer states assumptions, a falsifiable hypothesis, the mechanism, a controlled experiment,
+  discriminating evidence, a boundary condition, required evidence, risks, and an explicit rollback
+  gate. All numeric claims are tagged ESTIMATE or MEASURED with their derivation.
+- Blind-review integrity: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read,
+  opened or searched while producing this batch. Only source_user and source_assistant from
+  research/ai-infra-expert/corpus/train.jsonl were consulted.
+- Status: these outputs are PROVISIONAL teacher-B review records. They are not expert gold labels, they
+  have not been validated by a human domain expert, and they say nothing about any model's domain
+  capability. They are review artifacts only.
+
 ## Run 2026-08-18 batch 0169
 
 - Batch file: results/train-batch-0169.jsonl
