@@ -5,6 +5,45 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0163
+
+- Batch file: results/train-batch-0163.jsonl
+- Corpus range: train.jsonl lines 1621-1630 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01785 .. corpus-01794 (contiguous, no gaps in this window).
+- Progress: train 1630/2500, validation 0/0, total 1630/2500, remaining 870
+  (2500 is the user-set staged target from 2026-08-18, replacing the original 6000-record full sweep.)
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on the first run of scripts/adhoc_verify_batch_0163.py. The verifier is fresh
+  for this batch, shares no code with the generator, and re-derives source_user/source_assistant directly
+  from research/ai-infra-expert/corpus/train.jsonl. scripts/__pycache__ was removed before the generator ran.
+- Repair actions: none required (first run passed).
+- Final schema check: PASS - 10 records; newline-terminated JSONL, every line parseable; all 12 required
+  fields present; teacher_lane=teacher-B, teacher_model=claude-opus-5-current,
+  calibration_status=provisional, decision in {keep,rewrite,reject}; source_user/source_assistant
+  byte-identical to the corpus; corrected_answer non-empty; quality_dimensions integers in [1,5];
+  confidence float in [0,1]; source_id globally unique across all 1630 records; batch numbering
+  contiguous 0001-0163; the aggregated train sequence is exactly the first 1630 rows of train.jsonl in
+  order (strict prefix); zero validation-batch files exist.
+- Anti-template check: the ten corrected_answer strings hash to 10 distinct sha256 values (asserted in
+  the generator before writing).
+- Technical topics covered: all ten rows are rubric-style "multi-GPU job hangs during collective
+  initialization" prompts, so each was rewritten around a distinct, separately falsifiable mechanism -
+  stale TCPStore / reused MASTER_PORT; non-routable interface selection (NCCL_SOCKET_IFNAME);
+  duplicate GPU-UUID device binding; container /dev/shm and memlock limits; incomplete world from a
+  scheduler/image-pull failure; RoCEv2 GID-index and PFC mismatch; NCCL/PyTorch/CUDA version drift from a
+  mutable image tag; firewall drops on ephemeral ports after bootstrap; application-level collective
+  ordering divergence; and PCIe/NVLink topology asymmetry breaking ring construction. Every answer carries
+  assumptions, an ordered evidence-preserving triage, an explicit falsifiable prediction, a single-variable
+  controlled experiment, required measurements, confounders, and a rollback gate. Numeric claims are tagged
+  ESTIMATE or MEASURED (e.g. the NCCL_IB_DISABLE bandwidth-loss figure is explicitly an ESTIMATE pending a
+  cluster-local ib_write_bw vs iperf3 measurement).
+- Blind-review invariant: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read,
+  opened or grepped while producing this batch. Only source_user/source_assistant from the corpus were used.
+- Status: PROVISIONAL second-opinion labels. Not expert gold, not validated ground truth, and not evidence
+  of any model domain capability.
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except itself; sha256sum -c PASS.
+
 ## Run 2026-08-18 batch 0162
 
 - Batch file: results/train-batch-0162.jsonl
