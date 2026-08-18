@@ -5,6 +5,48 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0148
+
+- Batch file: results/train-batch-0148.jsonl
+- Corpus range: train.jsonl lines 1471-1480 (0-indexed 1470-1479)
+- Source IDs: corpus-01626 through corpus-01635 (contiguous; corpus order preserved verbatim)
+- Progress: train 1480/5399, validation 0/601, total 1480/6000 (remaining 4520)
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run
+  (scripts/adhoc_verify_batch_0148.py, written fresh for this run rather than reusing
+  the prior batch's verifier) — JSONL line-parse, 10 records in the new batch, all 12
+  required fields, teacher_lane/teacher_model/calibration_status/decision values
+  correct, quality_dimensions integers in [1,5], risks/evidence_required string arrays,
+  source_user/source_assistant byte-identical to corpus, corrected_answer non-empty,
+  confidence in [0,1], global source_id uniqueness across 1480 records, and the
+  aggregate train sequence is a strict prefix of train.jsonl (validation not started).
+- Repairs applied: none required.
+- Final schema check: PASS (rerun after EXPERIMENT.md update and before manifest regen
+  ordering was finalized; manifest regenerated last so it covers the updated files).
+- Manifest: MANIFEST.sha256 regenerated over all files in the experiment directory
+  except itself; sha256sum -c PASS.
+- Technical topics covered: multi-GPU collective-initialization hangs, scenario variants
+  26-35, each rewritten as a distinct diagnostic lane rather than ten paraphrases of one
+  checklist. Variant 26 isolates store rendezvous incompleteness via per-rank pre/post
+  init_process_group timestamps; 27 A/Bs NCCL_SOCKET_IFNAME selection against routability;
+  28 asserts LOCAL_RANK->GPU-UUID bijection to catch duplicate device binding; 29 uses a
+  minimal all-reduce scaled 2/4/8/multi-node as a cheap bisection reproducer; 30 separates
+  true deadlock from an extreme straggler using bounded process-group timeouts plus
+  TORCH_NCCL_ASYNC_ERROR_HANDLING and a join-time histogram; 31 builds a node-rotation
+  incidence table backed by Xid/ECC/ibstat hardware signals; 32 diffs per-node
+  NCCL/driver/CUDA/image/OFED fingerprints for version skew; 33 targets RDMA/RoCEv2
+  queue-pair setup via GID index, MTU, ib_write_bw and PFC/ECN counters, treating
+  NCCL_IB_DISABLE=1 strictly as a diagnostic and never a fix; 34 targets intra-node
+  P2P/NVLink with p2pBandwidthLatencyTest, nvlink -s and IOMMU/ACS state; 35 converts the
+  ad-hoc hunt into a falsifiable triage runbook scored by retrospective replay.
+  Every record carries explicit rollback thresholds (revert diagnostic env vars, canary
+  before fleet driver rolls, do not drain nodes without a hardware signal, do not automate
+  remediation before classifier precision is measured on live incidents).
+- Provisional status: these are provisional teacher-B second opinions from
+  claude-opus-5-current under blind review. They are NOT expert gold labels, have not been
+  validated against real cluster telemetry, and say nothing about any model's domain
+  capability. teacher-A outputs were not read, opened, or grepped during this run.
+
 ## Run 2026-08-18 batch 0147
 
 - Batch file: results/train-batch-0147.jsonl
