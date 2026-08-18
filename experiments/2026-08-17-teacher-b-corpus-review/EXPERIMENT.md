@@ -5,6 +5,53 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0144
+
+- Batch file: results/train-batch-0144.jsonl
+- Corpus range: train.jsonl lines 1431-1440
+- Source IDs: corpus-01585 through corpus-01594 (contiguous; corpus order preserved verbatim)
+- Progress: train 1440/5399, validation 0/601, total 1440/6000, remaining 4560
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run — JSONL parses line-by-line,
+  10 records, all 12 required fields present, teacher_lane / teacher_model /
+  calibration_status / decision values correct, byte-exact source_user and
+  source_assistant vs corpus, non-empty corrected_answer, quality_dimensions
+  integers in [1,5], confidence in [0,1], globally unique source_id across all 144
+  batches, and aggregated train sequence is a strict prefix of train.jsonl
+  (validation sequence empty, trivially a prefix).
+- Fixes applied: none required this run.
+- Final schema check: PASS (verifier scripts/tb_verify_batch_0144.py, written fresh
+  this run rather than reusing an earlier verifier, exit 0, FAILURES=0).
+- Manifest: MANIFEST.sha256 regenerated over all 238 files in this directory except
+  the manifest itself; `sha256sum -c` passed with no mismatches. __pycache__
+  artifacts pruned before hashing.
+- Technical topics covered: all ten items are the same long-context intermittent-OOM
+  scenario (variants 285-294) split across three categories — Performance Analysis,
+  System Design, Troubleshooting. The rewrites supply what the source rubric omits:
+  the three-pool device-memory budget (weights / prefill activation / pre-reserved
+  paged-KV block pool), the per-token KV formula with the num_key_value_heads (GQA)
+  term that a naive num_attention_heads computation overestimates 4-8x, the argument
+  that a *pre-reserved* KV pool preempts rather than OOMs so an intermittent hard OOM
+  points to transient prefill width or allocator fragmentation instead, three mutually
+  distinguishable hypotheses (H1 prefill width, H2 fragmentation via
+  memory_reserved−memory_allocated drift, H3 co-tenant via nvidia-smi), a randomized
+  four-arm frozen-trace replay with prefix-cache hit rate and thermal drift called out
+  as confounders, and mitigations ordered by reversibility with explicit rollback gates
+  (p95 TTFT +15%, throughput −10%, pre-registered accuracy non-inferiority margin for
+  fp8 KV quantization). Category-specific framings add: a measured MiB-per-1k-prefill-
+  token headroom regression (Performance Analysis), router-level admission control and
+  prefill/decode disaggregation with an explicit capacity model (System Design), and a
+  four-step triage ladder with per-step stop conditions plus Xid/multi-host escalation
+  criteria (Troubleshooting).
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, grepped or listed at any point during this run. Inputs were
+  research/ai-infra-expert/corpus/train.jsonl and this experiment's own results/ only.
+- Status caveat: these outputs are **provisional** teacher-B second opinions produced
+  by a general-purpose model under blind conditions. They are NOT expert gold labels,
+  have NOT been validated against hardware measurements, and say nothing about any
+  trained model's domain capability. Agreement-rate analysis versus teacher-A is a
+  separate, later step and was deliberately not performed here.
+
 ## Run 2026-08-18 batch 0143
 
 - Batch file: results/train-batch-0143.jsonl
