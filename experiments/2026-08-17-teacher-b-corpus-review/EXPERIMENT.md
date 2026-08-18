@@ -5,6 +5,63 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0139
+
+- Batch file: results/train-batch-0139.jsonl
+- Corpus range: train.jsonl lines 1381-1390 (0-indexed 1380..1389)
+- Source IDs: corpus-01525, 01526, 01527, 01528, 01529, 01530, 01533, 01534,
+  01535, 01536 (corpus order preserved verbatim; the gap at 01531/01532 is in the
+  source corpus itself and was NOT introduced here)
+- Progress: train 1390/5399, validation 0/601, total 1390/6000, remaining 4610
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run — JSONL line-parse, 10 records,
+  12 required fields present, teacher_lane/teacher_model/calibration_status/decision
+  values correct, byte-exact source_user and source_assistant vs corpus,
+  non-empty corrected_answer, confidence in [0,1], globally unique source_id across
+  all 1390 records, contiguous batch numbering, and the aggregated train sequence is
+  an exact prefix of train.jsonl.
+- Repairs: none required.
+- Final schema check: PASS.
+- Manifest: MANIFEST.sha256 regenerated over 237 files; `sha256sum -c` all OK.
+- Technical topics covered: this is again the identical-rubric family "long-context
+  workload intermittently hits OOM after several concurrent requests" (scenario
+  variants 225-236). Because the prompts are textually near-identical, the ten
+  corrected answers were deliberately diversified by primary mechanism hypothesis,
+  measurement plan and rollback gate rather than by prose paraphrase:
+  (1) KV high-water mark vs admission control, with the explicit
+  2*n_layers*n_kv_heads*head_dim*dtype*seq_len KV formula and a halved-max_num_seqs
+  A/B on a replayed fixed-seed trace; (2) allocator fragmentation, discriminated by
+  the reserved-minus-allocated gap and an expandable_segments arm that must leave
+  peak allocated bytes unchanged within 2%; (3) prefix-cache retention and
+  multi-tenant sharing, predicting OOM tracks prefix-hit-rate collapse rather than
+  QPS, tested by a shared-prefix vs randomised-prefix synthetic; (4) chunked prefill,
+  arguing the failing allocation is prefill activation not KV and using the OOM
+  requested-bytes field itself as the discriminator; (5) tensor-parallel per-rank
+  skew including NCCL registered buffers outside the PyTorch allocator and MoE
+  expert imbalance, requiring per-rank rather than averaged memory series;
+  (6) disaggregated prefill/decode KV transfer buffers in the Mooncake / NVIDIA
+  Dynamo architectural pattern, where RDMA-registered staging memory scales with
+  in-flight transfers and RoCE congestion silently inflates residency, plus the
+  GPUDirect-RDMA-vs-host-bounce-buffer verification requirement; (7) speculative
+  decoding draft model, multi-LoRA adapters and structured-output logits-processor
+  state as hidden co-tenants whose OOM threshold shifts linearly with speculation
+  length; (8) capacity-model-first arithmetic deriving the theoretical concurrency
+  ceiling before touching any knob, with the explicit caveat that naive KV formulas
+  are invalid for MLA, sliding-window and hybrid-attention models; (9) failure-mode
+  containment — making OOM survivable via preemption, router token-budget admission
+  gates and drain-aware readiness probes before making it rare, validated by
+  staging-only fault injection; (10) time-correlated drift across deploy SHAs,
+  image digests, driver/CUDA/NCCL/engine versions and prompt-length p95 steps,
+  discriminated by replaying today's trace against the last known-good image.
+  Every record states assumptions, one falsifiable hypothesis, the measurements
+  that would refute it, expected confounders, prioritised mitigations and an
+  explicit numeric rollback gate.
+- Status caveat: these outputs are PROVISIONAL teacher-B blind-review artifacts.
+  They are not expert gold labels, they have not been adjudicated against teacher-A
+  (which remained unread during this run, per the blind protocol), and they say
+  nothing about any model's domain capability. Agreement analysis is a separate
+  later step outside this worker's scope.
+
 ## Run 2026-08-17 batch 0138
 
 - Batch file: results/train-batch-0138.jsonl
