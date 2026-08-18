@@ -1,0 +1,239 @@
+import json, os
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+EXP = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review"
+OUT = f"{EXP}/results/train-batch-0222.jsonl"
+START = 2210
+N = 10
+
+FRAME = """
+Common frame (applies to every stance below).
+Assumptions (must be restated by the answering engineer, not inherited silently):
+A1. Single node, 8 GPUs, NVLink/NVSwitch intra-node; inter-node paths only appear where a stance says so explicitly.
+A2. Decode-dominant, latency-sensitive serving: the SLO is TTFT p95 and TPOT (inter-token latency) p95, never a mean.
+A3. Model weights fit in aggregate HBM with at least 20% KV-cache headroom at target concurrency.
+A4. Exactly one variable moves per arm: no simultaneous change of quantization, batching policy, or speculative decoding.
+Mechanism, stated plainly:
+- Tensor parallelism (TP) shards every layer's GEMMs. Each transformer block needs two all-reduces (after attention out-projection and after the MLP down-projection), so decode carries L * 2 * allreduce_latency of synchronous cost, where L is the layer count. TP is latency-additive in collectives but capacity- and bandwidth-multiplying: per-GPU weight bytes and per-GPU KV bytes both fall by the TP degree.
+- Pipeline parallelism (PP) shards layers into stages. Per token it adds only (PP-1) small point-to-point hidden-state sends, which are cheap, but a single request serializes through all stages and the bubble fraction is (PP-1)/(micro_batches + PP-1). At low concurrency there are too few in-flight micro-batches to fill the pipeline, so PP loses badly on single-request latency.
+Boundary conditions that flip the answer:
+- B1. On NVLink-class fabric, small-message all-reduce latency is in the single-digit microseconds and TP up to 8 is normally latency-viable. Over PCIe-only or across nodes on RoCE/IB the same collective's latency floor rises roughly an order of magnitude and TP stops paying past TP=2 (ESTIMATE; derivation: decode all-reduce payload is hidden_size * dtype_bytes per token per layer, which is small, so the collective is latency-bound rather than bandwidth-bound and the per-hop latency floor dominates).
+- B2. If the model cannot fit on one GPU, sharding is mandatory and the question reduces to which axis, not whether.
+- B3. Under high, steady concurrency the PP bubble amortizes and PP becomes competitive on throughput per GPU while still losing on single-request latency.
+Default recommendation: use TP inside the node up to the point where collective cost stops being repaid by reduced per-GPU memory traffic; use PP only to cross a node boundary or to fit a model TP alone cannot fit. PP is not a latency optimization.
+Measurement and evidence policy: every number below that was not produced by a run on this hardware is labelled ESTIMATE and carries its derivation. Only values read out of named benchmark artifacts may be labelled MEASURED. This review reports no MEASURED values, because no benchmark was executed for it.
+"""
+
+CRITIQUE = """Critique of the source item: the prompt is a legitimate infrastructure question and does ask for assumptions, a falsifiable hypothesis, measurements, confounders and rollback criteria, but the corpus pair is degenerate - the assistant turn contains only a rubric describing what an answer should contain, not an answer. There is therefore no substantive content to keep, and the item is rewritten into a complete response that supplies the mechanism, the boundary conditions that flip the recommendation, an explicit falsifiable hypothesis, a single-variable controlled experiment, the evidence artifacts required to adjudicate it, and a rollback gate. Every quantitative claim is labelled ESTIMATE and carries its derivation; no value here is MEASURED, because no benchmark run was performed for this review. This output is provisional teacher-B review material, not expert gold, and it is not evidence about any model's domain capability."""
+
+COMMON_RISK = "Source assistant turn is a grading rubric, not an answer; training on it teaches meta-commentary about answers instead of the underlying reasoning."
+COMMON_RISK2 = "No falsifiable hypothesis, no confounder list and no rollback gate, despite the prompt explicitly demanding them."
+
+STANCES = [
+ (220,
+  "Prefix caching and cross-request KV reuse change the effective workload, so a layout comparison on cold caches measures a system that never runs in production.",
+  "A production serving stack that hashes prompt prefixes and reuses cached KV blocks turns a large fraction of prefill work into a pointer lookup. The hit rate is a property of the traffic, not of the layout, but its consequences are layout-dependent: prefix reuse shrinks the compute-bound prefill phase and leaves the decode phase, which is memory-bandwidth-bound and collective-heavy, as a larger share of the step budget. That shifts the balance toward tensor parallelism, whose per-GPU weight and KV bytes shrink with degree, and away from pipeline parallelism, whose bubble is not repaid by cheaper prefill. A cold-cache benchmark therefore over-weights prefill and systematically flatters whichever layout handles prefill better.",
+  "H220: replaying the same trace with prefix caching warmed versus cold changes the measured TP-versus-PP TPOT ordering only if the trace's prefix hit rate exceeds roughly half, and below that threshold the ordering is stable (ESTIMATE; derivation: decode cost per request is unaffected by prefix reuse while prefill cost scales with the miss fraction, so the phase mix moves materially only once the majority of prefill tokens are served from cache).",
+  "Controlled experiment: capture one production trace with its natural prefix structure; for each layout run it twice, once with the prefix cache disabled and once after a warm-up pass that populates it; report the measured prefix hit rate per arm alongside TTFT p95 and TPOT p95, and reject the comparison if hit rates differ across layouts by more than run-to-run dispersion.",
+  "Rollback gate: if the warm and cold arms disagree on which layout wins, no layout is promoted; revert to the incumbent configuration and re-run with the cache state pinned to the production hit rate before any decision is recorded.",
+  [COMMON_RISK,
+   "Cold-cache benchmarking inflates the prefill share and biases the layout comparison toward the arm that happens to prefill better.",
+   "Prefix hit rate is treated as a constant when it is a property of the traffic mix and drifts with product changes.",
+   "Cache eviction under memory pressure competes with KV cache for the same HBM, so enabling reuse can shrink usable concurrency at high TP degree.",
+   COMMON_RISK2],
+  ["Measured prefix cache hit rate per arm, reported as a distribution over the trace rather than a single mean.",
+   "TTFT p95 and TPOT p95 for each layout under both cold and warmed cache, same trace, at least three repeats.",
+   "HBM accounting separating weights, KV cache and prefix cache blocks, per layout and per TP degree.",
+   "Output parity check confirming cached and uncached paths produce identical greedy outputs for the same prompts."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 2}, 0.78),
+
+ (221,
+  "The interconnect topology inside the node is not uniform, so a TP group placed across an unbalanced NVLink or PCIe path measures the wiring rather than the parallel axis.",
+  "Nominally identical GPUs in one chassis can sit behind different PCIe switches, different NUMA nodes, or asymmetric NVLink hop counts. A tensor-parallel group is only as fast as its slowest pairwise path, because the all-reduce synchronises every rank each layer. If ranks are assigned by device ordinal rather than by measured topology, a TP=4 group can straddle a slow bridge while another candidate assignment stays entirely on the fast fabric. Pipeline parallelism is far less sensitive because its inter-stage traffic is a small point-to-point send that tolerates a slower hop. A comparison that does not pin and report rank placement therefore attributes wiring variance to the layout.",
+  "H221: re-assigning ranks from ordinal order to a topology-aware order changes measured TP decode latency by more than run-to-run dispersion on any node with a non-uniform intra-node fabric, and by less than dispersion on a fully symmetric NVSwitch node (ESTIMATE; derivation: the all-reduce completion time is set by the worst pairwise link in the group, so placement matters exactly when link quality varies across candidate groupings, and not otherwise).",
+  "Controlled experiment: dump the device topology and the actual rank-to-device mapping for each arm; run the TP arm under at least two rank assignments, ordinal and topology-aware, with everything else pinned; report a pairwise bandwidth and latency matrix taken immediately before each run so the fabric state is evidence, not assumption.",
+  "Rollback gate: if the two rank assignments disagree beyond dispersion and the topology-aware mapping cannot be guaranteed by the scheduler in production, the TP result must be reported at the worst-case placement, not the best; revert to the incumbent layout until placement is enforceable.",
+  [COMMON_RISK,
+   "Rank-to-device assignment left to ordinal defaults, so the measured collective cost reflects placement luck rather than the parallel axis.",
+   "Intra-node fabric assumed uniform when PCIe switch and NUMA boundaries make pairwise bandwidth heterogeneous.",
+   "Production schedulers may not reproduce the benchmark's placement, so a topology-tuned number is not achievable in service.",
+   COMMON_RISK2],
+  ["Device topology dump and the explicit rank-to-device mapping used by each arm.",
+   "Pairwise bandwidth and latency matrix captured immediately before each measurement run.",
+   "TP decode latency under at least two rank assignments, ordinal and topology-aware, with dispersion across repeats.",
+   "Production scheduler placement policy, showing whether the tested mapping is enforceable outside the benchmark."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.79),
+
+ (222,
+  "Long-context requests move the bottleneck from weight traffic to attention over the KV cache, and the two axes shard those two terms differently, so the winner depends on the context-length distribution.",
+  "Decode cost decomposes into a weight-reading term, roughly constant per token, and an attention term that grows with the number of cached tokens attended to. Tensor parallelism shards both: weights by degree, and KV by degree along the head dimension, so both terms shrink per GPU. Pipeline parallelism shards weights by stage but leaves each stage holding the full KV for its own layers, so the attention term per GPU does not shrink with stage count in the way the weight term does. As context grows, the attention term dominates, and the axis that shards it wins. A benchmark run at short context therefore measures the weight-dominated regime and can invert at production context lengths.",
+  "H222: as mean context length grows, the TP advantage on TPOT widens monotonically, and there exists a context length below which the two axes are within dispersion (ESTIMATE; derivation: the attention term scales with cached tokens per GPU, which TP divides by degree and PP does not, so the gap is an increasing function of context length while the weight term contributes a fixed offset).",
+  "Controlled experiment: sweep mean context length across at least four points spanning the production distribution, holding output length, batching policy and precision fixed; report TPOT p95 per layout at each point, and fit whether the gap trend is monotone in context length rather than reporting a single aggregate.",
+  "Rollback gate: if the production context distribution straddles the crossover point identified in the sweep, no single layout is promoted; revert to the incumbent and either segment traffic by context length or re-open the decision with the SLO owner.",
+  [COMMON_RISK,
+   "Single fixed context length in the benchmark hides a crossover that reverses the recommendation at production lengths.",
+   "Per-GPU KV bytes under pipeline parallelism do not shrink with stage count the way weight bytes do, which capacity planning often assumes incorrectly.",
+   "Long-context attention kernels may switch implementation at a length threshold, adding a discontinuity that looks like a layout effect.",
+   COMMON_RISK2],
+  ["Production context-length distribution, not just its mean, with percentiles.",
+   "TPOT p95 per layout across a context-length sweep of at least four points, three repeats each.",
+   "Per-GPU KV byte accounting at each context point for both layouts.",
+   "Attention kernel backend and any length-dependent implementation switch, logged per run."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 2}, 0.78),
+
+ (223,
+  "Mixture-of-experts routing adds an all-to-all whose cost depends on token-to-expert assignment, so expert parallelism is a third axis and the TP-versus-PP framing is incomplete for such models.",
+  "In an MoE layer each token is routed to a small number of experts. When experts are distributed across GPUs, the layer requires a dispatch all-to-all and a combine all-to-all per MoE block. The payload is data-dependent: if routing is balanced, each rank sends roughly equal volume; if a few experts dominate, the collective degenerates to the slowest rank and the whole step stalls. This cost is orthogonal to the TP-versus-PP question and can exceed both. A comparison of TP against PP on an MoE model without pinning the expert-parallel degree and reporting routing balance is measuring routing luck.",
+  "H223: on an MoE model, the step-time variance attributable to expert load imbalance exceeds the mean difference between TP and PP arms at the same expert-parallel degree (ESTIMATE; derivation: the all-to-all completes at the pace of the most loaded expert rank, so imbalance enters step time linearly, while the TP-versus-PP difference enters through collective and bubble terms that are bounded by the layer count; if the measured imbalance-driven variance is smaller, the claim is refuted).",
+  "Controlled experiment: fix the expert-parallel degree and the router checkpoint; log per-expert token counts per step; run the TP and PP arms on the same trace; report step-time distribution conditioned on a routing-balance metric, and compare layouts only within comparable balance bands.",
+  "Rollback gate: if per-expert token counts show sustained imbalance beyond the capacity factor, the layout comparison is invalid and must be discarded; revert to the incumbent configuration and address routing balance before re-running.",
+  [COMMON_RISK,
+   "Expert parallelism omitted entirely, so the dominant collective in an MoE model is absent from the decision.",
+   "Routing imbalance makes step time data-dependent, which breaks the assumption that arms differ only by layout.",
+   "Capacity factor and token dropping change output quality, so a fast arm may simply be dropping more tokens.",
+   COMMON_RISK2],
+  ["Per-expert token counts per step, with an explicit imbalance metric and its distribution.",
+   "Expert-parallel degree, capacity factor and drop counts logged per arm.",
+   "Step-time distribution per layout conditioned on routing-balance band, not aggregated.",
+   "Output quality parity check confirming token dropping did not differ across arms."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.77),
+
+ (224,
+  "GPUDirect Storage and the checkpoint load path determine how fast a replica can be created or replaced, and deployment agility is part of the latency decision when capacity is elastic.",
+  "Weight loading is a storage and host-memory problem, not a compute problem. With GPUDirect Storage the DMA path goes from NVMe directly into device memory, bypassing a bounce buffer in host RAM; without it, every byte crosses the CPU and the load rate is capped by host memory bandwidth and page-cache behaviour. The layout changes the shape of this traffic: tensor parallelism has every rank read a shard of every layer, producing many concurrent moderate reads, while pipeline parallelism has each stage read a contiguous subset of layers, producing fewer, larger, more sequential reads. If the service scales replicas in response to load, a slow cold start converts directly into SLO violation during a traffic ramp, which is a latency consequence even though it is not a steady-state latency term.",
+  "H224: with GPUDirect Storage enabled, pipeline parallelism reaches ready-to-serve faster than tensor parallelism at equal total weight bytes, because its read pattern is more sequential (ESTIMATE; derivation: sequential large reads achieve a higher fraction of device bandwidth than many concurrent smaller shard reads on NVMe; if measured time-to-ready is equal or reversed, the read pattern is not the binding term and the claim is refuted).",
+  "Controlled experiment: measure time from process start to first successful token for each layout, with GPUDirect Storage explicitly enabled and explicitly disabled, from cold page cache each time; report storage-side throughput counters alongside the wall-clock, and drop the page cache between runs so the second run is not measuring RAM.",
+  "Rollback gate: if a layout cannot meet the replica cold-start budget implied by the traffic ramp rate, it is rejected regardless of its steady-state latency; revert to the incumbent and re-evaluate only after the load path is fixed.",
+  [COMMON_RISK,
+   "Cold-start and replica-creation time excluded from a decision that governs an elastically scaled service.",
+   "Warm page cache silently makes the second measured arm faster, manufacturing a layout difference from filesystem state.",
+   "GPUDirect Storage availability depends on filesystem and driver support, so a benchmark result may not be reproducible in the production storage tier.",
+   COMMON_RISK2],
+  ["Time from process start to first token per layout, from cold page cache, at least three repeats.",
+   "Storage-side throughput and IOPS counters per arm, plus confirmation of whether the GPUDirect path was actually taken.",
+   "Filesystem, driver and mount options for the production storage tier, to establish reproducibility.",
+   "Traffic ramp rate the service must absorb, which sets the cold-start budget the layouts are judged against."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.79),
+
+ (225,
+  "The sampling and detokenisation path runs on the host and does not shard with either axis, so at small batch it can be a fixed floor that makes both layouts look equal.",
+  "After the final logits are produced, the server applies temperature, top-k or top-p filtering, samples, appends the token, and detokenises for streaming. This work is largely host-side and per-request, and it does not shrink when the model is sharded. As tensor-parallel degree rises and device time per step falls, this fixed host cost becomes a larger share of the step. Two layouts whose device times differ meaningfully can therefore report similar end-to-end TPOT simply because both are sitting on the same host-side floor. The diagnosis is straightforward: compare device time per step against wall-clock time per step, and if the gap is large the experiment is measuring the host.",
+  "H225: at batch size one, the difference between wall-clock TPOT and summed device time per step is approximately equal across TP and PP arms, and that difference is a non-trivial fraction of TPOT (ESTIMATE; derivation: the sampling and detokenisation path is layout-independent per request, so it contributes a common additive term; if the gap differs across arms, some of it is layout-dependent and the mechanism claim is wrong).",
+  "Controlled experiment: instrument both device time per decode step and end-to-end wall-clock TPOT for each layout at batch one and at a higher batch; report the wall-clock-minus-device gap explicitly per arm, and only compare layouts on device time once the host floor is shown to be common.",
+  "Rollback gate: if the host-side gap exceeds a declared fraction of TPOT, the layout comparison is suspended and the host path is optimised first; no layout change ships on a measurement dominated by host overhead.",
+  [COMMON_RISK,
+   "Host-side sampling and detokenisation cost omitted, so a layout comparison can be dominated by a term neither axis shards.",
+   "Device-time-only profiling hides the host floor and overstates the benefit of increasing tensor-parallel degree.",
+   "Streaming detokenisation cost scales with output token count, so traces with different output lengths carry different host floors.",
+   COMMON_RISK2],
+  ["Device time per decode step and end-to-end wall-clock TPOT, reported separately per layout.",
+   "Host-side profile attributing time to sampling, detokenisation, serialisation and transport.",
+   "Output-length distribution per arm, to confirm the host floor is comparable.",
+   "Measurements at batch one and at production batch, so the host share is visible in both regimes."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 2}, 0.77),
+
+ (226,
+  "On a lossless RoCE fabric the PFC and ECN control loops make inter-node collective latency load-dependent, so a quiet-fabric measurement is an optimistic bound rather than a production number.",
+  "RoCE preserves losslessness with priority flow control, which pauses upstream senders, and with explicit congestion notification, which asks senders to slow down. Both are feedback loops with their own time constants. Under a quiet fabric a small all-reduce sees near-minimum latency; under congestion from a neighbouring job, the same call can see pause frames and a materially longer tail. Tensor parallelism across nodes is exposed to this on every layer of every token, so its tail latency inherits fabric congestion directly. Pipeline parallelism crosses the fabric once per stage boundary per micro-batch and is far less exposed. Any cross-node layout comparison run on an idle fabric therefore understates TP's tail risk.",
+  "H226: introducing a controlled background load on the shared fabric degrades cross-node TP tail latency by a larger factor than cross-node PP tail latency, at equal offered background load (ESTIMATE; derivation: TP issues collectives proportional to layer count per token while PP issues one point-to-point send per stage boundary per micro-batch, so TP's exposure per unit of served work is higher by roughly the ratio of those counts).",
+  "Controlled experiment: run each cross-node layout twice, once on a quiesced fabric and once with a calibrated, reproducible background traffic generator at a declared offered load; report PFC pause frame counts and ECN marking rates per run alongside TPOT p99, and reject any comparison where the two arms saw different pause counts.",
+  "Rollback gate: if TP tail latency under the loaded fabric violates the SLO while the quiet-fabric number met it, the quiet number must not be published; revert to the incumbent layout and require fabric isolation or a lower TP degree before revisiting.",
+  [COMMON_RISK,
+   "Quiet-fabric measurement presented as a production number, hiding congestion-dependent tail latency.",
+   "PFC pause propagation can create head-of-line blocking and victim flows on shared switches, affecting unrelated tenants.",
+   "ECN thresholds and PFC watchdog settings are switch-side configuration that the benchmark may not control or even record.",
+   COMMON_RISK2],
+  ["PFC pause frame counts and ECN marking rates per port, captured per run.",
+   "Declared offered background load and the traffic generator configuration, so the load is reproducible.",
+   "TPOT p99 per layout under both quiesced and loaded fabric, three repeats each.",
+   "Switch-side ECN threshold and PFC configuration for the ports in the collective path."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.80),
+
+ (227,
+  "Sharding changes reduction order and kernel selection, so numerical parity must be demonstrated before any latency number is allowed to matter.",
+  "Changing tensor-parallel degree changes how a matrix product is partitioned and therefore the order in which partial sums are accumulated. Floating-point addition is not associative, so bitwise-identical outputs are not guaranteed across layouts even with greedy decoding. Kernel autotuning compounds this: a different shard shape can select a different GEMM implementation with different accumulation precision. The practical consequence is that a faster arm may also be a slightly different model from the user's perspective, and comparing latency without first bounding the output divergence is comparing two products rather than two configurations.",
+  "H227: greedy-decode outputs diverge between TP degrees on a non-trivial fraction of prompts, with divergence appearing later in the sequence rather than at the first token (ESTIMATE; derivation: per-step logit differences are small relative to typical top-1 margins, so a flip requires a near-tie, and the probability of encountering at least one near-tie grows with sequence length).",
+  "Controlled experiment: run a fixed prompt set through each layout under greedy decoding; report exact-match rate, first-divergence position distribution, and a task-level quality metric on a held-out set; only after divergence is bounded and accepted may the latency comparison proceed.",
+  "Rollback gate: if task-level quality differs beyond the pre-declared acceptance band, the faster layout is rejected on correctness grounds regardless of latency; revert to the incumbent and record the divergence evidence in the decision.",
+  [COMMON_RISK,
+   "Latency compared across layouts that are not numerically equivalent, so speed is bought with an unmeasured quality change.",
+   "Bitwise-identical output is wrongly assumed to follow from greedy decoding, ignoring non-associative accumulation.",
+   "Kernel autotuning can select different accumulation precision per shard shape, an effect invisible in configuration diffs.",
+   COMMON_RISK2],
+  ["Exact-match rate and first-divergence position distribution across layouts on a fixed prompt set.",
+   "Task-level quality metric on a held-out evaluation set, per layout, with a pre-declared acceptance band.",
+   "Selected kernel and accumulation precision per shard shape, logged from the autotuner.",
+   "Seed, sampling parameters and engine version pinned and recorded per arm."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.80),
+
+ (228,
+  "Autoscaling and replica-level horizontal scaling are a competing solution to the same latency problem, so the layout decision must be compared against simply adding replicas at equal cost.",
+  "Tensor and pipeline parallelism both reduce per-request latency by using more GPUs per replica. Horizontal replication instead reduces queueing delay by serving more requests concurrently. These attack different terms: sharding attacks service time, replication attacks waiting time. Under a latency SLO, whichever term dominates should be attacked first. At low utilisation queueing is negligible and sharding is the only lever; near saturation, queueing dominates and adding a replica can beat any layout change. Comparing TP against PP without also comparing against the equal-GPU-count replication option answers a narrower question than the one the service owner actually has.",
+  "H228: at utilisation above the queueing knee, adding replicas at fixed total GPU count improves TTFT p95 more than any TP-versus-PP layout change at the same GPU count (ESTIMATE; derivation: above the knee, waiting time grows superlinearly in utilisation while service time is roughly constant, so a lever that reduces utilisation dominates a lever that trims service time; below the knee the ordering reverses).",
+  "Controlled experiment: at a fixed total GPU budget, construct three arms - TP-sharded replicas, PP-sharded replicas, and more numerous less-sharded replicas - and drive all three with the same trace across a utilisation sweep that brackets the knee; report TTFT p95 and TPOT p95 per arm per utilisation point.",
+  "Rollback gate: if the replication arm meets the SLO at equal or lower GPU cost, the layout change is not promoted; revert to the incumbent layout and record that the decision was resolved by capacity rather than by sharding.",
+  [COMMON_RISK,
+   "Layout compared only against another layout, never against the horizontal-replication alternative at equal cost.",
+   "Queueing delay omitted, so the comparison is valid only far below saturation and silently misleads near the knee.",
+   "Per-replica GPU count interacts with bin-packing on the cluster, so a layout that fits poorly wastes capacity that never appears in the latency number.",
+   COMMON_RISK2],
+  ["TTFT p95 and TPOT p95 for TP, PP and replication arms at equal total GPU count, across a utilisation sweep bracketing the knee.",
+   "Measured queueing delay separated from service time, per arm and per utilisation point.",
+   "Cluster bin-packing outcome per arm: GPUs allocated versus GPUs usable.",
+   "Declared SLO and the utilisation range the service actually operates in."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.79),
+
+ (229,
+  "The deliverable is a scoped decision record with preconditions, monitors and an expiry, because every conditioning factor above is measurable and an unconditional layout claim will be falsified by the first workload change.",
+  "The preceding stances each identify a variable that can reverse the recommendation: cache warmth, rank placement, context length, expert routing, storage path, host overhead, fabric congestion, numerical parity and the replication alternative. A decision that states only which layout won is therefore not reusable, because it does not carry the conditions under which it holds. The defensible artifact is a bounded claim: the layout, the traffic envelope it was validated in, the invariants that must continue to hold, the monitors that assert them, the expiry date after which it must be re-validated, and the rollback procedure. This makes the claim falsifiable in production rather than only in the benchmark.",
+  "H229: within the declared envelope, the promoted layout continues to meet the SLO for the full validity window, and any breach is preceded by at least one monitored invariant leaving its declared band (ESTIMATE; derivation: the invariants were chosen because they are the inputs the latency model depends on, so a breach with all invariants in band would indicate a missing variable and refute the model).",
+  "Controlled experiment: publish the decision record with explicit invariant bands, wire each invariant to a monitor, and treat the validity window as the experiment; at expiry, re-run the layout comparison and compare the outcome against the recorded prediction rather than starting fresh.",
+  "Rollback gate: any monitored invariant leaving its band, or the expiry date arriving without re-validation, automatically reverts the service to the incumbent layout; the revert is pre-tested and does not require a fresh decision.",
+  [COMMON_RISK,
+   "Unconditional layout recommendation with no envelope, so it silently expires as traffic and software drift.",
+   "No monitors tied to the invariants the recommendation depends on, so violation is discovered as an incident rather than an alert.",
+   "No pre-tested rollback path, so reverting under pressure becomes an unrehearsed change.",
+   COMMON_RISK2],
+  ["Written decision record listing layout, traffic envelope, invariants with bands, monitors, expiry date and rollback procedure.",
+   "Monitor definitions and alert thresholds for each declared invariant, with evidence they fire.",
+   "Rehearsal evidence that the rollback path was executed successfully in a non-production environment.",
+   "Re-validation run at expiry, compared against the prediction recorded at promotion time."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.81),
+]
+
+assert len(STANCES) == N
+
+corpus = [json.loads(l) for l in open(CORPUS) if l.strip()]
+sel = corpus[START:START + N]
+assert len(sel) == N
+
+with open(OUT, "w") as f:
+    for rec, st in zip(sel, STANCES):
+        num, headline, mech, hyp, exp, rb, risks, evid, qd, conf = st
+        m = {x["role"]: x["content"] for x in rec["messages"]}
+        ca = (
+            f"Analytical stance under test: Stance {num} - {headline}\n"
+            + FRAME
+            + "\n" + mech
+            + "\nFalsifiable hypothesis H" + str(num) + ": " + hyp
+            + "\n" + exp
+            + "\n" + rb
+            + "\n\n" + CRITIQUE
+        )
+        out = {
+            "source_id": rec["id"],
+            "teacher_lane": "teacher-B",
+            "teacher_model": "claude-opus-5-current",
+            "calibration_status": "provisional",
+            "decision": "rewrite",
+            "source_user": m["user"],
+            "source_assistant": m["assistant"],
+            "corrected_answer": ca,
+            "quality_dimensions": qd,
+            "risks": risks,
+            "evidence_required": evid,
+            "confidence": conf,
+        }
+        f.write(json.dumps(out, ensure_ascii=False) + "\n")
+print("WROTE", OUT, "ids", sel[0]["id"], "..", sel[-1]["id"])
