@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0168
+
+- Batch file: results/train-batch-0168.jsonl
+- Corpus range: train.jsonl lines 1671-1680 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01838, corpus-01839, corpus-01840, corpus-01842, corpus-01843, corpus-01844,
+  corpus-01845, corpus-01846, corpus-01847, corpus-01848. Note the corpus itself has no corpus-01841
+  row at this position — this is an ID gap present in the source file, not a skip by this worker;
+  positional contiguity (lines 1671-1680) is exact.
+- Progress: train 1680/2500, validation 0/0, total 1680/2500, remaining 820
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/tb_verify_adhoc_0168.py) — trailing newline, 10 physical
+  JSONL lines, exactly the 12 required fields per record, teacher_lane/teacher_model/calibration_status/
+  decision enum values correct, byte-exact source_user and source_assistant against the corpus,
+  non-empty corrected_answer, integer 1-5 quality dimensions, non-empty string-array risks and
+  evidence_required, float confidence in [0,1], distinct corrected_answer within the batch, global
+  source_id uniqueness across all 168 batches, and the aggregate train sequence a strict prefix of
+  train.jsonl (1680 rows). Zero validation-batch files exist.
+- Independent ad-hoc re-check (/tmp/tb_adhoc2_0168.py, written outside the experiment tree and not reusing
+  the batch verifier): exactly 12 keys per record, sha256 of corrected_answer distinct within the batch and
+  colliding with no earlier batch, every answer contains an explicit hypothesis / controlled experiment /
+  rollback section, every answer carries ESTIMATE or MEASURED tagging, answer length floor met,
+  168 batch files / 1680 rows, strict prefix holds, no validation artifacts. Result: ADHOC2_PASS.
+- Repairs performed: none required; the batch verified on the first run. scripts/__pycache__ was removed
+  before generation and verification so it never enters the manifest or the commit.
+- Manifest: MANIFEST.sha256 regenerated after this EXPERIMENT.md edit, over every file in the experiment
+  directory except MANIFEST.sha256 itself; `sha256sum -c` reports all files OK.
+- Technical topics covered by this batch: all ten prompts are variants of "multi-GPU job hangs during
+  collective initialization", so each answer was assigned a deliberately distinct root-cause mechanism to
+  avoid templated output — (1) rendezvous split-brain from a second TCPStore under elastic restart,
+  (2) RLIMIT_MEMLOCK / cgroup limits blocking NCCL buffer pinning and IB memory registration,
+  (3) per-node DNS/hostname resolution asymmetry for MASTER_ADDR, (4) communicator construction-order
+  deadlock across DP/TP/PP subgroups, (5) RoCEv2 PFC/ECN priority mismatch deadlocking the init burst,
+  (6) missing nvidia-peermem so the GPUDirect RDMA path degrades into a stalled staging path,
+  (7) scheduler-level partial allocation where ranks were never launched, (8) slow first-touch
+  (cold checkpoint load / autotune) misdiagnosed as deadlock, distinguished by a time series rather than a
+  snapshot, (9) multi-tenant port and GPU contention on shared nodes, and (10) the inference-side analogue
+  in a Dynamo/Mooncake-style disaggregated fleet where a rolling update mixes image digests and KV layout
+  tuples inside one tensor-parallel group. Each answer states assumptions, one falsifiable hypothesis, a
+  one-variable controlled experiment, evidence to capture before mutating state, expected confounders,
+  and explicit rollback gates including a canary busbw threshold and a written-revert requirement for
+  BIOS/driver/switch-level changes.
+- Status: these outputs are PROVISIONAL teacher-B second opinions produced blind (teacher-A artifacts were
+  not read at any point during this batch). They are NOT expert gold labels, have not been human-verified,
+  and say nothing about any model's domain capability.
+
 ## Run 2026-08-18 batch 0167
 
 - Batch file: results/train-batch-0167.jsonl
