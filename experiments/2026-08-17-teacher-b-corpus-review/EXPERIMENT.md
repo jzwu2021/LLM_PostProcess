@@ -5,6 +5,49 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0181
+
+- Batch file: results/train-batch-0181.jsonl
+- Corpus range: train.jsonl positional lines 1801-1810, ten physically consecutive rows, original
+  corpus order preserved, nothing skipped or reordered. Selection by line position, not ID arithmetic.
+- Source IDs: corpus-01984, corpus-01985, corpus-01986, corpus-01987, corpus-01988, corpus-01990,
+  corpus-01991, corpus-01992, corpus-01993, corpus-01994. Note the ID gap: corpus-01989 does not
+  exist in train.jsonl. That is a corpus-side numbering gap, not a skipped record.
+- Progress: 1810/2500 train records (72.4%). Remaining: 690. The 2500 denominator is the user-set
+  staged target adopted on 2026-08-18, replacing the original 6000-record figure. Validation target
+  is 0 for this stage; zero validation-batch files exist and none were created (verifier asserts it).
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: pass (0 errors) on the first run of scripts/tb_verify_batch_0181.py.
+- Repair actions: none. No corpus file, no prior batch, no teacher-A artifact and no frozen artifact
+  was read or modified. Generator written to a script file (never an inline -c) and lint-clean
+  before execution.
+- Final schema check: pass. Checks: per-line JSONL parse, batch count == 10, all 12 required fields,
+  teacher_lane/teacher_model/calibration_status/decision value constraints, byte-exact equality of
+  source_user and source_assistant against research/ai-infra-expert/corpus/train.jsonl, non-empty
+  corrected_answer, corrected_answer != source_assistant, explicit ESTIMATE label and stance-marker
+  opening in every answer, ten distinct answer bodies and ten distinct 200-character openings
+  (anti-template), quality_dimensions integers in [1,5], non-empty risks and evidence_required string
+  arrays, confidence in [0,1], global source_id uniqueness across all 181 batches, strict-prefix
+  equality of the aggregated 1810-ID sequence against train.jsonl, and absence of any
+  validation-batch file.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself;
+  sha256sum -c passes for all entries.
+- Technical topics covered by this batch: all ten rows continue the weight-only quantization (WOQ)
+  fair-comparison stem (scenario variants 84-94; task_type design_or_diagnosis; difficulty hard;
+  categories Performance Analysis / System Design / Troubleshooting). Because the ten stems are
+  rubric-identical, the ten rewrites are differentiated by analytical stance rather than by topic:
+  quality-budget-first, confound-isolation-first (KV-capacity clamp), kernel-support-first (fused
+  low-precision dispatch vs dequant fallback), calibration-provenance-first, unit-economics-first
+  (GPU-seconds per 1,000 output tokens at fixed p95 SLO), tail-behaviour-first (p99 under bursty
+  open-loop arrivals), null-result-first (pre-registered null and minimum detectable effect),
+  reversibility-first (rehearsed rollback, warm BF16 replicas), workload-profile-first (measure f
+  before building), and auditability-first (manifest + raw traces reproduction). Each answer carries
+  the shared bandwidth-bound mechanism, fair-comparison invariants, and a pre-committed rollback
+  gate, and every numeric claim is labelled ESTIMATE with its derivation shown.
+- Status: these outputs are PROVISIONAL teacher-B second opinions produced by a reviewer model under
+  blind conditions. They are NOT expert gold labels, have not been human-verified, and say nothing
+  about any trained model's domain capability.
+
 ## Run 2026-08-18 batch 0180
 
 - Batch file: results/train-batch-0180.jsonl
