@@ -5,6 +5,46 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0128
+
+- Batch file: results/train-batch-0128.jsonl
+- Corpus range: train.jsonl lines 1271-1280 (0-indexed 1270..1279)
+- Source IDs: corpus-01409, corpus-01410, corpus-01411, corpus-01412, corpus-01413,
+  corpus-01414, corpus-01415, corpus-01416, corpus-01417, corpus-01418
+- Progress: train 1280/5399, validation 0/601, total 1280/6000, remaining 4720
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (ad-hoc verifier, first run, no repairs needed)
+- Repairs: none. The generator and verifier scripts were kept under /tmp so they do
+  not enter the experiment directory or the manifest.
+- Lock: /tmp/teacher-b-corpus-review.lock acquired atomically at run start (no
+  pre-existing lock, no stale-lock cleanup needed); released at run end.
+- Final schema check: PASS (train 1280, validation 0, total 1280, unique ids 1280,
+  strict-prefix check against train.jsonl OK, source_user/source_assistant
+  byte-identical to corpus, 0 errors)
+- Manifest: MANIFEST.sha256 regenerated over 216 files; `sha256sum -c` all OK
+- Topics covered: long-context intermittent OOM under concurrent LLM serving,
+  scenario variants 109-118 of the same base prompt, rotating across System Design,
+  Troubleshooting and Performance Analysis. All ten source assistant fields are
+  grading rubrics ("Answer should state assumptions...") rather than answers, so all
+  ten are rewrites. Each rewrite gives the device-memory decomposition (weights +
+  activation peak + KV pool + fragmentation + CUDA/NCCL context), the KV-bytes-per-token
+  formula with the GQA num_key_value_heads correction, the distinction between device
+  OOM and host oom-killer and between prefill activation spike and KV pool exhaustion,
+  five ranked falsifiable hypotheses (capacity tail, leak, fragmentation, prefill spike,
+  co-tenant) each with an explicit kill criterion, a fixed-trace replay experiment with
+  controls and >=3 runs per arm, a nine-step reversible mitigation ladder (token-budget
+  admission control, max_model_len/max_tokens ceilings, chunked prefill, lowering rather
+  than raising gpu_memory_utilization, prefix caching, expandable segments, KV
+  quantization gated on a quality eval, higher TP with its A30 PCIe-vs-NVLink cost, and
+  prefill/decode disaggregation Dynamo/Mooncake-style as a last resort), and canary
+  rollback gates on OOM count, TTFT p95, TPOT p95, throughput and preemption rate.
+  Category-specific framing was added per record (capacity contract for System Design,
+  a timed triage order for Troubleshooting, explicit pool arithmetic and
+  tok/s-at-fixed-SLO reporting for Performance Analysis).
+- Status: these outputs are PROVISIONAL teacher-B review artifacts. They are not
+  expert gold, they have not been validated against any real incident or measurement,
+  and they say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0127
 
 - Batch file: results/train-batch-0127.jsonl
