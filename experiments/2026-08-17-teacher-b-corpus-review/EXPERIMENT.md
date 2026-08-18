@@ -5,6 +5,55 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0158
+
+- Batch file: results/train-batch-0158.jsonl
+- Corpus range: train.jsonl lines 1571-1580 (positional), ten consecutive rows, order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01732 through corpus-01741 (contiguous in this window).
+- Progress: train 1580/5399, validation 0/601, total 1580/6000, remaining 4420
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on the first run of scripts/adhoc_verify_batch_0158.py. The verifier
+  was written fresh for this batch and is independent of the generator: it re-derives
+  source_user/source_assistant directly from research/ai-infra-expert/corpus/train.jsonl and
+  imports nothing from tb_gen_batch_0158.py.
+- Repair actions: none required (first run passed).
+- Final schema check: PASS - 10 records; newline-terminated JSONL, every line individually
+  parseable; all 12 required fields present; teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional, decision in
+  {keep,rewrite,reject}; source_user and source_assistant exactly equal to the corpus strings;
+  corrected_answer non-empty and sha256-unique within the batch (anti-template assertion, 10/10
+  distinct); confidence float in [0,1]; quality_dimensions has exactly the three required integer
+  1-5 keys; risks and evidence_required non-empty string arrays; source_id globally unique across
+  all 158 batches (1580 records); aggregated train sequence is a strict prefix of train.jsonl and
+  the validation sequence is still empty.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself,
+  and `sha256sum -c` verified all entries OK.
+- Technical topics covered: all ten rows are variants of the same rubric-style prompt - a multi-GPU
+  job hanging during collective initialization, requiring a falsifiable hypothesis and a controlled
+  experiment. Because the source assistant text is a grading rubric rather than an answer, every
+  record was marked `rewrite`. Each of the ten corrected answers was deliberately assigned a
+  *different* dominant failure mechanism so the batch does not collapse into one template:
+  (1) TCPStore rendezvous unreachable via MASTER_ADDR/PORT; (2) NCCL_SOCKET_IFNAME auto-selecting a
+  non-routable management/docker NIC; (3) rank-to-device binding collision (duplicate CUDA device
+  UUIDs within a node); (4) intra-node P2P/NVLink asymmetry blocked by ACS/IOMMU; (5) RoCE/RDMA lane
+  down while NCCL_NET is forced to IB (GID index / PFC); (6) mismatched world - a rank crashed
+  before joining; (7) version skew across nodes in torch/NCCL/driver/image digest; (8) slow-but-
+  progressing bootstrap misread as deadlock, tested with a 2/4/8-node scaling sweep; (9) firewall or
+  NetworkPolicy dropping ephemeral bootstrap ports after a healthy rendezvous; (10) /dev/shm and IPC
+  namespace limits blocking the intra-node SHM transport. Every answer states assumptions, an
+  ordered triage that gathers a rank census *before* any tunable is touched, one explicit falsifiable
+  prediction, a single-variable controlled experiment repeated 3x, named confounders, the concrete
+  commands/logs required as evidence, and an explicit rollback gate. The rollback gates deliberately
+  encode the operational-safety point the rubric omits: NCCL_P2P_DISABLE, NCCL_SHM_DISABLE,
+  NCCL_NET=Socket and raised timeouts are diagnostics, not fixes, and a firewall flush is never an
+  acceptable production remedy.
+- Status caveat: these results are PROVISIONAL teacher-B second opinions produced by a general
+  model under blind conditions. They are NOT expert gold labels, have not been validated on real
+  hardware, and say nothing about any trained model's domain capability.
+- Blind-review invariant: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was
+  read, opened, grepped or listed at any point during this run.
+
 ## Run 2026-08-18 batch 0157
 
 - Batch file: results/train-batch-0157.jsonl
