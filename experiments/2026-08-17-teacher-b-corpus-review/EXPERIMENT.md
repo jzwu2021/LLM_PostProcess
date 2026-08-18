@@ -5,6 +5,45 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0137
+
+- Batch file: results/train-batch-0137.jsonl
+- Corpus range: train.jsonl lines 1361-1370 (0-indexed 1360..1369)
+- Source IDs: corpus-01505 .. corpus-01514
+- Progress: train 1370/5399, validation 0/601, total 1370/6000, remaining 4630
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run — JSONL line-parse, 10 records,
+  12 required fields, lane/model/status/decision values, byte-exact source_user and
+  source_assistant vs corpus, non-empty corrected_answer, confidence in [0,1],
+  globally unique source_id, aggregated train sequence is an exact corpus prefix.
+- Repairs: none required.
+- Final schema check: PASS.
+- Manifest: MANIFEST.sha256 regenerated over 232 files; `sha256sum -c` all OK.
+- Topics covered: all ten items are the same rubric family — intermittent OOM in a
+  long-context LLM serving workload under concurrency (variants 205-214). To avoid
+  ten near-identical answers, each record was written through a distinct diagnostic
+  lens: (1) KV high-water vs steady-state accounting, (2) allocator fragmentation vs
+  true exhaustion, (3) scheduler over-subscription and preemption thrash, (4) prefix/
+  paged cache reuse under heterogeneous prompts, (5) non-KV activation/workspace and
+  CUDA-graph pools, (6) gpu_memory_utilization headroom vs co-resident consumers,
+  (7) tensor-parallel per-rank imbalance, (8) weight vs KV quantization as distinct
+  levers, (9) output-length tail driving the concurrency-weighted peak, (10) monotonic
+  leak vs bounded oscillation. Every record states the KV byte arithmetic
+  (2 * n_layers * n_kv_heads * d_head * bytes_per_elem), a named falsifiable
+  hypothesis with a refutation condition, a controlled single-factor experiment with
+  repeats and confounders, measurements with units, and explicit rollback thresholds.
+- All source records were graded rewrite because the corpus assistant field contains a
+  grading rubric ("Answer should state...", "Minimum technical points:") rather than an
+  engineering answer: no units, no arithmetic budget, no stated hypothesis, no rollback
+  gate. Fine-tuning on that text would teach meta-commentary about answers.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, or searched during this run. Inputs were the corpus source_user and
+  source_assistant only.
+- Status: these outputs are PROVISIONAL teacher-B reviews produced by a general model.
+  They are NOT expert gold labels, have not been validated by a human domain expert, and
+  say nothing about any trained model's domain capability. Agreement analysis against
+  teacher-A is a separate, later step outside this task.
+
 ## Run 2026-08-17 batch 0136
 
 - Batch file: results/train-batch-0136.jsonl
