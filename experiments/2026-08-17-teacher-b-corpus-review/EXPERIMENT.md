@@ -5,6 +5,55 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0169
+
+- Batch file: results/train-batch-0169.jsonl
+- Corpus range: train.jsonl lines 1681-1690 (positional), ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01849, corpus-01850, corpus-01851, corpus-01853, corpus-01854, corpus-01855,
+  corpus-01856, corpus-01857, corpus-01858, corpus-01859. corpus-01852 is absent from the source file at
+  this position — an ID gap in the corpus itself, not a skip by this worker; positional contiguity
+  (lines 1681-1690) is exact.
+- Progress: train 1690/2500, validation 0/0, total 1690/2500, remaining 810
+- Decisions: keep 0, rewrite 10, reject 0
+- Topic coverage: all ten rows are the same rubric-style prompt family — "multi-GPU job hangs during
+  collective initialization, produce a diagnosis plan" (scenario variants 249-259, categories split across
+  Performance Analysis / System Design / Troubleshooting). Because the prompts are homogeneous, each row was
+  rewritten around a DIFFERENT isolated failure mechanism so the batch is not ten paraphrases: (1) c10d
+  TCPStore rendezvous reachability; (2) world-size / rank-map bijection errors; (3) GPU visibility and
+  device-to-UUID binding (MIG and cgroup caveats); (4) NCCL_SOCKET_IFNAME bootstrap interface selection;
+  (5) IB/RoCEv2 transport with GID/PKey mismatch and ib_write_bw as ground truth; (6) intra-node P2P and
+  topology graph search (PCIe ACS, IOMMU, GDR/nvidia-peermem); (7) collective ordering/sequence-number
+  divergence and timeout semantics (TORCH_NCCL_ASYNC_ERROR_HANDLING, flight recorder); (8) minimal
+  all_reduce reproducer and world-size bisection to a fault domain; (9) container limits — /dev/shm,
+  ulimit -l memlock, IPC_LOCK, network namespace; (10) serving-side variant covering vLLM/Dynamo-style
+  tensor-parallel group formation and Mooncake-style disaggregated KV-transfer planes.
+  Every rewrite states an explicit falsifiable hypothesis, a controlled experiment, an explicit
+  falsification condition, boundary conditions, required evidence, and a rollback gate. Numeric claims are
+  tagged ESTIMATE (with the derivation stated) rather than presented as measurements; NCCL_IB_DISABLE and
+  NCCL_P2P_DISABLE are framed as diagnostics that must be reverted, never as fixes.
+- Initial schema check: PASS on first run (scripts/tb_verify_adhoc_0169.py) — trailing newline, 10 physical
+  JSONL lines, exactly the 12 required fields per record, teacher_lane/teacher_model/calibration_status/
+  decision enum values correct, byte-exact source_user and source_assistant against the corpus, non-empty
+  corrected_answer, integer 1-5 quality dimensions, non-empty string-array risks and evidence_required,
+  float confidence in [0,1], global source_id uniqueness across all 169 batches, and the aggregate train
+  sequence a strict prefix of train.jsonl (1690 rows). Zero validation-batch files exist.
+- Independent ad-hoc re-check (/tmp/tb_adhoc2_0169.py, written outside the experiment tree and not reusing
+  the batch verifier): exactly 12 keys per record, sha256 of corrected_answer distinct within the batch and
+  colliding with no earlier batch, every answer carries hypothesis / controlled experiment / falsification /
+  boundary sections and ESTIMATE-or-MEASURED tagging, answer length floor met, 1690 aggregate rows, no
+  validation artifacts. Result: ADHOC2_PASS.
+- Repairs required this run: none. No batch was rewritten to satisfy verification; no original corpus file,
+  benchmark generation, or teacher-A artifact was read or modified.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read,
+  opened, or grepped while producing this batch. Only source_user / source_assistant from
+  research/ai-infra-expert/corpus/train.jsonl were consulted.
+- Manifest: MANIFEST.sha256 regenerated over every file in this directory except itself; sha256sum -c
+  reports OK for all entries.
+- Status: these outputs are PROVISIONAL teacher-B second opinions produced by a general-purpose model. They
+  are NOT expert gold labels, have not been human-verified, and say nothing about any trained model's
+  domain capability.
+
 ## Run 2026-08-18 batch 0168
 
 - Batch file: results/train-batch-0168.jsonl
