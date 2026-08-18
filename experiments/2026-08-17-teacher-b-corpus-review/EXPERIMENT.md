@@ -5,6 +5,50 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0156
+
+- Batch file: results/train-batch-0156.jsonl
+- Corpus range: train.jsonl lines 1551-1560 (0-indexed 1550-1559)
+- Source IDs: corpus-01711 through corpus-01720 (contiguous; positional corpus order
+  preserved exactly, nothing skipped or reordered)
+- Progress: train 1560/5399, validation 0/601, total 1560/6000, remaining 4440
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on first run of scripts/adhoc_verify_batch_0156.py
+  (verifier written fresh for this batch, independently of the generator script)
+- Repair actions: none
+- Final schema check: PASS - 10 records, all 12 required fields present, teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional, decision in
+  {keep,rewrite,reject}, source_user/source_assistant byte-identical to
+  research/ai-infra-expert/corpus/train.jsonl, corrected_answer non-empty and sha256-unique
+  within the batch, confidence in [0,1], quality_dimensions integers 1-5,
+  source_id globally unique across all batches (1560 total), train aggregate is a strict
+  positional prefix of the train corpus, validation aggregate empty (also a valid prefix).
+- Manifest: MANIFEST.sha256 regenerated after this EXPERIMENT.md edit; `sha256sum -c` all OK.
+- Technical topics covered: all ten items are rubric-style "multi-GPU job hangs during collective
+  initialization" variants (111-120). The source assistant turn is a grading rubric, not an
+  answer, so every record was rewritten. Each of the ten was assigned a distinct root-cause
+  mechanism to avoid template memorisation: (111) MASTER_ADDR name-resolution divergence via
+  split-horizon DNS / stale /etc/hosts; (112) firewall or security group permitting only
+  MASTER_PORT while NCCL bootstrap needs ephemeral ports in both directions; (113) missing
+  nvidia_peermem so GPUDirect RDMA registration stalls, with NCCL_NET_GDR_LEVEL=0 as the
+  single-variable diagnostic; (114) RLIMIT_MEMLOCK ceiling in the container blocking RDMA memory
+  registration; (115) two concurrent rendezvous backends (Slurm PMI/PMIx vs c10d TCPStore)
+  splitting the barrier; (116) container device/topology visibility mismatch with masked /sys and
+  a non-bijective rank-to-GPU map; (117) RoCE path-MTU blackhole where small-packet rendezvous
+  succeeds and large RDMA writes are dropped; (118) participation shortfall from an OOM-killed or
+  crashed rank, converted to data with a bounded init timeout; (119) PCIe ACS/IOMMU silently
+  disabling intra-node P2P with the /dev/shm fallback also constrained; (120) scale-dependent
+  store fan-in, fd and listen-backlog exhaustion at rank 0, diagnosed by scale bisection.
+  Every rewritten answer states the mechanism, one explicitly falsifiable hypothesis with a
+  prediction, a single-variable controlled experiment, boundary conditions under which the
+  experiment is invalid, the measurements and evidence required (with units, and MEASURED vs
+  estimate distinguished), named confounders that produce the same signature, and an explicit
+  rollback gate limiting blast radius.
+- Status caveat: these outputs are PROVISIONAL teacher-B model review. They are not expert gold
+  labels, they have not been validated against real hardware, and they are not evidence of any
+  model domain capability. Agreement analysis against teacher-A is a separate, later step and was
+  not performed here; no teacher-A artifact was read during this run (blind review).
+
 ## Run 2026-08-18 batch 0155
 
 - Batch file: results/train-batch-0155.jsonl
