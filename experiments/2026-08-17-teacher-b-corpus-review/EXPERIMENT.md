@@ -5,6 +5,50 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0135
+
+- Batch file: results/train-batch-0135.jsonl
+- Corpus range: train.jsonl lines 1341-1350 (0-indexed 1340..1349)
+- Source IDs: corpus-01484, corpus-01485, corpus-01486, corpus-01487, corpus-01488,
+  corpus-01489, corpus-01490, corpus-01492, corpus-01493, corpus-01494
+- Progress: train 1350/5399, validation 0/601, total 1350/6000, remaining 4650
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_batches.py, verify_teacher_b.py, verify_run.py — 10 lines parse
+  as JSONL, all 12 required fields present, teacher_lane/teacher_model/calibration_status/decision
+  values correct, source_user and source_assistant byte-identical to corpus, corrected_answer
+  non-empty, confidence in [0,1], quality_dimensions 1-5 integers, risks/evidence_required arrays,
+  source_id globally unique across all 135 batches, aggregated train sequence a strict prefix of
+  train.jsonl, validation still empty)
+- Repairs applied: none required this run.
+- Final schema check: PASS (train 1350, validation 0, total 1350, unique_ids 1350)
+- Manifest: MANIFEST.sha256 regenerated over 225 files; `sha256sum -c` 225/225 OK, no failures.
+
+### Technical topics covered by this batch
+
+Same rubric family as the preceding long-context OOM block, deliberately re-angled to avoid
+template repetition. This batch is organised around three distinct analytical angles rather than a
+shared checklist: (a) Troubleshooting — lifetime accounting, i.e. which bytes are actually released
+at request completion versus pinned by slow-finishing unbounded generations, and how to tell
+monotonic free-block decay (accumulation) from a single-interval collapse (one large allocation);
+(b) Performance Analysis — failure-time attribution via a full per-device HBM decomposition
+(weights / CUDA context / KV pool / activation workspace peak / unexplained remainder), with the
+remainder used as the discriminator between a serving problem and a co-tenancy problem, plus a
+CUDA memory snapshot to recover the size of the failing allocation instead of guessing it;
+(c) System Design — making the unbounded generation tail a declared, enforceable contract
+(mandatory max_tokens, token-budget admission on sum(P_i + max_tokens_i)) as the precondition on
+which every other mitigation depends. Cross-cutting content: paged-KV capacity arithmetic with the
+explicit P-known / G-unknown asymmetry, chunked prefill as a workspace-peak bound, expandable
+segments for fragmentation, KV quantization gated on a fixed accuracy eval, and tensor parallelism
+priced as a per-layer PCIe all-reduce on a no-NVLink 8x A30 node. Disaggregated prefill/decode
+(NVIDIA Dynamo / Mooncake-style) is included with its boundary condition stated: without an
+RDMA/GPUDirect path the KV transfer traverses host memory and PCIe and can dominate TTFT, so it is
+not a free memory fix here. Every batch item carries guardrail metrics (p99 TTFT, inter-token
+latency, throughput, 429 rate, truncation rate) and explicit rollback thresholds.
+
+Status: these records are **provisional** teacher-B output produced by a general-purpose model in a
+blind lane. They are not expert gold, have not been validated by a domain expert, and say nothing
+about any trained model's domain capability. No teacher-A artifact was read while producing them.
+
 ## Run 2026-08-17 batch 0134
 
 - Batch file: results/train-batch-0134.jsonl
