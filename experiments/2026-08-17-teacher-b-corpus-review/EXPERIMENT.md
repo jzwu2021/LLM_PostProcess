@@ -5,6 +5,42 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0185
+
+- Batch file: results/train-batch-0185.jsonl
+- Corpus range: train.jsonl positional lines 1841-1850, ten physically consecutive rows, original
+  corpus order preserved, nothing skipped or reordered. Selection by line position, not ID arithmetic.
+- Source IDs: corpus-02031 through corpus-02040 (contiguous in this window).
+- Progress: 1850/2500 train records (74.0%). Remaining: 650. The 2500 denominator is the user-set
+  staged target adopted on 2026-08-18, replacing the original 6000-record figure. Validation target
+  is 0 for this stage; zero validation-batch files exist and none were created (verifier asserts it).
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on the first run of scripts/tb_verify_batch_0185.py (derived from the
+  batch-0184 verifier by literal 0184->0185 substitution, not rewritten). No repair actions needed.
+- Final schema check: PASS. Aggregate = 1850 source_ids, globally unique, and a strict prefix of
+  train.jsonl in original order.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself;
+  sha256sum -c reports all files OK.
+- Technical topics covered: all ten rows are rubric-shaped variants of one prompt family - defining a
+  fair comparison for weight-only quantization aimed at lower serving cost. The ten rewrites attack it
+  from ten distinct analytical stances so the batch is not templated: (H21) arithmetic-intensity /
+  roofline bound where decode speedup is capped by the BF16-to-INT4 weight-byte ratio, with the ~3.5x
+  group-size-128 bound labelled ESTIMATE and its derivation stated; (H22) fused dequant-GEMM kernel
+  verification and silent reference-path fallback; (H23) KV-cache capacity confound, clamped-KV versus
+  native-capacity arms and a closing HBM ledger; (H24) quality measurement power, A/A noise floor,
+  bootstrap CIs on absolute per-slice deltas; (H25) workload representativeness, open-loop trace replay
+  versus closed-loop synthetic, latency-throughput frontier at a stated SLO percentile; (H26) cost
+  accounting per million served tokens including one-off quantization and re-qualification cost;
+  (H27) reproducibility and provenance, manifest diffing to a bit-width-only difference; (H28) rollout
+  safety, shadow/canary/staged ramp, silent-drift quality canary and rehearsed measured time-to-safe;
+  (H29) generalisation boundaries measured at regime endpoints (context length, batch size, accelerator
+  generation) where the benefit decays; (H30) decision governance, pre-registered executable decision
+  rule and MEASURED/ESTIMATE/ASSUMED claim-class separation.
+- Status: PROVISIONAL. These are teacher-B second-opinion rewrites produced blind, without any access
+  to teacher-A outputs. They are not expert gold, have not been human-verified, and say nothing about
+  any model's domain capability. All numeric statements in the rewrites are labelled ESTIMATE with the
+  derivation inline; none are MEASURED.
+
 ## Run 2026-08-18 batch 0184
 
 - Batch file: results/train-batch-0184.jsonl
