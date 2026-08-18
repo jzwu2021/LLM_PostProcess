@@ -5,6 +5,76 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0129
+
+- Batch file: results/train-batch-0129.jsonl
+- Corpus range: train.jsonl lines 1281-1290 (0-indexed 1280..1289)
+- Source IDs: corpus-01419, corpus-01420, corpus-01421, corpus-01422, corpus-01424,
+  corpus-01425, corpus-01426, corpus-01427, corpus-01428, corpus-01429
+  (note: corpus-01423 does not exist in the corpus; the sequence is preserved
+  exactly as it appears in train.jsonl, nothing was skipped or reordered)
+- Progress: train 1290/5399, validation 0/601, total 1290/6000, remaining 4710
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (ad-hoc verifier /tmp/tb_verify.py, 0 errors across all
+  1290 aggregated records)
+- Repairs: one generator-side fix before any output was accepted. The first build ran
+  with an off-by-one corpus slice (rows[1290:1300], i.e. corpus-01430..01440) which
+  would have left a 10-record gap and broken the strict-prefix property. This was
+  caught before verification, the slice was corrected to rows[1280:1290], and the
+  batch file was regenerated in place. No previously committed batch and no original
+  corpus file was touched.
+- Final schema check: PASS (JSONL line-parse, 10 records in batch, all 12 required
+  fields, teacher_lane/teacher_model/calibration_status/decision values correct,
+  source_user and source_assistant byte-identical to corpus, corrected_answer
+  non-empty, confidence in [0,1], quality_dimensions integers in 1..5, source_id
+  globally unique, train sequence a strict prefix of train.jsonl)
+- Manifest: MANIFEST.sha256 regenerated over 217 files (all files in this directory
+  except the manifest itself); `sha256sum -c` reports all OK.
+- Blind-review compliance: no file under experiments/2026-08-14-teacher-a-corpus-calibration/
+  was read, opened, or searched at any point during this run.
+- Lock: /tmp/teacher-b-corpus-review.lock acquired atomically at run start (no
+  pre-existing lock, no stale-lock cleanup needed); released at run end.
+
+### Technical topics covered by this batch
+
+All ten items are variants of the same scenario family: a long-context serving
+workload that intermittently hits OOM only after several concurrent requests, split
+across the Troubleshooting, Performance Analysis, and System Design categories. The
+rewritten answers cover: separating device-side `torch.cuda.OutOfMemoryError` from a
+host cgroup OOM-kill as the mandatory first discriminator; the per-token KV-cache
+cost model (2 * layers * kv_heads * head_dim * dtype_bytes / TP) and why a heavy-tailed
+prompt-length distribution makes admission a worst-case rather than average-case
+problem; paged KV versus caching-allocator fragmentation for non-KV tensors, with
+logprobs/top_logprobs materialisation called out as a concrete blow-up path; startup
+KV-pool sizing via `gpu_memory_utilization` and the ways that assumption is silently
+violated later (co-tenants, MIG/MPS neighbours, ECC page retirement). Each answer
+states a falsifiable hypothesis H1 (length-blind admission) against a competing H0
+(fragmentation / non-KV spike), and a single controlled replay experiment that
+discriminates them, with pre-registered success criteria and an explicit confounder
+list (co-tenancy, warm-up and CUDA-graph capture, prefix-cache hit rate, page
+retirement, clock throttling). Mitigations are ordered P0..P3 with rollback cost:
+server-enforced `max_model_len` and mandatory server-side `max_tokens`, reservation-based
+admission, prefix caching gated on measured hit rate, fp8 KV quantization gated on a
+non-inferiority quality eval, `expandable_segments:True` as an H0-specific treatment,
+and finally prefill/decode disaggregation (NVIDIA Dynamo-style routing with a
+Mooncake-class KV store over RDMA/RoCE and GPUDirect RDMA) as the structural fix,
+including the requirement to verify GDR is actually engaged rather than silently
+falling back to a host-memory bounce. The Performance Analysis variants additionally
+frame the problem as a hard capacity inequality with an explicit token-in-flight
+roofline, and use "was kv_cache_usage near 1.0 at failure time?" as the fastest
+available discriminator between H1 and H0.
+
+Source-side assessment: every source_assistant in this batch is a grading rubric
+("Answer should state assumptions, ... Minimum technical points: ...") rather than an
+answer. Training on that text would teach meta-commentary about answers instead of
+engineering reasoning, which is why all ten are marked `rewrite` rather than `keep`.
+
+**Status caveat**: these teacher-B outputs are PROVISIONAL. They are one model's
+independent blind review, not expert gold labels, not validated against measured
+system behaviour, and they say nothing about any trained model's domain capability.
+Agreement analysis against teacher-A is a separate, later step and was deliberately
+not performed here.
+
 ## Run 2026-08-17 batch 0128
 
 - Batch file: results/train-batch-0128.jsonl
