@@ -5,6 +5,39 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0138
+
+- Batch file: results/train-batch-0138.jsonl
+- Corpus range: train.jsonl lines 1371-1380 (0-indexed 1370..1379)
+- Source IDs: corpus-01515 .. corpus-01524
+- Progress: train 1380/5399, validation 0/601, total 1380/6000, remaining 4620
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run — JSONL line-parse, 10 records,
+  12 required fields, lane/model/status/decision values, byte-exact source_user and
+  source_assistant vs corpus, non-empty corrected_answer, confidence in [0,1],
+  globally unique source_id, aggregated train sequence is an exact corpus prefix.
+- Repairs: none required.
+- Final schema check: PASS.
+- Manifest: MANIFEST.sha256 regenerated over 229 files; `sha256sum -c` all OK.
+- Technical topics covered: long-context KV-cache OOM under concurrency. The ten
+  records are diversified across distinct diagnostic lenses so identical rubric
+  prompts do not collapse into identical answers: (1) admission control and the
+  concurrency high-water mark, (2) reserved-vs-allocated split as the fragmentation
+  discriminator, (3) KV-pool capacity sizing on p99 rather than mean context,
+  (4) prefill transient spike vs decode steady state and chunked prefill,
+  (5) block-release/leak accounting vs legitimate cache retention, (6) prefix/radix
+  cache as capacity relief or added pressure, (7) KV quantization constant-factor
+  relief with a pre-agreed quality gate, (8) tensor-parallel per-rank imbalance and
+  the num_kv_heads < TP replication boundary, (9) context-limit policy with shadow-mode
+  rejection-rate measurement, (10) reproduction discipline as a gate before any A/B.
+  Each answer states assumptions, a falsifiable hypothesis, ordered measurements,
+  a single-variable experiment design, confounders, an explicit boundary condition,
+  rollback thresholds, and what would refute the framing.
+- Status: these outputs are PROVISIONAL teacher-B second opinions produced blind
+  (teacher-A artifacts were not read at any point). They are NOT expert gold labels,
+  have not been validated against real hardware measurements, and say nothing about
+  any model's domain capability. Agreement analysis is a separate later step.
+
 ## Run 2026-08-17 batch 0137
 
 - Batch file: results/train-batch-0137.jsonl
