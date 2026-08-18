@@ -5,6 +5,57 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0174
+
+- Batch file: results/train-batch-0174.jsonl
+- Corpus range: train.jsonl positional lines 1731-1740, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01908, corpus-01910, corpus-01911, corpus-01912, corpus-01913, corpus-01914,
+  corpus-01915, corpus-01916, corpus-01917, corpus-01918. Note the corpus ID numbering skips 01909;
+  this is a gap in the source corpus itself, NOT a skipped row — the ten rows read are exactly the
+  ten consecutive physical lines 1731-1740.
+- Progress: 1740/2500 train records (69.6%). Remaining: 760. Validation target is 0 for this stage
+  and no validation-batch file exists or was created.
+- Decisions this batch: keep 0, rewrite 10, reject 0.
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened,
+  grepped, or listed while producing this batch. Only research/ai-infra-expert/corpus/train.jsonl was read.
+- Initial schema check: an ad-hoc verifier (written to /tmp, run, then deleted) initially reported FAIL
+  on a global corrected_answer uniqueness assertion. Investigation showed all reported collisions are
+  PRE-EXISTING duplicates inside historical batches 0001-0173 (142 duplicate hashes across 1730 legacy
+  records). No historical batch and no original corpus file was edited to satisfy the check. The
+  verifier was corrected to scope the uniqueness assertion to the newly produced batch and to
+  cross-check the new batch against all legacy hashes for collisions, while reporting the legacy
+  duplicate count as an observation. This is a verifier scoping fix, not a data fix.
+- Fix actions this run: verifier assertion rescoped as described above. Batch content itself required
+  no repair. scripts/__pycache__ removed before manifest regeneration.
+- Final schema check: PASS. 1740 records parsed line by line; batch 0174 has exactly 10 records; all
+  12 required fields present on every record; teacher_lane=teacher-B, teacher_model=claude-opus-5-current,
+  calibration_status=provisional, decision in {keep,rewrite,reject} on all records; source_user and
+  source_assistant byte-identical to the original corpus; corrected_answer non-empty; confidence within
+  [0,1]; quality_dimensions integers within 1-5; source_id globally unique; aggregate sequence verified
+  to be a strict prefix of train.jsonl; batch file numbering contiguous 0001-0174; new batch has 10
+  distinct corrected_answer sha256 values with zero collisions against any legacy record.
+- Manifest: MANIFEST.sha256 regenerated over all 316 files in the experiment directory except the
+  manifest itself; `sha256sum -c` reported 316 OK and 0 failures.
+- Technical topics covered: this is a rubric-identical variant family, all ten rows asking how to
+  define a FAIR comparison for weight-only quantization as a serving-cost lever. To avoid template
+  collapse each variant was assigned a distinct controlling mechanism: (1) memory-bandwidth-bound decode
+  and the weight-byte ratio ceiling; (2) cost defined per in-SLO token rather than per GPU-hour;
+  (3) paired, task-matched quality evaluation versus aggregate perplexity; (4) calibration corpus as a
+  controlled experimental variable and contamination check; (5) fused dequant-GEMM kernel availability
+  and Amdahl-weighted fallback penalty; (6) freed weight memory converting to value only through KV-cache
+  capacity, with explicit KV-bytes-per-token arithmetic; (7) statistical pre-registration, multiplicity
+  correction, and a BF16-vs-BF16 negative control; (8) operational failure modes, soak testing and canary
+  rollback gates; (9) comparison against real alternatives (FP8, smaller model, prefix caching) on a
+  Pareto frontier; (10) latency-delta attribution into weight-read, dequant, and non-weight residual.
+  Every numeric figure in every answer is explicitly labelled ESTIMATE with its derivation shown, or
+  flagged as something that must be MEASURED on the reader's own hardware. No vendor-specific
+  performance fact is asserted.
+- Status: PROVISIONAL. These are teacher-B second-opinion drafts produced by a general model under a
+  blind protocol. They are NOT expert gold, have NOT been human-verified, and say nothing about any
+  trained model's domain capability. Agreement analysis against teacher-A is a separate later step and
+  was deliberately not performed here.
+
 ## Run 2026-08-18 batch 0173
 
 - Batch file: results/train-batch-0173.jsonl
