@@ -5,6 +5,69 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0177
+
+- Batch file: results/train-batch-0177.jsonl
+- Corpus range: train.jsonl positional lines 1761-1770, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. Indexing is by line position, not by numeric ID suffix
+  (this batch's IDs are non-contiguous: 01943 and 01949 do not exist in train.jsonl).
+  The original corpus was not modified, and no teacher-A artifact was read at any point in this run
+  (blind lane isolation held).
+- Source IDs: corpus-01939, corpus-01940, corpus-01941, corpus-01942, corpus-01944, corpus-01945,
+  corpus-01946, corpus-01947, corpus-01948, corpus-01950.
+- Progress: 1770/2500 train records (70.8%). Remaining: 730. The 2500 denominator is the
+  user-set staged target adopted on 2026-08-18, replacing the original 6000-record figure.
+  Validation target is 0 for this stage; zero validation-batch files exist and none were created.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Technical topics covered: all ten rows are variants (39-50) of the same stem — "a team wants
+  lower serving cost through weight-only quantization, define a fair comparison" — with rotating
+  category labels (Performance Analysis / System Design / Troubleshooting) and an identical
+  grading-rubric `source_assistant`. Because the shipped assistant turn is a rubric rather than an
+  answer, every row is `rewrite`. The rewritten answers cover: the bandwidth mechanism (WOQ reduces
+  weight bytes moved per decode step, so it helps only in small-batch memory-bound decode and
+  decays toward 1.0x as batch grows, with TTFT flat or worse because prefill is compute bound);
+  a byte-count upper bound labelled ESTIMATE with its derivation inline (9B BF16 18 GB vs INT4
+  group-128 ~5.0-5.3 GB, ratio ~3.2-3.6x, valid only as a batch-1 decode-step bound); the
+  KV-capacity-clamped second quantized arm that separates kernel effect from extra batching;
+  cost expressed as GPU-seconds per 1,000 output tokens at a fixed p95 SLO and compared at each
+  arm's own SLO intersection rather than at fixed batch size; frozen hashed arm identity;
+  separation of weight-only from KV/activation precision changes; silent dequant-GEMM kernel
+  fallback as a tooling defect rather than a verdict; calibration/eval leakage proof by hash;
+  per-slice quality deltas with bootstrap 95% CIs; and pre-committed rollback gates with the BF16
+  arm kept warm and routable.
+- Anti-template control: each of the ten rows uses a distinct analytical stance, declared in a
+  machine-checkable `Analytical stance under test: <stance>.` marker line placed first so the
+  shared preamble cannot dominate the opening. Stances used, in order: failure-mode-first
+  (six named ways the study returns a confident wrong answer, each with a countermeasure);
+  traffic-shape-first (decode fraction from production traces sets an Amdahl ceiling, ESTIMATE
+  1.33x at f=0.4 and 2.1x at f=0.8, used as a go/no-go gate); accuracy-budget-first (per-slice
+  tolerable degradation signed and frozen before any speed number exists); power-first (pilot
+  variance to a minimum detectable effect so a null is informative); reconciliation-first
+  (synthetic sweep and shadow-traffic replay as two instruments that must agree); memory-ledger-
+  first (account every HBM byte, freed memory as the real product); attribution-first (per-layer
+  kernel profile as the primary artifact); capacity-planning-first (replica count at peak, not
+  tokens/s); reproducibility-first (a re-runnable bundle a skeptic can rerun); and
+  value-of-information-first (staged gates that terminate early, alternatives priced at stage 0).
+- Initial schema check: PASS on first run (scripts/tb_verify_batch_0177.py). No repair actions
+  were required in this run.
+- Verifier coverage: JSONL line-by-line parse, trailing newline, batch size 10, exact 12-field
+  set, fixed-value fields (teacher_lane / teacher_model / calibration_status / decision domain),
+  byte-exact `source_user` and `source_assistant` equality against train.jsonl for ALL 1770
+  aggregate records, non-empty `corrected_answer` distinct from `source_assistant`, presence of
+  the literal `ESTIMATE` label in every answer, quality_dimensions key set and 1-5 integer range,
+  risks/evidence_required list-of-string typing, `confidence` float in [0,1], globally unique
+  `source_id`, aggregate sequence a strict prefix of train.jsonl, contiguous batch numbering from
+  0001, zero validation-batch files, ten distinct `corrected_answer` sha256, ten distinct stance
+  markers, and ten distinct 200-character openings. No assertion is stubbed.
+- Final schema check: PASS (total train records 1770; batch 0177 corpus-01939 -> corpus-01950).
+- MANIFEST.sha256 regenerated over every file in this experiment directory except MANIFEST.sha256
+  itself; `sha256sum -c` verified all entries OK.
+- Status caveat: these outputs are PROVISIONAL teacher-B review artifacts produced by a single
+  model in one pass. They are NOT expert gold labels, they have not been human-verified, and they
+  say nothing about any trained model's domain capability. Every numeric figure in the answers is
+  explicitly labelled ESTIMATE with its derivation; none is MEASURED. Agreement analysis against
+  teacher-A remains a separate, later, out-of-scope step.
+
 ## Run 2026-08-18 batch 0176
 
 - Batch file: results/train-batch-0176.jsonl
