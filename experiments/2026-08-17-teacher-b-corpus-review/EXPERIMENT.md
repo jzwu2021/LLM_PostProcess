@@ -5,6 +5,59 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0183
+
+- Batch file: results/train-batch-0183.jsonl
+- Corpus range: train.jsonl positional lines 1821-1830, ten physically consecutive rows, original
+  corpus order preserved, nothing skipped or reordered. Selection by line position, not ID arithmetic.
+- Source IDs: corpus-02006, corpus-02007, corpus-02009, corpus-02010, corpus-02011, corpus-02013,
+  corpus-02014, corpus-02015, corpus-02016, corpus-02017. Note the ID gaps: corpus-02008 and
+  corpus-02012 do not exist in train.jsonl. These are corpus-side numbering gaps, not skipped records.
+- Progress: 1830/2500 train records (73.2%). Remaining: 670. The 2500 denominator is the user-set
+  staged target adopted on 2026-08-18, replacing the original 6000-record figure. Validation target
+  is 0 for this stage; zero validation-batch files exist and none were created (verifier asserts it).
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: FAIL (4 errors) on the first run of scripts/tb_verify_batch_0183.py — four
+  answers (corpus-02010, corpus-02013, corpus-02015, corpus-02016) lacked an explicit ESTIMATE label.
+- Repair actions: the generator script tools/gen_batch_0183.py was patched to add a labelled ESTIMATE
+  with its derivation to each of those four answers (Amdahl's-law speedup collapse under partial kernel
+  fusion; calibration sample-count requirement for outlier-channel scale stability; compounded agent-loop
+  failure rate 1-(0.99^10) from a 1% per-call tool-call validity drop; canary traffic volume needed to
+  resolve a +0.1-point error-rate shift). The batch was regenerated from the patched script and
+  re-verified. No corpus file, no prior batch, no teacher-A artifact and no frozen artifact was read or
+  modified. Generator written to a script file (never an inline -c) and lint-clean before execution.
+- Final schema check: pass (VERIFY_PASS, TOTAL 1830). Checks: per-line JSONL parse, batch count == 10,
+  all 12 required fields, teacher_lane/teacher_model/calibration_status/decision value constraints,
+  byte-exact equality of source_user and source_assistant against
+  research/ai-infra-expert/corpus/train.jsonl, non-empty corrected_answer,
+  corrected_answer != source_assistant, explicit ESTIMATE label and stance-marker opening in every
+  answer, ten distinct answer bodies and ten distinct 200-character openings (anti-template),
+  quality_dimensions integers in [1,5], non-empty risks and evidence_required string arrays, confidence
+  in [0,1], global source_id uniqueness across all 183 batches, strict-prefix property of the aggregated
+  train sequence against train.jsonl, and zero validation-batch files.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself;
+  sha256sum -c reports all entries OK.
+- Technical topics covered: all ten rows are the same weight-only-quantization fair-comparison prompt
+  under rubric-identical variants 106-117, so the ten rewrites were deliberately differentiated by
+  analytical stance rather than by restating one template. Stances: (1) bandwidth-vs-FLOPs framing with
+  a concurrency sweep and prefill-regression warning; (2) pre-registered eval suite with paired per-item
+  bootstrap CIs and batching non-determinism control; (3) currency-denominated cost per token at fixed
+  SLO with replica-count vs throughput channel decomposition; (4) kernel dispatch audit as a
+  precondition to any latency measurement, including group-size/TP-shard divisibility breakage;
+  (5) full GPU memory-budget decomposition showing KV cache reallocation as the real serving benefit;
+  (6) calibration corpus as a hidden independent variable requiring hashing, multi-seed spread and
+  eval-overlap checks; (7) Pareto comparison against FP8, KV quantization and speculative decoding
+  rather than against BF16 alone, including the roofline interaction; (8) distribution- and
+  behaviour-level probes (top-1 agreement, KL, tool-call JSON validity, degeneration, refusal flips)
+  because aggregate parity hides hard failure modes; (9) staged shadow/canary rollout with pre-registered
+  automated abort conditions and hash-stable routing; (10) reproducibility as the deliverable, with
+  pinned image digest, locked clocks and independent third-party regeneration.
+- Status: these results are PROVISIONAL teacher-B opinions from a single reviewer model. They are not
+  expert gold labels, have not been human-verified, and say nothing about any model's domain capability.
+  Every numeric quantity in the answers is labelled ESTIMATE with its derivation so a human reviewer can
+  falsify it; none are MEASURED. Agreement analysis against teacher-A remains a separate later step and
+  was not performed here — this run was blind, and no teacher-A artifact was accessed.
+
 ## Run 2026-08-18 batch 0182
 
 - Batch file: results/train-batch-0182.jsonl
