@@ -1,0 +1,262 @@
+import json, os
+
+SRC = 'research/ai-infra-expert/corpus/train.jsonl'
+OUT = 'experiments/2026-08-17-teacher-b-corpus-review/results/train-batch-0151.jsonl'
+START, N = 1500, 10
+
+rows = []
+with open(SRC) as f:
+    for i, line in enumerate(f):
+        if START <= i < START + N:
+            rows.append(json.loads(line))
+        elif i >= START + N:
+            break
+
+def ua(r):
+    u = a = ''
+    for m in r['messages']:
+        if m['role'] == 'user': u = m['content']
+        elif m['role'] == 'assistant': a = m['content']
+    return u, a
+
+ANS = [
+# variant 58 - store/rendezvous
+"""Hang at collective init is not one bug; bisect it into rendezvous, bootstrap, and transport phases before touching any tuning knob.
+
+Mechanism. torch.distributed init_process_group performs three sequential steps: (1) every rank connects to the rendezvous store (TCPStore on rank0's MASTER_ADDR:MASTER_PORT, or the etcd/c10d backend), (2) NCCL rank0 creates a ncclUniqueId and broadcasts it through that store, (3) all ranks open bootstrap TCP sockets to each other and then negotiate a transport (P2P/NVLink, SHM, or NET via IB/RoCE or sockets). A hang looks identical in all three phases from the user's log, so the first job is to localize the phase, not to guess.
+
+Falsifiable hypothesis H1: the job is stuck in phase 1/2 because a subset of ranks never reached the store — i.e. the world never assembled, and NCCL is blocked in bootstrapAllGather, not in transport setup.
+
+Controlled experiment. Run the identical launcher with the collective replaced by a barrier-only script that calls init_process_group then dist.barrier() and prints rank/hostname/local_rank immediately after each. Keep world size, launcher, container image, and env identical; change only the payload. If the barrier-only job also hangs, H1 is supported and the fault is in rendezvous, not NCCL transport. If it passes, H1 is refuted and you move to transport bisection.
+
+Measurements to record before, during, and after.
+- Per-rank RANK, LOCAL_RANK, WORLD_SIZE, MASTER_ADDR, MASTER_PORT, hostname, container id. Mismatched WORLD_SIZE or duplicated RANK is the single most common cause and is visible in this dump alone.
+- NCCL_DEBUG=INFO plus NCCL_DEBUG_SUBSYS=INIT,ENV,NET on every rank to a per-rank file. The last line printed tells you the phase: absence of any "Bootstrap : Using" line means phase 1/2.
+- py-spy dump --pid on one stuck rank per node. A stack in TCPStore::get or bootstrapRoot is phase 1/2; a stack in ncclCommInitRank under transport setup is phase 3.
+- ss -tnp on the MASTER_ADDR node: count established connections to MASTER_PORT and compare to world size. The deficit names the missing ranks.
+
+Expected confounders. A slow-but-not-hung rendezvous under large world sizes looks like a hang for minutes; set TORCH_DISTRIBUTED_DEBUG=DETAIL and a finite init timeout so you get an exception with the missing-rank list instead of an indefinite block. A crashed rank whose launcher does not propagate the failure also presents as a hang on the survivors — always check exit codes and dmesg/OOM-killer records on every node before blaming the network. Stale processes from a previous run holding MASTER_PORT will cause a subset of ranks to connect to the wrong job.
+
+Evidence required to close the ticket: per-rank env dump showing a consistent RANK set 0..W-1, the barrier-only reproducer result, and the NCCL INIT log line proving the phase.
+
+Rollback threshold. If the barrier-only reproducer does not localize the phase within two attempts, or if the fault is intermittent across identical submissions, stop debugging in place: drain the suspect nodes from the scheduler, rerun the job on a known-good node set to restore training throughput, and continue the investigation offline. Any env change made during triage must be reverted and re-benchmarked, because init-phase workarounds such as forcing a transport frequently cost steady-state bandwidth.""",
+# 59 - interface selection
+"""Diagnose init hangs as an interface-selection problem first when the cluster has more than one NIC or a container network overlay, because that is where the failure is silent by construction.
+
+Mechanism. NCCL bootstrap picks an interface by scanning available interfaces and applying its own ordering, unless NCCL_SOCKET_IFNAME constrains it. If different nodes resolve to different subnets — a docker0/cni bridge on one host and the physical 10G NIC on another, or an IPv6-only lla — the ranks publish addresses that peers cannot route to. The TCP connect then blocks in SYN retransmit, which manifests as an indefinite hang rather than an error, because NCCL's bootstrap connect has no default deadline short enough to matter.
+
+Falsifiable hypothesis H2: ranks are advertising addresses on a non-routable interface, so bootstrap connect never completes; constraining NCCL_SOCKET_IFNAME to the single routable physical interface on all nodes will make init succeed with no other change.
+
+Controlled experiment. Two runs, identical in every other respect. Run A: unmodified. Run B: NCCL_SOCKET_IFNAME=<physical iface> exported uniformly on all nodes (and GLOO_SOCKET_IFNAME set the same, since the torch rendezvous may use gloo). If B passes and A hangs, H2 is supported. If both hang, H2 is refuted and the fault is upstream of interface choice — check rendezvous reachability instead.
+
+Measurements. Per node: ip -o addr show and ip route get <MASTER_ADDR> to prove which source interface is actually used. From NCCL_DEBUG=INFO with NCCL_DEBUG_SUBSYS=INIT,NET, capture the "NCCL INFO Bootstrap : Using [iface]:[addr]" line from every rank and assert all addresses lie in one subnet — this single assertion resolves most of these incidents. Concurrently run ss -tn state syn-sent on a stuck node; a persistent SYN-SENT toward a 172.17.x.x or 169.254.x.x address is direct evidence. For containers, confirm the network mode: host networking and bridge networking cannot be mixed across ranks of one job.
+
+Expected confounders. Setting NCCL_SOCKET_IFNAME correctly fixes bootstrap but the data path may still be wrong: NCCL_IB_HCA and NCCL_IB_DISABLE govern the transport, not the bootstrap, so a job can init fine and then be slow. Conversely, forcing NCCL_IB_DISABLE=1 to "fix" a hang converts an IB fabric job to TCP and can cost an order of magnitude of all-reduce bandwidth — that is a diagnostic step, never a fix. MTU mismatch between nodes produces a hang only for large messages, not at init, so it is not an explanation here.
+
+Evidence required: the per-rank Bootstrap iface/addr lines, the routing table proof, and an A/B result where only NCCL_SOCKET_IFNAME differs.
+
+Rollback threshold. Apply the IFNAME pin as a job-level env var, not a cluster-wide image change, until you have two clean end-to-end runs plus an all-reduce bus-bandwidth measurement within 5 percent of the pre-incident baseline. If bandwidth regresses, revert the pin and escalate to the fabric owner instead of shipping a throughput regression to fix a startup bug.""",
+# 60 - GPU visibility / device mapping
+"""Treat init hangs as a device-visibility bug until proven otherwise when the job runs under a container runtime or a scheduler that injects CUDA_VISIBLE_DEVICES.
+
+Mechanism. NCCL assigns one communicator rank per CUDA device. If two ranks on the same node select the same physical GPU — because each container sees devices renumbered as 0..k-1 and the code does set_device(rank % 8) instead of set_device(local_rank) — the communicator graph is inconsistent and init deadlocks: one device waits for a peer connection that will never be offered. Similarly, if a rank's device index exceeds visible device count, the CUDA context creation blocks or fails in a way the launcher swallows.
+
+Falsifiable hypothesis H3: at least two ranks are bound to the same GPU (or a rank is bound to an invisible one), so the P2P/SHM transport setup cannot complete; correcting device binding to local_rank makes init succeed without any network change.
+
+Controlled experiment. Insert a pre-collective probe that every rank prints before init_process_group: rank, local_rank, CUDA_VISIBLE_DEVICES, torch.cuda.device_count(), torch.cuda.current_device(), and the PCI bus id from pynvml for that device. Aggregate and assert the set of (hostname, pci_bus_id) pairs has exactly world_size distinct elements. Then rerun with the binding fixed and nothing else changed. Distinct-count violation before and success after is decisive support for H3; unchanged hang refutes it.
+
+Measurements. nvidia-smi --query-compute-apps=pid,gpu_uuid --format=csv on every node while the job is stuck: two PIDs of the same job on one GPU UUID is the smoking gun. nvidia-smi topo -m to confirm the intended NVLink/PCIe topology matches what NCCL reports in its INIT log ring/tree construction lines. Check for a leftover process from a prior run pinning the GPU, and check nvidia-smi -q for ECC errors or a GPU in a fallen-off-the-bus state, which produces a hang rather than a clean error.
+
+Expected confounders. MIG-enabled GPUs expose instances that NCCL cannot use for P2P; a job that assumes 8 full GPUs will misbehave on a MIG-partitioned node. Persistence-mode transitions and a driver/fabric-manager mismatch on NVSwitch systems also hang at init and are not fixable from the job side. cgroup device restrictions can hide a GPU from one container only, producing an asymmetric world.
+
+Evidence required: the per-rank device/PCI-bus dump with the distinctness assertion, nvidia-smi compute-apps output during the hang, and fabric-manager status on NVSwitch hosts.
+
+Rollback threshold. If the distinctness assertion passes and the hang persists, this hypothesis is closed — do not keep permuting binding code. Revert any speculative binding edits, restore the last known-good launcher, and escalate to node health triage. Any node that shows a GPU in an error state must be cordoned before further runs, because retrying on it burns cluster hours and pollutes the evidence.""",
+# 61 - minimal all-reduce reproducer
+"""The fastest way out of an init hang is to shrink the reproducer until it either passes or fails deterministically; only then reason about causes.
+
+Mechanism and plan. Build a ladder of reproducers that share the launcher and environment but vary exactly one dimension: (a) single process, single GPU, no collectives — proves CUDA and driver health; (b) single node, 2 GPUs, one 4-byte all-reduce — proves P2P/SHM transport and device binding; (c) single node, all local GPUs — proves intra-node topology including NVLink/NVSwitch; (d) two nodes, 1 GPU each — proves rendezvous plus the network transport in isolation; (e) two nodes, all GPUs; (f) full world. Run each with NCCL_DEBUG=INFO to per-rank files.
+
+Falsifiable hypothesis H4: the fault is scale-dependent and appears only above a specific world size or node count; the first failing rung of the ladder localizes it to intra-node transport, inter-node transport, or rendezvous fan-in.
+
+Controlled experiment. Execute the ladder twice on the same node set to distinguish deterministic from intermittent failure, then once on a disjoint node set of the same size. Four outcomes with distinct meanings: fails at (b) on both node sets means a code/binding bug, not the fabric; fails first at (d) means the network path; passes on the disjoint set but fails on the original means a bad node or NIC, and you should bisect nodes by halving; intermittent at the same rung means a marginal link or a race in the rendezvous, which you chase with timeouts and counters rather than with reruns.
+
+Measurements. For each rung record: pass/fail, wall time to complete init, and for passing rungs the bus bandwidth from a fixed-size all-reduce so you have a performance baseline, not only a liveness signal. Capture ibstat/ibdev2netdev counters (port state, link speed, symbol errors, link downed) before and after each rung on the nodes involved; a rising error counter across a failing rung is direct fabric evidence. Record NCCL's reported ring/tree construction lines per rung.
+
+Expected confounders. Reproducers that change the container image, the launcher, or the env do not bisect anything — hold everything constant except the one dimension. A ladder run while the original job is still holding GPUs will fail for the wrong reason; confirm the GPUs are free first. Some failures only appear with large message sizes or many concurrent jobs, so a passing 4-byte ladder does not certify the fabric for production shapes.
+
+Evidence required: the ladder pass/fail table with timings, per-rung NCCL INIT logs, fabric counters before/after, and the node-set swap result.
+
+Rollback threshold. Cap the ladder at roughly 30 minutes of cluster time. If it has not localized the fault by then, restore service first: resubmit the production job on a known-good node set at reduced scale so training continues, and move the ladder to a maintenance reservation. Do not leave diagnostic env vars such as NCCL_P2P_DISABLE or NCCL_IB_DISABLE in the production launcher; each must be removed and the throughput re-measured against the pre-incident baseline before the incident is closed.""",
+# 62 - timeouts and observability
+"""Convert the hang into an error before diagnosing it; an indefinite block yields almost no evidence, whereas a timeout yields a rank list and a stack.
+
+Mechanism. Two independent timeouts govern the failure mode. init_process_group(timeout=...) bounds the store rendezvous and the gloo/c10d work; NCCL's own watchdog, surfaced by TORCH_NCCL_ASYNC_ERROR_HANDLING (formerly NCCL_ASYNC_ERROR_HANDLING) plus the ProcessGroupNCCL watchdog timeout, bounds in-flight collectives. Default NCCL bootstrap connects can block far longer than either. If neither is configured, a single unreachable rank produces a silent multi-hour stall that consumes the whole reservation and leaves nothing in the logs.
+
+Falsifiable hypothesis H5: the job is blocked waiting on a strict subset of ranks; with a finite init timeout and DETAIL debug enabled, the framework will name that subset, and those ranks will correlate with one node or one NIC.
+
+Controlled experiment. Resubmit unchanged except: timeout set to a few minutes on init_process_group, TORCH_DISTRIBUTED_DEBUG=DETAIL, TORCH_NCCL_ASYNC_ERROR_HANDLING=1, NCCL_DEBUG=INFO with per-rank log files, and TORCH_NCCL_TRACE_BUFFER_SIZE enabled so a flight recorder dump is available. If the run now raises with a missing-rank set, H5 is supported and the named ranks are the investigation target. If all ranks report present and it still stalls, H5 is refuted and the fault is in transport establishment after a complete rendezvous.
+
+Measurements. The timeout exception's rank list; per-rank last NCCL INFO line; py-spy or gdb stacks from one stuck rank per node; the flight-recorder dump identifying the last completed and first outstanding collective sequence number per rank. Divergent sequence numbers indicate rank-desynchronized collective ordering — for example a conditional branch that calls a collective on only some ranks — which is an application bug, not infrastructure. Also record scheduler-side node allocation so rank-to-host mapping is reconstructable.
+
+Expected confounders. Timeouts that are too aggressive turn healthy large-world startups or slow checkpoint loads into spurious failures; pick a value above the measured p99 init time from healthy runs, not an arbitrary one. Async error handling changes failure semantics — ranks now abort rather than hang — so downstream retry and checkpoint logic must tolerate it. A rank killed by the OOM killer will appear as a missing rank with no fault of its own; check dmesg before blaming the fabric.
+
+Evidence required: the timeout rank list, flight-recorder sequence numbers per rank, per-node dmesg, and the healthy-run p99 init time used to justify the threshold.
+
+Rollback threshold. Keep the observability settings permanently; they cost nothing measurable. Revert the timeout value if it produces any false abort in a week of healthy runs, and re-derive it from updated p99 data rather than doubling it by reflex.""",
+# 63 - node bisection / hardware
+"""When init hangs intermittently across submissions on a large world, stop reading logs and start bisecting nodes; the evidence you need is which host set fails, not which line stalls.
+
+Mechanism. A single degraded component — a NIC that links up at reduced width, a port flapping under load, a host whose fabric manager did not initialize, a GPU that has fallen off the PCIe bus — makes only the collectives that traverse it stall. Because NCCL builds rings and trees over the whole world, one bad link stalls every rank, so per-rank logs look symmetric and uninformative. The asymmetry is in the hardware, and binary search over the node set exposes it in log2(N) runs.
+
+Falsifiable hypothesis H6: exactly one node (or one NIC on one node) is responsible; a run on any node subset excluding it will succeed, and any subset including it will fail at the same rung.
+
+Controlled experiment. Fix a small reproducer — two GPUs per node, one 4-byte all-reduce, 60-second timeout — and run it on halves of the allocation, then quarters, holding the reproducer, image, and env constant. Log pass/fail per subset. If a consistent single node explains every failure, H6 is supported; if failures follow no consistent node membership, H6 is refuted and you should suspect a shared resource such as a top-of-rack switch, a subnet manager, or a shared storage mount, and bisect by rack or leaf instead.
+
+Measurements. Per node before and after each subset run: ibstat port state and rate, link_downed and symbol_error counters, ibdev2netdev mapping, nvidia-smi -q ECC and Xid history, dmesg for PCIe AER or Xid entries, and fabric-manager status on NVSwitch systems. A counter that increments only during failing subsets is the strongest evidence available. Also compare each candidate node's driver, firmware, and container image versions against the fleet baseline; a single node behind on NIC firmware reproduces exactly this symptom.
+
+Expected confounders. Node health can be load-dependent, so a node that passes the tiny reproducer may still fail under production message sizes — confirm the fix with a full-scale run, not only the reproducer. Bisection is invalidated if the scheduler silently reallocates different hosts between runs; pin the node list explicitly. Concurrent jobs from other users on shared nodes can perturb results.
+
+Evidence required: the subset pass/fail table with explicit node lists, fabric and Xid counter deltas per run, and firmware/driver version diff against baseline.
+
+Rollback threshold. As soon as one node is implicated by two independent subset runs, cordon it and return the remaining healthy nodes to production immediately — restoring training throughput outranks completing the diagnosis. Only return the node to the pool after it passes a full-scale collective benchmark within 5 percent of fleet-median bus bandwidth and shows zero new error counters over a sustained soak; a clean reboot alone is not sufficient evidence.""",
+# 64 - single-node vs reduced-world comparison
+"""Compare a single-node run against a reduced-world multi-node run first; that one contrast splits the entire hypothesis space in half at minimal cost.
+
+Mechanism. Intra-node collectives use P2P over NVLink/NVSwitch or PCIe, or fall back to shared memory; inter-node collectives use the NET plugin over IB/RoCE or TCP sockets. These are disjoint code paths with disjoint failure modes and disjoint environment variables. A hang that reproduces on one node implicates device binding, SHM (including a too-small /dev/shm in a container), or P2P; a hang that appears only when a second node joins implicates rendezvous reachability, interface selection, or the fabric.
+
+Falsifiable hypothesis H7: the fault lies exclusively on the inter-node path; a single-node run with the same per-node GPU count will complete init and a full all-reduce, while a two-node run with one GPU each will hang.
+
+Controlled experiment. Three runs with identical image, launcher, and code: (1) one node, all local GPUs; (2) two nodes, one GPU each; (3) two nodes, all GPUs. Outcome (1) pass and (2) hang supports H7. Outcome (1) hang refutes it and redirects to intra-node causes — check /dev/shm size, NCCL_SHM_DISABLE as a diagnostic, and set_device binding. Outcome (1) and (2) pass with (3) hanging points at a per-node resource limit such as file descriptors, pinned-memory limits, or GPU-to-NIC affinity under full load.
+
+Measurements. For each run capture NCCL's chosen transport per connection from NCCL_DEBUG_SUBSYS=INIT,NET,GRAPH — the log states whether a pair uses NVLink, SHM, or NET, which directly confirms which path is exercised. Record df -h /dev/shm and ulimit -l inside the container, since insufficient shared memory and a low locked-memory limit each produce init-time stalls that look like network problems. For inter-node runs record the bootstrap addresses and the IB device selected per rank, plus achieved bus bandwidth on the passing rungs as a baseline.
+
+Expected confounders. A container with host networking behaves differently from bridge networking, so the single-node case may not exercise the same stack even for the same code. GDRDMA availability (nvidia-peermem or the dmabuf path) changes inter-node behavior and may be present on some nodes only; verify it uniformly rather than assuming. Single-node success does not certify the code, because rank-desynchronized collective calls may only manifest at larger world sizes.
+
+Evidence required: the three-run outcome table, per-run transport lines from the NCCL graph log, /dev/shm and ulimit -l values, and bus bandwidth for every passing configuration.
+
+Rollback threshold. Diagnostic disables such as NCCL_SHM_DISABLE or NCCL_P2P_DISABLE may be used to test a hypothesis but must never survive into production; each one is removed before the incident closes and throughput re-measured against the pre-incident baseline. If the single-node run also hangs, stop consuming multi-node reservations entirely and continue on one node — that alone frees the rest of the cluster while the investigation proceeds.""",
+# 65 - application-level rank desync
+"""Rule out the application before the infrastructure: a large share of apparent init hangs are rank-desynchronized collective sequences, and no amount of fabric tuning will fix those.
+
+Mechanism. NCCL collectives are ordered and must be issued in the identical sequence on every rank of a communicator. If a code path is conditional on rank, on data (an empty shard, a dataloader that exhausts early on one worker), or on an exception caught on some ranks only, then rank A issues all_reduce #7 while rank B issues broadcast #7. Both block forever with no error, because each is legitimately waiting. The same class of bug appears when a subset of ranks builds a second communicator (a subgroup) that other ranks never join, or when only some ranks execute a barrier inside an error handler.
+
+Falsifiable hypothesis H8: at least two ranks are waiting on different collective operations or different sequence numbers at the time of the hang, which proves an application ordering bug rather than a transport failure.
+
+Controlled experiment. Enable the ProcessGroupNCCL flight recorder (TORCH_NCCL_TRACE_BUFFER_SIZE) and TORCH_DISTRIBUTED_DEBUG=DETAIL, reproduce, then dump the recorder from every rank and align the last completed and first outstanding entries. Divergent op names or sequence numbers support H8 decisively. Identical outstanding entries across all ranks refute it and hand the case back to transport or node health. As a cheap independent check, run the same code with the gloo backend on CPU tensors at small scale: a rank-ordering bug reproduces there too, whereas an IB/RoCE fault does not.
+
+Measurements. Per-rank flight-recorder dump with op name, sequence number, tensor shape, and dtype; py-spy stacks showing the Python call site per rank; a log line emitted before every collective containing rank, step, and an operation tag so the divergence point is visible in plain logs. Shape and dtype mismatches on the same op are a distinct sub-case that also hangs and is visible in the same dump.
+
+Expected confounders. Uneven dataset sharding causes ranks to exit a loop at different steps and is easy to mistake for a network fault; verify sample counts per rank explicitly. Gradient accumulation with a straggler, dynamic control flow in the model, and skipped optimizer steps on NaN all introduce rank-conditional collectives. Note also that a real fabric stall can cause a downstream timeout that then triggers rank-conditional error handling, so a desync observed late in a run may be a symptom rather than the root cause — always check which event came first by timestamp.
+
+Evidence required: aligned per-rank flight-recorder dumps, the gloo-backend small-scale result, and per-rank sample counts.
+
+Rollback threshold. If flight-recorder alignment shows all ranks on the same outstanding op, close this hypothesis rather than continuing to audit the code. If a desync is confirmed, fix it by making the collective sequence unconditional — for example by all-reducing a per-rank done flag before any early exit — and require two full-scale runs plus an unchanged step-time baseline before returning the job to the production queue.""",
+# 66 - env drift / image and version skew
+"""Check for environment drift across nodes before running any experiment; version skew reproduces every symptom in this class and is the cheapest thing to exclude.
+
+Mechanism. A distributed job assumes a homogeneous stack: identical container image digest, identical NCCL and CUDA runtime versions, identical driver and NIC firmware, identical env vars. NCCL's wire protocol and its topology detection are not guaranteed compatible across mismatched versions, and a mixed world can stall during bootstrap negotiation. Drift arrives quietly — a node reimaged during maintenance, a floating image tag re-pushed between submissions, a per-node override in a shell profile, a stale env var inherited from the scheduler.
+
+Falsifiable hypothesis H9: at least one node differs from the fleet in image digest, NCCL version, driver version, or a NCCL_* env var, and running exclusively on nodes matching the majority configuration will make init succeed.
+
+Controlled experiment. Collect a configuration fingerprint from every rank at startup: image digest (not tag), nccl version from torch.cuda.nccl.version(), torch version, CUDA runtime and driver versions, NIC firmware, kernel release, and the sorted list of NCCL_*, TORCH_*, CUDA_VISIBLE_DEVICES, LD_LIBRARY_PATH values. Hash the fingerprint per rank and assert a single distinct hash. Then run the job restricted to the majority-fingerprint nodes only, changing nothing else. Success on the homogeneous subset with failure on the mixed set supports H9; failure on both refutes it.
+
+Measurements. The per-rank fingerprint table with the distinct-hash assertion result and a field-level diff for any outlier. Also record where each divergent value came from — image, entrypoint script, scheduler prolog, or user profile — because the fix differs. Retain the fingerprint artifact with the run so future incidents can be compared against a known-good baseline rather than reconstructed from memory.
+
+Expected confounders. Some divergence is benign: hostname, local NIC address, and rank-specific vars must be excluded from the hash or every run looks broken. A matching image digest does not guarantee a matching driver, since the driver comes from the host. LD_LIBRARY_PATH ordering can cause a different libnccl.so to load than the one the image intends, so record the resolved library path, not only the version string. Conversely, eliminating drift may fix the symptom while leaving a latent hardware fault that returns under load.
+
+Evidence required: the fingerprint table with per-field diff, the resolved libnccl path per rank, and the homogeneous-subset run result.
+
+Rollback threshold. Pin images by digest and make the fingerprint assertion a hard preflight gate that fails fast with a clear message instead of hanging. If pinning a digest regresses throughput or breaks an unrelated dependency, revert the pin, keep the assertion as a warning, and escalate to the platform owner. Do not roll a fleet-wide driver or NCCL upgrade as an incident response; stage it on a canary node set and require a collective benchmark within 5 percent of the current baseline before wider rollout.""",
+# 67 - synthesis / runbook
+"""Run the diagnosis as an ordered runbook with explicit exit criteria at each step, so the incident terminates in bounded time whether or not the root cause is found.
+
+Assumptions stated up front: the job previously ran on this cluster, the code has not changed, and the hang occurs before the first training step completes. If any assumption is false, the ordering below changes — a code change makes rank-desynchronized collectives the leading hypothesis, and a first-ever run makes configuration the leading one.
+
+Step 1, make it fail fast. Set a finite init_process_group timeout, TORCH_DISTRIBUTED_DEBUG=DETAIL, TORCH_NCCL_ASYNC_ERROR_HANDLING=1, NCCL_DEBUG=INFO with NCCL_DEBUG_SUBSYS=INIT,NET,GRAPH to per-rank files, and enable the flight recorder. Exit criterion: the next run produces a rank list and stacks instead of silence.
+
+Step 2, assert the world. From a preflight dump verify RANK is exactly 0..W-1 with no duplicates, WORLD_SIZE agrees on every rank, and each (hostname, GPU PCI bus id) pair is distinct with count equal to world size. Exit criterion: assertion passes, or it fails and you have the root cause without touching the network.
+
+Step 3, assert homogeneity. Fingerprint image digest, NCCL/torch/CUDA/driver/NIC firmware versions, and NCCL_* env per rank; require one distinct hash. Exit criterion: single hash, or an outlier node identified and drained.
+
+Step 4, localize the phase. Read the last NCCL INFO line per rank and take a stack from one stuck rank per node. Rendezvous/bootstrap, transport setup, and first collective are three different investigations; do not proceed without knowing which.
+
+Step 5, bisect scale then nodes. Ladder from one node to two-nodes-one-GPU-each to full world with a 4-byte all-reduce, then binary search the node set at the first failing rung. Exit criterion: a reproducible node subset that fails, or a determination that the failure is not node-specific.
+
+Falsifiable hypothesis governing the whole runbook: the failure is deterministic for a fixed node set and configuration. Controlled experiment: run the smallest failing configuration three times on the pinned node set. Three failures support determinism and justify continued bisection; mixed results refute it and redirect effort to marginal-link evidence — fabric error counters, Xid entries, and link flap logs — because bisection is unreliable under intermittency.
+
+Measurements to retain for every step: per-rank env and device fingerprints, NCCL INIT/NET/GRAPH logs, flight-recorder dumps, ibstat and Xid counter deltas, subset pass/fail table with explicit node lists, and bus bandwidth for every configuration that passes so the fix is validated on performance, not only liveness.
+
+Expected confounders. Changing more than one variable between runs destroys the evidence; scheduler reallocation between runs invalidates node bisection; diagnostic env vars that disable a transport mask the fault while silently costing bandwidth; and a rank killed by the OOM killer or a node reboot presents identically to a fabric fault, so dmesg and exit codes must be checked before any network hypothesis is accepted.
+
+Evidence required to declare root cause: a mechanism that explains the observed phase, a controlled A/B where only the implicated variable changed, and a full-scale run that both completes and matches the pre-incident step-time and bus-bandwidth baseline within 5 percent.
+
+Rollback thresholds. Restore service before completing the diagnosis: within 30 minutes, resubmit on a known-good node set, at reduced scale if necessary, and move investigation to a reservation. Every diagnostic env var is removed before closing. Any implicated node stays cordoned until it passes a soak with zero new error counters. If the fix is a configuration pin, it is applied at job scope first and promoted to the fleet only after a canary run meets the same 5 percent baseline gate."""
+]
+
+assert len(ANS) == len(rows) == 10
+
+QD = [
+    (2,2,2),(2,2,2),(2,2,2),(2,2,2),(2,2,2),(2,2,2),(2,2,2),(2,2,2),(2,2,2),(2,2,2),
+]
+CONF = [0.79,0.78,0.8,0.79,0.8,0.78,0.79,0.8,0.78,0.81]
+
+RISKS = [
+ ["source_assistant is a grading rubric, not an answer; training on it teaches meta-commentary instead of diagnosis",
+  "no concrete commands, so a model cannot learn the actual bisection procedure"],
+ ["rubric-style source text repeats verbatim across scenario variants, risking memorization of the rubric phrasing",
+  "interface-selection failure mode is absent from the source despite being a leading cause"],
+ ["source omits device-binding and GPU-visibility failure modes entirely",
+  "risk of a model recommending network changes for a local binding bug"],
+ ["source lists steps without ordering or exit criteria, so an agent could loop indefinitely",
+  "no cost bound on diagnostic cluster time"],
+ ["source does not mention timeouts, so the hang is never converted into evidence",
+  "aggressive timeouts could abort healthy large-world startups if applied without a baseline"],
+ ["source has no notion of node bisection or hardware fault isolation",
+  "cordoning nodes without evidence would reduce cluster capacity unnecessarily"],
+ ["source does not distinguish intra-node from inter-node transports",
+  "diagnostic transport disables can silently cost bandwidth if left in production"],
+ ["source frames the problem as purely infrastructural, ignoring application-level rank desync",
+  "misattribution would send the team to the fabric team for a code bug"],
+ ["source ignores version and image drift across nodes",
+  "fleet-wide driver or NCCL upgrades as incident response are high blast radius"],
+ ["source provides no termination condition for the investigation",
+  "prolonged debugging on production reservations blocks other users"],
+]
+
+EVID = [
+ ["per-rank RANK/WORLD_SIZE/MASTER_ADDR dump","NCCL_DEBUG=INFO INIT logs per rank","barrier-only reproducer result","py-spy stack from one stuck rank per node"],
+ ["ip route get MASTER_ADDR per node","NCCL Bootstrap iface/addr line per rank","ss -tn syn-sent snapshot","A/B run differing only in NCCL_SOCKET_IFNAME"],
+ ["per-rank CUDA_VISIBLE_DEVICES and GPU PCI bus id with distinctness assertion","nvidia-smi compute-apps during the hang","nvidia-smi topo -m","fabric-manager status on NVSwitch hosts"],
+ ["ladder pass/fail table with init wall times","per-rung NCCL INIT logs","ibstat error counters before and after each rung","disjoint node-set result"],
+ ["init timeout exception rank list","flight-recorder sequence numbers per rank","dmesg/OOM records per node","p99 init time from healthy historical runs"],
+ ["subset pass/fail table with explicit node lists","ibstat link_downed and symbol_error deltas","nvidia-smi Xid and ECC history","firmware and driver version diff against fleet baseline"],
+ ["three-run outcome table (1 node / 2x1 GPU / full)","NCCL GRAPH transport lines per connection","df -h /dev/shm and ulimit -l inside container","bus bandwidth for each passing configuration"],
+ ["per-rank flight-recorder dump with op name and sequence number","gloo-backend small-scale reproduction result","per-rank sample counts from the dataloader","timestamps ordering fabric stall vs desync"],
+ ["per-rank configuration fingerprint hash with field-level diff","resolved libnccl.so path per rank","image digest per node","homogeneous-subset run result"],
+ ["full runbook step outcomes with exit criteria","determinism check: three runs on pinned node set","bus bandwidth and step time vs pre-incident baseline","record of every diagnostic env var removed before close"],
+]
+
+with open(OUT, 'w') as f:
+    for r, ans, qd, cf, rk, ev in zip(rows, ANS, QD, CONF, RISKS, EVID):
+        u, a = ua(r)
+        rec = {
+            "source_id": r["id"],
+            "teacher_lane": "teacher-B",
+            "teacher_model": "claude-opus-5-current",
+            "calibration_status": "provisional",
+            "decision": "rewrite",
+            "source_user": u,
+            "source_assistant": a,
+            "corrected_answer": ans,
+            "quality_dimensions": {
+                "technical_correctness": qd[0],
+                "instruction_coverage": qd[1],
+                "operational_safety": qd[2],
+            },
+            "risks": rk,
+            "evidence_required": ev,
+            "confidence": cf,
+        }
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+print("wrote", OUT, len(rows))

@@ -5,6 +5,57 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0151
+
+- Batch file: results/train-batch-0151.jsonl
+- Corpus range: train.jsonl lines 1501-1510 (0-indexed 1500-1509)
+- Source IDs: corpus-01658 through corpus-01667 (contiguous, corpus order preserved verbatim)
+- Progress: train 1510/5399, validation 0/601, total 1510/6000 (remaining 4490)
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run
+  (scripts/adhoc_verify_batch_0151.py, written fresh for this run and independent of
+  the generator scripts/gen_train_batch_0151.py). Checks: per-line JSONL parse over all
+  151 batch files, all 12 required fields present, teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional,
+  decision in {keep,rewrite,reject}, source_user/source_assistant byte-exact against
+  research/ai-infra-expert/corpus/train.jsonl, corrected_answer non-empty,
+  confidence in [0,1], quality_dimensions three integer 1-5 fields, risks and
+  evidence_required string arrays, source_id globally unique, and aggregated train
+  sequence is a strict prefix of the corpus. Result: train 1510, validation 0,
+  total 1510, errors 0.
+- Repair actions: none required this run.
+- Final schema check: PASS (identical script, exit 0, errors 0)
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory
+  except MANIFEST.sha256 itself; `sha256sum -c` verified all entries OK.
+- Technical topics covered by this batch: all ten records are scenario variants 58-67
+  of "multi-GPU job hangs during collective initialization". The source assistant text
+  is an identical grading rubric across all ten, so every record was marked `rewrite`.
+  The ten independent answers deliberately partition the hypothesis space rather than
+  repeating one template: (58) rendezvous/TCPStore and NCCL bootstrap phase
+  localization with a barrier-only reproducer; (59) NCCL_SOCKET_IFNAME / multi-NIC and
+  container-overlay interface selection with an A/B experiment; (60) GPU visibility and
+  device binding, duplicate-GPU detection via (hostname, PCI bus id) distinctness, MIG
+  and NVSwitch fabric-manager caveats; (61) a scale ladder from single-GPU to full world
+  with bus-bandwidth baselines at each passing rung; (62) converting the hang into an
+  error via init timeouts, TORCH_DISTRIBUTED_DEBUG=DETAIL, async error handling, and the
+  ProcessGroupNCCL flight recorder; (63) node bisection against ibstat link_downed /
+  symbol_error counters and Xid history; (64) intra-node (NVLink/P2P/SHM, /dev/shm,
+  ulimit -l) versus inter-node (NET/IB/RoCE, GDRDMA) path separation; (65) application
+  -level rank desynchronization of collective sequences, diagnosed by flight-recorder
+  sequence-number alignment and a gloo cross-check; (66) image/driver/NCCL/firmware
+  drift detected by a per-rank configuration fingerprint hash; (67) a synthesizing
+  runbook with per-step exit criteria and a bounded time budget.
+  Every answer states an explicit falsifiable hypothesis, a controlled experiment with
+  exactly one varied dimension, the measurements to record, expected confounders, the
+  evidence required to close, and a rollback threshold (restore service on a known-good
+  node set within ~30 minutes; remove all diagnostic env vars such as NCCL_IB_DISABLE /
+  NCCL_P2P_DISABLE / NCCL_SHM_DISABLE before closing; re-validate within 5 percent of
+  the pre-incident step-time and bus-bandwidth baseline).
+- Status caveat: these outputs are PROVISIONAL teacher-B blind review only. They are
+  not expert gold labels, they have not been validated against hardware, and they say
+  nothing about any model's domain capability. No teacher-A artifact was read, opened,
+  or grepped during this run; the blind constraint was maintained.
+
 ## Run 2026-08-18 batch 0150
 
 - Batch file: results/train-batch-0150.jsonl
