@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0145
+
+- Batch file: results/train-batch-0145.jsonl
+- Corpus range: train.jsonl lines 1441-1450
+- Source IDs: corpus-01595 through corpus-01604 (contiguous; corpus order preserved verbatim)
+- Progress: train 1450/5399, validation 0/601, total 1450/6000 (remaining 4550)
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run (scripts/tb_verify_batch_0145.py) —
+  JSONL line-parse, 10 records, all 12 required fields, fixed-value fields correct,
+  source_user/source_assistant byte-identical to corpus, corrected_answer non-empty,
+  confidence in [0,1], global source_id uniqueness (1450 unique), and train/validation
+  aggregate sequences are strict prefixes of their corpora.
+- Repairs applied: none required.
+- Final schema check: PASS (train_total=1450, validation_total=0, grand_total=1450).
+- Manifest: MANIFEST.sha256 regenerated over 239 files (excluding itself);
+  `sha256sum -c` passed with no mismatches. __pycache__ pruned before hashing.
+
+Technical topics covered by this batch:
+Two clusters, both `design_or_diagnosis` / `hard`. (1) corpus-01595..01600 —
+long-context inference OOM under concurrency: paged KV-cache sizing formula,
+allocator fragmentation (reserved vs allocated, expandable_segments), prefill
+activation/logits spikes and chunked prefill, admission control via
+max_num_seqs / max_num_batched_tokens, gpu_memory_utilization preallocation,
+prefix caching, FP8 KV quantization behind an accuracy gate, and tensor-parallel
+as the structural fix. (2) corpus-01601..01604 — multi-GPU NCCL collective-init
+hang: store/rendezvous vs transport-setup vs device-visibility hypotheses,
+NCCL_DEBUG=INFO log diffing, py-spy stack attribution, nvidia-smi topo / ibstat
+for IB and RoCE, minimal all_reduce reproducer, world-size bisection, and
+NCCL_ASYNC_ERROR_HANDLING for fail-fast. Every rewrite states assumptions, a
+falsifiable primary hypothesis with competing alternatives and explicit
+discriminators, a single-variable controlled experiment, confounders, required
+evidence, and numeric rollback gates.
+
+All source items were graded rewrite: the corpus `assistant` fields are rubric
+descriptions ("Answer should state...") rather than answers, so instruction
+coverage is structurally low (scored 2) even though the listed technical points
+are directionally correct (scored 3).
+
+BLIND: teacher-A outputs under experiments/2026-08-14-teacher-a-corpus-calibration/
+were not read, opened, or grepped at any point during this run.
+
+Status: PROVISIONAL. These are one model's independent second-opinion reviews.
+They are NOT expert gold labels, have NOT been human-verified, and say nothing
+about any trained model's domain capability. Agreement analysis against teacher-A
+is a separate, later step outside this task.
+
 ## Run 2026-08-18 batch 0144
 
 - Batch file: results/train-batch-0144.jsonl
