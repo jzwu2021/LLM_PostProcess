@@ -5,6 +5,56 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0130
+
+- Batch file: results/train-batch-0130.jsonl
+- Corpus range: train.jsonl lines 1291-1300 (0-indexed 1290..1299)
+- Source IDs: corpus-01430, corpus-01431, corpus-01433, corpus-01434, corpus-01435,
+  corpus-01436, corpus-01437, corpus-01438, corpus-01439, corpus-01440
+  (note: corpus-01432 does not appear in train.jsonl; the sequence is copied in
+  exact corpus order, nothing skipped or reordered)
+- Progress: train 1300/5399, validation 0/601, total 1300/6000, remaining 4700
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (ad-hoc verifier /tmp/tb_verify.py, 0 errors across all
+  1300 aggregated records; checks JSONL line parse, batch count, 12 required fields,
+  fixed-value fields, source_user/source_assistant byte-equality against
+  research/ai-infra-expert/corpus/train.jsonl, non-empty corrected_answer,
+  confidence in [0,1], global source_id uniqueness, and strict corpus-prefix ordering)
+- Repairs: none required this run; the batch verified clean on first write.
+- Final schema check: PASS (0 errors)
+- Manifest: MANIFEST.sha256 regenerated over all 218 files in this directory
+  (excluding the manifest itself); `sha256sum -c` reports all OK.
+
+### Technical topics covered by this batch
+
+All ten records are variants of the same scenario family: a long-context serving
+workload that intermittently OOMs after several concurrent requests, each asking for
+a prioritized diagnosis plus an explicit falsifiable hypothesis and controlled
+experiment. Every source `assistant` field is a grading rubric rather than an answer,
+so all ten were marked `rewrite`.
+
+To avoid ten near-identical rewrites, each record was given a distinct primary
+hypothesis and a matching discriminating experiment: (1) length-blind admission
+control, (2) allocator fragmentation from variable-length activation buffers,
+(3) prefix-cache eviction thrash, (4) chunked prefill disabled so one long prompt
+allocates a single huge activation, (5) CUDA-graph capture pools reserved per batch
+shape, (6) mis-estimated per-token KV bytes from wrong kv_head count or dtype,
+(7) host pinned-memory / CPU-offload pressure with the host OOM-killer as the real
+terminator, (8) GPU co-tenancy from a stale worker or exporter holding a context,
+(9) max_model_len arithmetically incompatible with the KV pool at any concurrency,
+and (10) speculative-decoding draft-model memory. Shared across all ten: exact
+per-token KV arithmetic (2 x layers x kv_heads x head_dim x bytes_per_elem, with GQA/MQA
+called out as an order-of-magnitude factor), the reserved-vs-allocated gap as the
+discriminator between fragmentation and genuine capacity exhaustion, confounders
+(cold vs warm prefix cache, client retry amplification, mid-window autoscaling), and
+mitigations ordered by reversibility with quantization gated behind a task-level eval
+rather than an OOM fix alone.
+
+- Status: PROVISIONAL. These are second-opinion reviews from a single model under
+  blind conditions. They are not expert gold labels, have not been validated by a
+  human domain expert, and say nothing about any model's domain capability. No
+  teacher-A artifact was read, opened, or grepped while producing this batch.
+
 ## Run 2026-08-17 batch 0129
 
 - Batch file: results/train-batch-0129.jsonl
