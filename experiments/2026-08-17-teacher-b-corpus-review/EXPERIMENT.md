@@ -5,6 +5,48 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0142
+
+- Batch file: results/train-batch-0142.jsonl
+- Corpus range: train.jsonl lines 1411-1420
+- Source IDs: corpus-01560, 01561, 01562, 01563, 01565, 01566, 01567, 01568,
+  01569, 01570 (corpus order preserved verbatim; the gap at 01564 is present in
+  the source corpus itself and was NOT introduced here)
+- Progress: train 1420/5399, validation 0/601, total 1420/6000, remaining 4580
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run — JSONL line-parse, 10 records,
+  12 required fields present, teacher_lane/teacher_model/calibration_status/decision
+  values correct, byte-exact source_user and source_assistant vs corpus,
+  non-empty corrected_answer, confidence in [0,1], globally unique source_id,
+  aggregated train/validation sequences are strict prefixes of their corpora
+- Repairs required: none
+- Final schema check: PASS (verify_batches.py → VERIFY_PASS,
+  train=1420/5399 validation=0/601 total=1420)
+- Manifest: MANIFEST.sha256 regenerated over all files except itself;
+  `sha256sum -c` → 236/236 OK, 0 failures
+- Technical topics covered by this batch: scenario variants 260-270 of the
+  long-context intermittent-OOM diagnosis prompt (categories Troubleshooting /
+  Performance Analysis / System Design). The rewritten answer supplies the
+  mechanism the rubric-style source_assistant omits: the device-memory identity
+  (weights + activation/workspace peak + KV pool + fragmentation + allocator
+  cache), KV bytes per token derived from num_key_value_heads rather than
+  attention head count (GQA correction), the distinction between overlapping
+  prefill activation peaks and genuine KV-pool exhaustion, reserved-minus-
+  allocated as the fragmentation discriminator, chunked prefill and
+  max_num_batched_tokens as the primary lever, token-budgeted admission control
+  as the durable design fix, and FP8/INT8 KV quantization gated on task-level
+  accuracy rather than perplexity. It states a falsifiable hypothesis (H1:
+  activation peak, not KV exhaustion) with a numeric prediction, a controlled
+  replay experiment with arms/repetitions/primary metric, named confounders
+  (allocator warm-up, prefix-cache contamination, client-side queuing, ECC and
+  throttling), explicit evidence requirements, and quantitative rollback
+  thresholds (p99 TTFT +20%, throughput -10%, preemption >1%) behind a <=10%
+  canary. Category-specific slants add on-call evidence-preservation guidance
+  (do not restart first), distribution-over-time reporting for performance
+  analysis, and admission-time memory budgeting for system design.
+- These outputs are PROVISIONAL teacher-B model review, not expert gold labels,
+  and they say nothing about the trained model's domain capability.
+
 ## Run 2026-08-18 batch 0141
 
 - Batch file: results/train-batch-0141.jsonl
