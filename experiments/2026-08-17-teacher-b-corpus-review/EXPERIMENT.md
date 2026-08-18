@@ -5,6 +5,57 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0162
+
+- Batch file: results/train-batch-0162.jsonl
+- Corpus range: train.jsonl lines 1611-1620 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01775, corpus-01776, corpus-01777, corpus-01778, corpus-01779, corpus-01780,
+  corpus-01781, corpus-01782, corpus-01783, corpus-01784 (contiguous, no gaps in this window).
+- Progress: train 1620/5399, validation 0/601, total 1620/6000, remaining 4380
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on the first run of scripts/adhoc_verify_batch_0162.py. The verifier is fresh
+  for this batch, shares no code with the generator, and re-derives source_user/source_assistant directly
+  from research/ai-infra-expert/corpus/train.jsonl. scripts/__pycache__ was removed before the generator
+  ran, so no stale bytecode could execute.
+- Repair actions: none required (first run passed).
+- Final schema check: PASS - 10 records; newline-terminated JSONL, every line parseable; all 12 required
+  fields present; teacher_lane=teacher-B, teacher_model=claude-opus-5-current,
+  calibration_status=provisional, decision in {keep,rewrite,reject}; source_user/source_assistant
+  byte-identical to the corpus; corrected_answer non-empty; quality_dimensions integers in [1,5];
+  confidence float in [0,1]; source_id globally unique across all 1620 records; batch numbering
+  contiguous; the aggregated train sequence is exactly the first 1620 rows of train.jsonl in order
+  (strict prefix) and validation is still empty.
+- Anti-template check: the ten corrected_answer strings hash to 10 distinct sha256 values (asserted in
+  the generator before writing).
+- Technical topics covered by this batch: all ten rows are variants of the same rubric-style prompt
+  ("a multi-GPU job hangs during collective initialization; give a diagnosis plan with a falsifiable
+  hypothesis and controlled experiment"). Each of the ten was assigned a distinct primary mechanism so
+  the batch does not collapse into one templated answer: (1) IPv6/dual-stack resolution splitting the
+  rendezvous into two address-family groups; (2) host firewall / security group permitting MASTER_PORT
+  but blocking NCCL's additional ephemeral ports; (3) topology detection stalling under virtualised or
+  passed-through PCIe where the switch hierarchy is flattened (NCCL GRAPH stage, NCCL_TOPO_FILE arm);
+  (4) heterogeneous scheduler allocation making WORLD_SIZE arithmetically unsatisfiable; (5) the stall
+  being pre-NCCL entirely - ranks blocked in D-state on a shared NFS/object mount before
+  init_process_group; (6) InfiniBand subnet manager down or ports not ACTIVE, with NCCL_IB_DISABLE=1 as
+  the TCP control arm; (7) container image digest skew leaving two different NCCL/CUDA builds in one
+  world; (8) PCIe ACS enabled on the root complex breaking GPU-to-GPU P2P (NCCL_P2P_DISABLE=1 probe,
+  p2pBandwidthLatencyTest evidence); (9) elastic-agent restart loop leaving stale members registered
+  under one rendezvous run_id so quorum is never reached; (10) co-tenant or leaked GPU memory occupancy
+  blocking communicator buffer allocation on a subset of ranks. Every rewrite states assumptions, an
+  evidence-first ordered triage that forbids restarting before stacks are captured, one explicitly
+  falsifiable hypothesis with a prediction, a single-variable controlled experiment, expected
+  confounders, a concrete measurement list, and an explicit rollback gate. Shared safety stance across
+  the batch: never widen the NCCL timeout as a fix, and never leave a diagnostic downgrade
+  (--ipc=host, open port ranges, ACS disabled, unauthenticated store, NCCL_IB_DISABLE=1) in place as a
+  residual production state.
+- Status caveat: these outputs are PROVISIONAL teacher-B blind review. They are not expert gold labels,
+  they have not been validated against real cluster telemetry, and they are not evidence of any model's
+  domain capability. Agreement analysis against teacher-A is a separate, later step; no teacher-A file
+  was read, opened or searched during this run.
+- Manifest: MANIFEST.sha256 regenerated over every file in this experiment directory except the manifest
+  itself; sha256sum -c reports all files OK.
+
 ## Run 2026-08-18 batch 0161
 
 - Batch file: results/train-batch-0161.jsonl
@@ -4554,9 +4605,25 @@ Agreement against teacher-A is computed only in a separate later analysis step.
 
 ## Scope
 
-- train: 5399 records, in corpus order (prefix-aligned)
-- validation: 601 records, in corpus order (prefix-aligned)
-- total: 6000
+REVISED 2026-08-18 by user decision: this lane now stops at 2500 train records
+instead of the original 6000. The cron worker's stop condition was updated to
+match (job 2d4c0c54bbc6, renamed "teacher-B corpus review until 2500").
+
+Current stage target:
+
+- train: 2500 records, in corpus order (prefix-aligned)
+- validation: 0 records — NOT processed in this stage
+- total: 2500
+
+Original (superseded, kept for provenance):
+
+- train: 5399 records / validation: 601 records / total: 6000
+
+Consequence for analysis: the teacher-A vs teacher-B overlap is therefore capped
+at the first 2500 train records. Any agreement figure computed from this lane
+covers a train-order PREFIX of the corpus, not a random or stratified sample, so
+it must not be reported as corpus-wide agreement. Validation split has zero
+teacher-B coverage and cannot be compared across lanes at all.
 
 ## Output schema (per JSONL record)
 
