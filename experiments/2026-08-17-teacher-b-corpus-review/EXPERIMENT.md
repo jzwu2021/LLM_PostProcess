@@ -5,6 +5,48 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0143
+
+- Batch file: results/train-batch-0143.jsonl
+- Corpus range: train.jsonl lines 1421-1430
+- Source IDs: corpus-01571, 01572, 01574, 01575, 01576, 01577, 01579, 01581,
+  01583, 01584 (corpus order preserved verbatim; the gaps at 01573, 01578, 01580,
+  01582 exist in the source corpus itself and were NOT introduced here)
+- Progress: train 1430/5399, validation 0/601, total 1430/6000, remaining 4570
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run — JSONL line-parse, 10 records,
+  12 required fields present, teacher_lane/teacher_model/calibration_status/decision
+  values correct, byte-exact source_user and source_assistant vs corpus,
+  non-empty corrected_answer, confidence in [0,1], globally unique source_id,
+  aggregated train/validation sequences are strict prefixes of their corpora
+- Repairs required: none
+- Final schema check: PASS (verify_batches.py → VERIFY_PASS, train=1430/5399,
+  validation=0/601, total=1430; verify_run.py → VERIFY_PASS, 143 files)
+- Manifest: MANIFEST.sha256 regenerated over all files except itself;
+  `sha256sum -c` → 237/237 OK, 0 failures
+- Technical topics covered by this batch: scenario variants 271-284 of the
+  long-context intermittent-OOM prompt (categories System Design /
+  Troubleshooting / Performance Analysis). The rewrite supplies what the
+  rubric-style source_assistant omits: the device-memory identity
+  (weights + activation peak + reserved KV pool + fragmentation + non-engine
+  residents), KV bytes/token computed from num_key_value_heads so GQA models are
+  not overestimated 4-8x, the leak-versus-peak discriminator, an explicitly
+  falsifiable hypothesis H1 (concurrent prefill activation peak, not KV
+  exhaustion) with named falsifiers H2/H3, a four-arm controlled experiment
+  (baseline / halved prefill budget / halved max_num_seqs / allocator policy)
+  with OOMs-per-GPU-hour as the primary endpoint and p95 TTFT plus tokens/s as
+  guardrails, named confounders (trace drift, warm prefix cache, co-tenancy,
+  CUDA-graph capture, history-dependent fragmentation), and explicit rollback
+  thresholds. Category-specific tails cover memory as a declared per-GPU budget
+  with disaggregated prefill/decode (Dynamo-style routing, Mooncake-style KV
+  store / RDMA-NIXL transfer) for System Design, evidence preservation before
+  restart for Troubleshooting, and prefill-compute versus decode-bandwidth
+  attribution on a throughput-latency curve for Performance Analysis.
+- Status caveat: these outputs are PROVISIONAL teacher-B model review under blind
+  conditions. They are NOT expert gold labels, have not been validated against
+  hardware measurements, and say nothing about any model's domain capability.
+  No teacher-A artifact was read or referenced while producing this batch.
+
 ## Run 2026-08-18 batch 0142
 
 - Batch file: results/train-batch-0142.jsonl
