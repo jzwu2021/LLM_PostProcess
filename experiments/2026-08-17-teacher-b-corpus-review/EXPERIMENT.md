@@ -5,6 +5,55 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0179
+
+- Batch file: results/train-batch-0179.jsonl
+- Corpus range: train.jsonl positional lines 1781-1790, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered.
+- Source IDs: corpus-01961, corpus-01962, corpus-01963, corpus-01964, corpus-01965, corpus-01966,
+  corpus-01967, corpus-01969, corpus-01970, corpus-01971.
+- Progress: 1790/2500 train records (71.6%). Remaining: 710. The 2500 denominator is the
+  user-set staged target adopted on 2026-08-18, replacing the original 6000-record figure.
+  Validation target is 0 for this stage; zero validation-batch files exist and none were created.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: pass (0 errors) on the first run of scripts/adhoc_verify_batch_0179.py.
+- Repair actions: none. No corpus file, no prior batch, and no frozen artifact was modified.
+- Final schema check: pass. Checks run: per-line JSONL parse, batch count == 10, all 12 required
+  fields present, teacher_lane/teacher_model/calibration_status/decision value constraints,
+  byte-exact equality of source_user and source_assistant against research/ai-infra-expert/corpus/train.jsonl,
+  non-empty corrected_answer, confidence within [0,1], quality_dimensions integers in [1,5],
+  risks/evidence_required string arrays, global source_id uniqueness across all 179 batches,
+  and strict-prefix equality of the aggregated 1790-ID sequence against train.jsonl.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself;
+  sha256sum -c passes for all entries.
+- Technical topics covered by this batch: all ten rows are the weight-only quantization (WOQ)
+  fair-comparison stem (scenario variants 61-71, design/troubleshooting/performance-analysis
+  task types, difficulty hard). Each variant is answered from a distinct, non-overlapping
+  analytical stance so the batch does not become ten paraphrases: calibration-set provenance as a
+  hidden hyperparameter and a two-calibration spread as the real error bar; tail-first design
+  (p99 TPOT, inter-token gap histograms, preemption and recompute) instead of mean throughput;
+  multi-tenant / co-tenancy measurement exposing the bottleneck that WOQ shifts to (host-side
+  sampling, PCIe, NUMA); ops-burden TCO accounting for a second numeric path with fleet-size
+  break-even; falsification symmetry (equal tuning budget for the BF16 control, logged tuning
+  actions); model-family generalization boundaries (MoE weight-byte profile per token, GQA/MQA
+  KV-to-weight ratio, small vs large model 4-bit tolerance); data-pipeline and A/A noise-floor
+  validity before any A/B is believed; deployment mechanics (checkpoint conversion, HBM load,
+  CUDA-graph capture and autotune warmup, time-to-ready and the autoscaler headroom it forces);
+  analytic cross-checking of measured speedup against an independent byte-count upper bound, with
+  measurement above the bound treated as evidence of a broken comparison; and decision-memo-first
+  design where measurements that cannot move the recommendation are cut. Shared across all ten:
+  the WOQ mechanism is bytes moved per decode step, so gains are confined to memory-bound decode
+  and decay with batch; the Q-clamped versus Q-native arm pair separates kernel effect from KV
+  capacity effect; the cost unit is GPU-seconds per 1,000 output tokens at a fixed p95 SLO,
+  compared at each arm's own SLO intersection rather than a fixed batch size; every numeric claim
+  is labelled ESTIMATE with its derivation inline (the 9B BF16 18 GB vs INT4 ~5.0-5.3 GB byte
+  count giving a ~3.2-3.6x upper bound, and the Amdahl ceiling from the decode fraction), and no
+  MEASURED value is asserted because none was measured here.
+- Status caveat: these records are PROVISIONAL teacher-B review output produced by the current
+  conversation model under blind conditions. They are not expert gold, they have not been
+  human-verified, and they say nothing about any trained model's domain capability. No teacher-A
+  artifact was read, opened, or grepped at any point during this batch.
+
 ## Run 2026-08-18 batch 0178
 
 - Batch file: results/train-batch-0178.jsonl
