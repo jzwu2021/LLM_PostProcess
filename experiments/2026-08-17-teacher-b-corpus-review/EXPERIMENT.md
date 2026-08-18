@@ -5,6 +5,57 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0141
+
+- Batch file: results/train-batch-0141.jsonl
+- Corpus range: train.jsonl lines 1401-1410 (0-indexed 1400..1409)
+- Source IDs: corpus-01549, 01550, 01552, 01553, 01554, 01555, 01556, 01557,
+  01558, 01559 (corpus order preserved verbatim; the gaps at 01548 and 01551 are
+  present in the source corpus itself and were NOT introduced here)
+- Progress: train 1410/5399, validation 0/601, total 1410/6000, remaining 4590
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run — JSONL line-parse, 10 records,
+  12 required fields present, teacher_lane/teacher_model/calibration_status/decision
+  values correct, byte-exact source_user and source_assistant vs corpus,
+  non-empty corrected_answer, confidence in [0,1], globally unique source_id,
+  aggregated train/validation sequences are strict prefixes of their corpora
+- Repairs required: none
+- Final schema check: PASS (verify_teacher_b.py → VERIFY_PASS,
+  train=1410/5399 validation=0/601 total=1410/6000)
+- Manifest: MANIFEST.sha256 regenerated over all files except itself;
+  `sha256sum -c` → 234/234 OK, 0 failures
+- Technical topics covered by this batch: all ten items are variants of the same
+  long-context intermittent-OOM diagnosis prompt (scenario variants 249-259,
+  categories Performance Analysis / System Design / Troubleshooting). To avoid
+  ten near-identical answers, each record is written through a distinct analytic
+  lens with its own falsifiable hypothesis, discriminating measurements,
+  confounders, boundary condition and rollback gate:
+  (1) failure-envelope reconstruction and telemetry clustering before ranking any
+  mitigation; (2) the residency inequality sum(in-flight tokens) × per-token KV
+  bytes vs pool bytes, with per_token_KV_bytes derived term-by-term and validated
+  against measured occupancy; (3) non-KV consumers — attention workspace, logits
+  and sampling buffers, captured CUDA graphs, NCCL communication buffers — as an
+  unbudgeted term that makes the KV pool fraction unsafe; (4) output-length
+  uncertainty, pessimistic reservation vs overcommit, and failures created at
+  decode step N rather than at admission; (5) preemption/swap as the intended
+  relief valve, its counters, recompute cost and PCIe ceiling; (6) multi-tenancy
+  and noisy neighbours (MIG/MPS/co-located jobs) invalidating internal accounting;
+  (7) batch-shape (not batch-size) sensitivity of peak transient memory and
+  attention-kernel path switches at length thresholds; (8) regression attribution
+  via archived-trace replay against the previous build before bisecting;
+  (9) graceful degradation — converting hard OOM into a bounded, observable
+  rejection with a memory-aware admission gate; (10) the decision record itself —
+  a ≥2-of-3 reproduction gate, a pre-registered metric set, randomised arm order,
+  and reverting any mitigation whose min-max bands overlap the baseline.
+  Every record additionally states the refuting condition: if device free bytes
+  are near zero and the requested block exceeds (reserved − allocated), the device
+  is genuinely exhausted and all scheduling/allocator levers are inert.
+- Status: PROVISIONAL. These are teacher-B blind second opinions produced by an
+  LLM reviewer. They are NOT expert gold labels, have not been validated against
+  any running system, and say nothing about the domain capability of any trained
+  model. Agreement analysis against teacher-A is a separate, later step; no
+  teacher-A artifact was read while producing this batch.
+
 ## Run 2026-08-18 batch 0140
 
 - Batch file: results/train-batch-0140.jsonl
