@@ -1,0 +1,245 @@
+import json, os
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+EXP = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review"
+OUT = f"{EXP}/results/train-batch-0225.jsonl"
+START, END = 2240, 2250
+
+rows = [json.loads(l) for l in open(CORPUS) if l.strip()]
+sel = rows[START:END]
+assert len(sel) == 10
+
+COMMON = """Common frame (applies to every stance below).
+Assumptions (must be restated by the answering engineer, not inherited silently):
+A1. Single node, 8 GPUs, NVLink/NVSwitch intra-node; inter-node paths only appear where a stance says so explicitly.
+A2. Decode-dominant, latency-sensitive serving: the SLO is TTFT p95 and TPOT (inter-token latency) p95, never a mean.
+A3. Model weights fit in aggregate HBM with at least 20% KV-cache headroom at target concurrency.
+A4. Exactly one variable moves per arm: no simultaneous change of quantization, batching policy, or speculative decoding.
+Mechanism, stated plainly:
+- Tensor parallelism (TP) shards every layer's GEMMs. Each transformer block needs two all-reduces (after attention out-projection and after the MLP down-projection), so decode carries L * 2 * allreduce_latency of synchronous cost, where L is the layer count. TP is latency-additive in collectives but capacity- and bandwidth-multiplying: per-GPU weight bytes and per-GPU KV bytes both fall by the TP degree.
+- Pipeline parallelism (PP) shards layers into stages. Per token it adds only (PP-1) small point-to-point hidden-state sends, which are cheap, but a single request serializes through all stages and the bubble fraction is (PP-1)/(micro_batches + PP-1). At low concurrency there are too few in-flight micro-batches to fill the pipeline, so PP loses badly on single-request latency.
+Boundary conditions that flip the answer:
+- B1. On NVLink-class fabric, small-message all-reduce latency is in the single-digit microseconds and TP up to 8 is normally latency-viable. Over PCIe-only or across nodes on RoCE/IB the same collective's latency floor rises roughly an order of magnitude and TP stops paying past TP=2 (ESTIMATE; derivation: decode all-reduce payload is hidden_size * dtype_bytes per token per layer, which is small, so the collective is latency-bound rather than bandwidth-bound and the per-hop latency floor dominates).
+- B2. If the model cannot fit on one GPU, sharding is mandatory and the question reduces to which axis, not whether.
+- B3. Under high, steady concurrency the PP bubble amortizes and PP becomes competitive on throughput per GPU while still losing on single-request latency.
+Default recommendation: use TP inside the node up to the point where collective cost stops being repaid by reduced per-GPU memory traffic; use PP only to cross a node boundary or to fit a model TP alone cannot fit. PP is not a latency optimization.
+Measurement and evidence policy: every number below that was not produced by a run on this hardware is labelled ESTIMATE and carries its derivation. Only values read out of named benchmark artifacts may be labelled MEASURED. This review reports no MEASURED values, because no benchmark was executed for it."""
+
+CRITIQUE = """Critique of the source item: the prompt is a legitimate infrastructure question and does ask for assumptions, a falsifiable hypothesis, measurements, confounders and rollback criteria, but the corpus pair is degenerate - the assistant turn contains only a rubric describing what an answer should contain, not an answer. There is therefore no substantive content to keep, and the item is rewritten into a complete response that supplies the mechanism, the boundary conditions that flip the recommendation, an explicit falsifiable hypothesis, a single-variable controlled experiment, the evidence artifacts required to adjudicate it, and a rollback gate. Every quantitative claim is labelled ESTIMATE and carries its derivation; no value here is MEASURED, because no benchmark run was performed for this review. This output is provisional teacher-B review material, not expert gold, and it is not evidence about any model's domain capability."""
+
+BASE_RISKS = [
+    "Source assistant turn is a grading rubric, not an answer; training on it teaches meta-commentary about answers instead of the underlying reasoning.",
+    "No falsifiable hypothesis, no confounder list and no rollback gate, despite the prompt explicitly demanding them.",
+]
+
+S = [
+ dict(n=250,
+  t="Warmup, autotuning and JIT compilation dominate the first minutes of a run, so a layout comparison measured before steady state ranks the wrong axis.",
+  body="""Serving stacks do substantial one-time work after process start: CUDA context creation, kernel autotuning and algorithm selection for the exact GEMM shapes, graph capture, collective-library ring or tree construction and its own algorithm autotuning, KV-cache arena allocation, and on some stacks a compilation pass over the model graph. All of these are per-layout, and their cost is not symmetric across the axes: a wider tensor-parallel group has more distinct collective shapes to autotune and more ranks to rendezvous, while a deeper pipeline has more stage boundaries to warm but smaller per-rank GEMMs. Measuring during this window therefore attributes fixed startup cost to a steady-state property.
+A second, slower transient sits behind the first: the KV cache and any prefix-cache pool are cold, so early requests miss caches that would hit in production, and continuous batching has not yet reached its equilibrium batch composition. Both transients push measured latency upward, but not equally across arms.""",
+  h="H250: TPOT p95 measured in the first N minutes after process start differs from steady-state TPOT p95 by an amount that varies across layouts, so the ranking of TP and PP arms can invert between the warmup window and steady state (ESTIMATE; derivation: startup work is one-time and per-layout while steady-state cost is per-token, so the contaminating fraction is startup_cost/(tokens_measured * per_token_cost) and shrinks with measurement length; if ranking is stable from the first request onward, the transient was negligible and the claim is refuted).",
+  exp="Run each layout arm on an identical replayed trace and record latency as a time series rather than a single aggregate; discard nothing at first, then compute the aggregate over successive windows and locate the point where the per-window p95 stops drifting. Repeat each arm three times from a cold process to establish the run-to-run spread of the transient itself. Only after the steady-state onset is identified per arm may the arms be compared, and the comparison must use windows of equal token count, not equal wall-clock time.",
+  gate="Rollback gate: no layout is promoted from a measurement whose window begins before the identified steady-state onset, or whose per-window p95 is still drifting monotonically at the end of the run; if the three cold-start repeats of any arm disagree by more than the margin between arms, the comparison is declared inconclusive and the incumbent layout stays.",
+  risks=["A layout comparison taken during warmup can invert the ranking and promote the wrong axis.",
+         "Cold KV and prefix caches inflate early latency unevenly across arms.",
+         "Discarding a fixed arbitrary warmup prefix is itself unjustified unless the steady-state onset is located per arm."],
+  ev=["Per-request latency time series for every arm, from the first request, not a single aggregate.",
+      "Per-window p95 curves showing where drift stops, one per arm and repeat.",
+      "Process start, first-token and steady-state-onset timestamps for each run.",
+      "Three cold-start repeats per arm to establish transient run-to-run spread."],
+  qd=(3,2,3), conf=0.79),
+
+ dict(n=251,
+  t="Collective library version, topology detection and environment variables are silent confounders, so an unpinned software environment makes the layout comparison unreproducible.",
+  body="""The communication library autodetects topology and selects algorithm, protocol and channel count from that detection plus a large surface of environment variables. A minor version bump can change the default algorithm for the exact message size decode uses, change how many channels are opened, or change whether a peer-to-peer transport is chosen over a shared-memory or network one. None of this is visible in the serving stack's own logs unless it is asked for. Two arms run days apart, or on hosts with different driver or fabric-manager versions, can therefore differ by a factor that has nothing to do with the tensor-versus-pipeline choice.
+The same applies to the serving stack: scheduler defaults, chunked-prefill settings, graph-capture toggles and memory-pool fractions all move with versions and all interact with the parallel layout.""",
+  h="H251: holding the parallel layout fixed and changing only the collective library version, its topology detection result or its tuning environment variables produces a shift in TPOT p95 comparable to the shift attributed to the TP-versus-PP choice (ESTIMATE; derivation: decode collectives sit synchronously on the per-token critical path, so any change to algorithm or protocol selection for that message size scales the per-layer collective term directly; if pinning is irrelevant and unpinned repeats match pinned repeats within noise, the claim is refuted).",
+  exp="Build one image with every relevant version pinned - driver, collective library, serving stack, model weights hash - and record the library's own topology and algorithm-selection output at the start of every run. Run the layout comparison inside that single image. Then, as a separate controlled arm, vary only the library version or a single tuning variable at fixed layout and measure the resulting shift. Compare the magnitude of that shift to the inter-layout margin before concluding anything about the layout.",
+  gate="Rollback gate: no layout decision is promoted unless every arm carries a recorded version manifest and topology-detection dump, all arms match on that manifest, and the environment-only arm's measured shift is smaller than the margin between layouts; any mismatch voids the comparison and the incumbent stays.",
+  risks=["Collective-library version or topology-detection differences between arms can exceed the real inter-layout margin.",
+         "Tuning environment variables are inherited silently from the shell or container and rarely logged.",
+         "Serving-stack scheduler defaults move with versions and interact with the parallel layout.",
+         "A result obtained on an unpinned environment cannot be reproduced or audited later."],
+  ev=["Full version manifest per arm: driver, fabric manager, collective library, serving stack, model weights hash.",
+      "Collective-library topology and algorithm-selection log output for every run.",
+      "The complete set of communication-related environment variables actually present in each run's process environment.",
+      "An environment-only control arm at fixed layout quantifying the shift attributable to software alone."],
+  qd=(3,2,3), conf=0.8),
+
+ dict(n=252,
+  t="Attention grouping caps the useful tensor-parallel degree, because KV heads cannot be sharded past their count without replication.",
+  body="""Tensor parallelism shards attention along the head dimension. With grouped-query or multi-query attention the number of key/value heads is much smaller than the number of query heads, and once the tensor-parallel degree exceeds the KV-head count the KV heads must be replicated across ranks rather than split. At that point the per-GPU KV-cache saving that motivated widening TP stops accruing: each additional rank pays the full collective cost per layer but no longer reduces its own KV footprint. The GEMMs continue to shard, so compute per rank still falls, but the memory-capacity argument - usually the binding one for serving - collapses at exactly that threshold.
+This is a structural property of the model checkpoint, not a tuning knob, so it must be read off the config before any sweep is designed.""",
+  h="H252: the marginal benefit of increasing the tensor-parallel degree changes character at the KV-head count: below it, per-GPU KV bytes fall proportionally and maximum concurrency rises; at and above it, per-GPU KV bytes stop falling while per-token collective cost keeps rising (ESTIMATE; derivation: KV bytes per rank equal 2 * layers * kv_heads_per_rank * head_dim * dtype_bytes * sequence_length, and kv_heads_per_rank cannot fall below one, so the term floors once TP exceeds the KV-head count; if measured per-GPU KV occupancy keeps falling past that degree, the model is not using grouped-query attention as assumed and the claim is refuted).",
+  exp="Read the KV-head count from the model config first, then sweep TP across degrees that bracket it. At each degree record measured per-GPU KV-cache bytes at a fixed concurrency and sequence length, the maximum concurrency the cache admits before preemption, and TPOT p95. Hold the sequence-length distribution, batching policy and quantization identical across degrees; change only the degree.",
+  gate="Rollback gate: a TP degree above the KV-head count is not promoted unless it demonstrably improves the SLO metric despite flat per-GPU KV occupancy; if measured KV occupancy per GPU is flat while TPOT p95 rises, the sweep stops at the last degree below the threshold and the service stays there.",
+  risks=["Widening TP past the KV-head count buys no KV-capacity relief while still paying the per-layer collective cost.",
+         "Sweeps designed without reading the attention configuration waste arms on structurally dominated degrees.",
+         "Per-GPU KV occupancy is often inferred from a formula rather than measured, hiding replication.",
+         "Concurrency limits set by cache capacity are frequently mistaken for a latency property."],
+  ev=["Model configuration showing query-head count, KV-head count, head dimension and layer count.",
+      "Measured per-GPU KV-cache bytes at fixed concurrency and sequence length for each TP degree.",
+      "Maximum admitted concurrency and preemption or cache-eviction counters per degree.",
+      "TPOT p95 per degree with the sequence-length distribution held identical."],
+  qd=(3,2,3), conf=0.81),
+
+ dict(n=253,
+  t="Long-context traffic changes which term dominates, because attention cost grows with sequence length while the collective term does not.",
+  body="""The per-token decode collective payload is one activation row: it scales with hidden size and is independent of how long the context already is. Attention work during decode, by contrast, reads the entire KV cache for the sequence, so its cost grows with context length, and the KV cache itself grows linearly in sequence length. Prefill cost grows faster still, roughly quadratically in prompt length before any chunking or sparsity.
+The consequence is that a layout ranked on short prompts is being ranked in a regime where the fixed collective term is a large fraction of the per-token cost, and the same layout evaluated on long-context traffic sits in a regime where memory-bound attention dominates and the collective term is comparatively small. Tensor parallelism, which splits both the KV reading work and the KV bytes, gains relative advantage as context grows, for reasons that have nothing to do with the short-prompt measurement.""",
+  h="H253: the TP-versus-PP margin is a function of the context-length distribution, and the advantage of a wider tensor-parallel group increases with mean context length (ESTIMATE; derivation: per-token decode cost is approximately attention_over_KV(sequence_length) + fixed_collective_term, and TP divides the first term across ranks while adding to the second, so as sequence_length grows the divided term dominates the added one; if the margin is flat across a tenfold change in mean context length, the claim is refuted).",
+  exp="Construct at least three replay traces with deliberately different context-length distributions - short, mixed, and long - drawn from real traffic rather than synthetic uniform lengths, and run every layout arm against each trace. Report latency conditioned on context-length bucket, not pooled, and record per-GPU KV occupancy and preemption counts per bucket. Hold arrival rate and concurrency identical across arms so that only the layout and the trace vary, and vary them one at a time.",
+  gate="Rollback gate: a layout is promoted only for the context-length distribution it was measured on; if production's context-length distribution drifts beyond the range covered by the traces, the decision record expires and the comparison must be rerun before the layout is retained.",
+  risks=["A layout ranked on short prompts may be the wrong choice for long-context traffic, and vice versa.",
+         "Pooled latency aggregates hide bucket-level inversions between arms.",
+         "Long contexts inflate KV footprint and can trigger preemption that is misread as a layout property.",
+         "Synthetic uniform-length traces do not reproduce the heavy tail of real prompt distributions."],
+  ev=["Context-length distribution of the production trace, with tail percentiles, not just the mean.",
+      "Latency percentiles conditioned on context-length bucket for every arm.",
+      "Per-GPU KV occupancy and preemption or eviction counts per bucket and per arm.",
+      "Prefill and decode time separated per request, so the two regimes are not conflated."],
+  qd=(3,2,3), conf=0.8),
+
+ dict(n=254,
+  t="Streaming APIs put the network and client on the same critical path as the token, so an SLO defined at the client cannot be attributed to the layout without server-side attribution.",
+  body="""Inter-token latency observed by a client is the sum of server compute, scheduler queueing, serialization into the streaming protocol, kernel socket buffering, network transit, any proxy or load-balancer hop, TLS record framing, and client-side parsing. Only the first of these moves when the parallel layout changes. Proxies with response buffering can coalesce several tokens into one flush, which makes inter-token gaps bimodal and destroys the correspondence between an observed gap and a decode step. Nagle-style coalescing and TLS record boundaries do the same at a lower layer.
+Attribution therefore requires the server to emit its own per-token timestamps, so the client-observed gap can be decomposed rather than assumed to be compute.""",
+  h="H254: the client-observed inter-token gap distribution differs from the server-side per-token generation interval by a component attributable to transport and proxy buffering, and that component is independent of the parallel layout (ESTIMATE; derivation: transport and proxy costs depend on payload size and flush policy, neither of which changes when layers are resharded across GPUs; if removing the proxy and terminating the stream on the server host leaves the observed gap distribution unchanged, the transport component is negligible and the claim is refuted).",
+  exp="Instrument the server to record a timestamp per generated token and export it alongside the response, then measure the same trace three ways: in-process on the server, over a direct loopback connection, and through the full production path including proxy and TLS. Difference the distributions to isolate the transport component. Only after that component is bounded may the layout arms be compared, and they must be compared on the server-side series.",
+  gate="Rollback gate: no layout is promoted on client-observed latency alone; if the transport component is larger than the inter-layout margin, or if response buffering is detected anywhere in the path, the comparison is void until the path is bypassed or the buffering disabled, and the incumbent layout stays.",
+  risks=["Proxy response buffering coalesces tokens and makes observed inter-token gaps unrelated to decode steps.",
+         "TLS record framing and socket coalescing add layout-independent jitter to the tail.",
+         "A client-side SLO can be met or missed for reasons entirely outside the serving process.",
+         "Load-balancer hop count often differs between the benchmark path and the production path."],
+  ev=["Server-side per-token generation timestamps exported with the response.",
+      "The same trace measured in-process, over loopback, and through the full production path.",
+      "Proxy and load-balancer buffering configuration for the measured path.",
+      "Distribution, not mean, of the difference between client-observed and server-side inter-token intervals."],
+  qd=(3,2,3), conf=0.79),
+
+ dict(n=255,
+  t="Storage and weight-loading paths determine reconfiguration cost, so GPUDirect Storage and checkpoint sharding belong in a layout decision that must survive restarts.",
+  body="""Choosing a parallel layout is also choosing how the checkpoint is sharded on disk and how it reaches HBM. A tensor-parallel layout needs each rank to read a different slice of every weight tensor; a pipeline-parallel layout needs each rank to read a contiguous subset of layers. The first pattern is many strided reads across many files, the second is fewer larger sequential reads, and a storage backend optimized for one can be poor at the other. GPUDirect Storage removes the bounce through host memory for the read path, but only when the file system, driver and alignment requirements are all satisfied; when they are not, the path silently falls back to the buffered route and the benefit disappears without an error.
+This matters operationally because load time is recovery time: it bounds how fast a replica returns after a crash, a node drain or a rolling upgrade, and therefore feeds directly into availability rather than into steady-state latency.""",
+  h="H255: cold-start time to first served request differs materially between tensor-parallel and pipeline-parallel layouts of the same model, driven by checkpoint shard layout and read pattern rather than by compute (ESTIMATE; derivation: load time is approximately bytes_read/effective_read_bandwidth plus per-file open and metadata overhead, and the two layouts differ in both the number of files touched per rank and the sequentiality of the reads; if measured cold-start times match within noise across layouts, the storage path is not the bottleneck and the claim is refuted).",
+  exp="Time cold start end to end for each layout from process launch to first successfully served request, three repeats, with the page cache dropped before each run so the read is genuinely cold. Record bytes read, file count, achieved read bandwidth and whether the direct-storage path was actually taken rather than assumed. Separately measure a warm-cache start to bound how much of the difference is storage rather than initialization.",
+  gate="Rollback gate: a layout whose measured cold-start time exceeds the recovery-time objective is not promoted regardless of steady-state latency; if the direct-storage path is not confirmed active in the run logs, the measured load time is reported as the buffered-path number and no direct-storage benefit is claimed.",
+  risks=["Direct-storage paths fall back to buffered I/O silently when alignment or filesystem requirements are unmet.",
+         "Checkpoint shard layout is coupled to the parallel layout, so changing the layout invalidates the on-disk artifact.",
+         "Cold-start time is recovery time and bounds availability, but is routinely excluded from layout comparisons.",
+         "Page-cache warmth between repeats makes load-time measurements optimistic and unrepeatable."],
+  ev=["Cold-start wall-clock from launch to first served request, three repeats, page cache dropped before each.",
+      "Bytes read, file count and achieved read bandwidth per rank during load.",
+      "Explicit confirmation from logs or counters that the direct-storage path was used rather than the buffered fallback.",
+      "Warm-cache start time for the same layout, to separate storage cost from initialization cost."],
+  qd=(3,2,3), conf=0.78),
+
+ dict(n=256,
+  t="Autoscaling and replica granularity make the layout a fleet-level choice, because the layout sets the size of the indivisible scaling unit.",
+  body="""A parallel layout fixes how many GPUs one replica consumes, and that number is the quantum in which capacity can be added or removed. A layout spanning eight GPUs can only scale in eight-GPU steps, so a fleet sized to a bursty arrival process must either overprovision to the next quantum or accept queueing during the ramp. A layout spanning two GPUs scales in finer steps and wastes less headroom, but each replica holds a full copy of the weights, so aggregate memory spent on weights rises and the KV budget per GPU falls.
+Scheduling adds a second constraint: a large replica needs that many GPUs free on topologically adjacent devices simultaneously, which is harder to satisfy on a fragmented cluster and produces longer scheduling latency and stranded devices.""",
+  h="H256: at fixed total GPU count and a bursty arrival process, the layout minimising single-request latency is not necessarily the layout minimising SLO violations at the fleet level, because coarser replicas quantise capacity and lengthen the scale-up path (ESTIMATE; derivation: SLO violation during a burst is governed by queueing until capacity arrives, and time-to-capacity is the replica cold-start time plus the wait for a topologically valid free slot, both of which grow with replica size; if fleet-level violation rates track single-replica latency ordering exactly, the quantisation effect is negligible and the claim is refuted).",
+  exp="Replay a production arrival trace that contains real bursts against fleets built from each candidate layout, holding total GPU count constant so the arms are comparable. Record SLO violation rate, queue depth over time, scale-up decision-to-ready latency, and the number of GPUs left stranded by fragmentation. Separately record scheduling wait time for a new replica on a deliberately fragmented cluster, since that cost is invisible on an empty one.",
+  gate="Rollback gate: a layout is not promoted on single-replica latency alone; if its fleet-level SLO violation rate under the burst trace is worse than the incumbent's, or if stranded-GPU count exceeds the agreed waste budget, the incumbent layout is retained.",
+  risks=["Coarse replica granularity forces overprovisioning or accepts queueing during bursts.",
+         "Large replicas need topologically adjacent free GPUs and suffer longer scheduling waits on fragmented clusters.",
+         "Fine-grained replicas duplicate weights and shrink the per-GPU KV budget.",
+         "Fleet-level SLO behaviour can invert the single-replica latency ranking."],
+  ev=["Production arrival trace containing real bursts, with the burst statistics characterised.",
+      "Fleet-level SLO violation rate and queue-depth time series per layout at fixed total GPU count.",
+      "Scale-up decision-to-ready latency, decomposed into scheduling wait and replica cold start.",
+      "Stranded-GPU and fragmentation counts from the cluster scheduler during each run."],
+  qd=(3,2,3), conf=0.79),
+
+ dict(n=257,
+  t="Observability itself perturbs the measurement, so profiler and tracing overhead must be quantified before profiled results are used to choose a layout.",
+  body="""The instruments used to attribute latency between compute and communication are not free. Kernel-level profiling serializes device work or inserts synchronisation to timestamp boundaries; collective-library tracing adds per-call bookkeeping on exactly the path under study; per-token application traces add allocation and serialization per token; and high-frequency device metric polling contends with the workload for driver access. The overhead is not uniform across layouts: an arm with more collective calls per token pays more collective-tracing overhead than one with fewer, which biases the comparison in the direction of the hypothesis being tested.
+The disciplined pattern is two passes: an unprofiled pass that produces the numbers of record, and a profiled pass that produces attribution and is never used for the headline comparison.""",
+  h="H257: enabling profiling and tracing changes measured TPOT p95 by an amount that differs across layouts, and the difference can be a significant fraction of the inter-layout margin (ESTIMATE; derivation: tracing cost scales with the number of instrumented events per token, and TP arms have more collective events per token than PP arms, so the added cost is asymmetric by construction; if profiled and unprofiled runs agree within noise for every arm, the overhead is negligible and the claim is refuted).",
+  exp="Run every layout arm twice on the identical trace: once fully unprofiled with only cheap counters, once with the profiling configuration intended for attribution. Report the delta per arm as the measured instrumentation overhead. Use the unprofiled numbers for the layout decision and the profiled numbers only to explain where time went, and state which pass every reported figure came from.",
+  gate="Rollback gate: any headline latency figure sourced from a profiled run is rejected; if the measured instrumentation overhead of any arm exceeds the margin between arms, the attribution is reported as directional only and no layout change is promoted on it.",
+  risks=["Profiler and tracing overhead is asymmetric across layouts and biases the comparison.",
+         "Profiled numbers leak into headline results when the pass provenance is not recorded per figure.",
+         "High-frequency metric polling contends with the workload for driver access.",
+         "Kernel-level profiling inserts synchronisation that changes the very overlap being measured."],
+  ev=["Paired profiled and unprofiled runs for every arm on the identical trace, with the delta reported.",
+      "Explicit provenance tag on every reported number stating which pass produced it.",
+      "The exact profiling and tracing configuration, including sampling rates and enabled event classes.",
+      "Cheap-counter-only baseline demonstrating what the workload looks like with minimal instrumentation."],
+  qd=(3,2,3), conf=0.8),
+
+ dict(n=258,
+  t="Hardware heterogeneity and silent degradation inside a nominally uniform node make the slowest rank the layout's latency, so per-rank health must be verified before attributing a result to the axis.",
+  body="""Both parallel axes are synchronous: a tensor-parallel step completes when the slowest rank reaches the all-reduce, and a pipeline stage cannot start before its predecessor finishes. Any per-device asymmetry therefore propagates to the whole replica. Real causes of asymmetry inside a supposedly uniform node include thermal or power throttling on the hottest devices, a degraded interconnect link that has fallen back to fewer lanes or a lower speed, correctable-error retraining on a link, an unbalanced PCIe topology where some devices sit behind a different switch, and clock differences between parts.
+Tensor parallelism is the more exposed axis because it synchronises twice per layer per token, so a single slow device is paid on every collective, whereas a pipeline suffers a slow stage only once per stage traversal.""",
+  h="H258: introducing a single degraded rank raises TPOT p95 more for a wide tensor-parallel arm than for a pipeline arm of equivalent GPU count, because the number of synchronisation points per token differs (ESTIMATE; derivation: TP pays two collectives per layer per token, each gated by the slowest rank, whereas PP pays one point-to-point handoff per stage boundary per token, so the exposure to a straggler scales with layer count in one case and stage count in the other; if the degradation cost is equal across arms, the synchronisation-frequency argument is refuted).",
+  exp="Before any layout comparison, run a per-device health sweep: identical single-device compute and memory-bandwidth microbenchmarks on every GPU, pairwise link bandwidth and latency across all device pairs, and link-error and throttle-reason counters read before and after. Then, as a deliberate arm, induce a controlled slowdown on one device - for example by capping its clock or power limit - and repeat the comparison to measure each arm's straggler sensitivity.",
+  gate="Rollback gate: no layout comparison is accepted if the pre-run health sweep shows any device deviating from the node median by more than a pre-agreed tolerance, or if throttle or link-error counters incremented during any arm; the run is discarded, the device is investigated, and the incumbent layout stays until a clean sweep is produced.",
+  risks=["A single throttled or degraded device sets the latency of the whole synchronous replica.",
+         "Link speed or lane-width fallback is silent and is easily attributed to the parallel layout instead.",
+         "Nominally identical nodes differ in thermals, power caps and PCIe topology.",
+         "Wide tensor-parallel groups amplify straggler exposure because they synchronise every layer."],
+  ev=["Per-device compute and memory-bandwidth microbenchmark results across all GPUs in the node, before each arm.",
+      "Pairwise link bandwidth and latency matrix, plus link-error and retraining counters read before and after every run.",
+      "Throttle-reason and power-cap counters sampled during each run, per device.",
+      "A deliberate induced-straggler arm quantifying each layout's sensitivity to one slow rank."],
+  qd=(3,2,3), conf=0.79),
+
+ dict(n=259,
+  t="The correct deliverable is a scoped, expiring decision record whose validity is the intersection of every conditioning variable identified above, not a universal ranking of the two axes.",
+  body="""Every stance in this batch names a variable that can invert the comparison: warmup and steady state, software version pinning, KV-head count, context-length distribution, transport and proxy path, checkpoint and storage path, fleet-level replica granularity, instrumentation overhead, and per-device health. A claim of the form 'tensor parallelism beats pipeline parallelism' is therefore not well formed unless it carries the conjunction of all of those conditions.
+The deliverable that survives review is a decision record that states the model and weights hash, the fabric and topology, the software version manifest, the traffic distribution including context lengths and burstiness, the SLO definition and its measurement point, the arms compared, the measured margin with run-to-run spread, and an explicit expiry condition. Without the expiry condition the record silently becomes a standing belief and outlives the conditions that justified it.""",
+  h="H259: a layout decision recorded without its conditioning variables will be invalidated by ordinary drift in at least one of them within a normal operating interval, and the invalidation will not be noticed unless an expiry condition and a monitor were written down alongside the decision (ESTIMATE; derivation: each conditioning variable named above independently drifts - versions are upgraded, traffic distributions shift, hardware degrades - so the probability that all of them hold simultaneously decays with time; if a re-run under drifted conditions reproduces the original margin, the record was more robust than claimed and the hypothesis is refuted for that case).",
+  exp="Write the decision record with every conditioning variable enumerated and each one paired with a monitored signal and a threshold. Schedule a re-run of the same comparison after a fixed interval, or immediately upon any monitored variable crossing its threshold, and diff the new margin against the recorded one. Treat the re-run as the falsification test of the record rather than as a routine benchmark.",
+  gate="Rollback gate: the decision record expires automatically at the stated interval or on any threshold crossing; on expiry the layout is not silently retained - either the comparison is rerun and the record reissued, or the service reverts to the incumbent layout with the change noted as unvalidated.",
+  risks=["An unscoped layout ranking is applied outside the conditions that produced it.",
+         "Decision records without expiry conditions become standing beliefs that outlive their evidence.",
+         "Conditioning variables drift independently, so validity decays even with no deliberate change.",
+         "Without a monitored threshold per variable, invalidation is discovered only after an incident."],
+  ev=["A written decision record enumerating model hash, fabric topology, version manifest, traffic distribution, SLO definition and measurement point.",
+      "Measured margin between arms with run-to-run spread, not a single point estimate.",
+      "One monitored signal and threshold per conditioning variable, with the alerting path named.",
+      "A scheduled re-run result diffed against the original margin, treated as the record's falsification test."],
+  qd=(3,2,3), conf=0.8),
+]
+
+assert len(S) == 10
+
+out = []
+for row, s in zip(sel, S):
+    m = {x["role"]: x["content"] for x in row["messages"]}
+    ans = (
+        f"Analytical stance under test: Stance {s['n']} - {s['t']}\n\n"
+        f"{COMMON}\n\n"
+        f"{s['body'].strip()}\n"
+        f"Falsifiable hypothesis H{s['n']}: {s['h']}\n"
+        f"Controlled experiment: {s['exp']}\n"
+        f"{s['gate']}\n\n"
+        f"{CRITIQUE}"
+    )
+    qd = s["qd"]
+    out.append({
+        "source_id": row["id"],
+        "teacher_lane": "teacher-B",
+        "teacher_model": "claude-opus-5-current",
+        "calibration_status": "provisional",
+        "decision": "rewrite",
+        "source_user": m["user"],
+        "source_assistant": m["assistant"],
+        "corrected_answer": ans,
+        "quality_dimensions": {
+            "technical_correctness": qd[0],
+            "instruction_coverage": qd[1],
+            "operational_safety": qd[2],
+        },
+        "risks": s["risks"] + BASE_RISKS,
+        "evidence_required": s["ev"],
+        "confidence": s["conf"],
+    })
+
+with open(OUT, "w") as f:
+    for r in out:
+        f.write(json.dumps(r, ensure_ascii=False) + "\n")
+print("WROTE", OUT, len(out))
+print("IDS", [r["source_id"] for r in out])
