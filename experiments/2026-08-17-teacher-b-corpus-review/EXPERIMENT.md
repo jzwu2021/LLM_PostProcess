@@ -5,6 +5,69 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0176
+
+- Batch file: results/train-batch-0176.jsonl
+- Corpus range: train.jsonl positional lines 1751-1760, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. Indexing is by line position, not by numeric ID suffix.
+  The original corpus was not modified, and no teacher-A artifact was read at any point in this run
+  (blind lane isolation held).
+- Source IDs: corpus-01929, corpus-01930, corpus-01931, corpus-01932, corpus-01933, corpus-01934,
+  corpus-01935, corpus-01936, corpus-01937, corpus-01938.
+- Progress: 1760/2500 train records (70.4%). Remaining: 740. The 2500 denominator is the
+  user-set staged target adopted on 2026-08-18, replacing the original 6000-record figure;
+  earlier entries in this file intentionally retain the denominators in force at their time.
+  Validation target is 0 for this stage; zero validation-batch files exist and none were created
+  (asserted by the verifier, not merely promised).
+- Decisions this batch: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on first run (scripts/tb_verify_batch_0176.py). No repair actions were
+  required, so no batch content was rewritten. The original corpus and all prior batches were left
+  untouched.
+- Verifier assertions exercised: trailing newline on every batch file; contiguous batch numbering
+  0001..0176; field-set EQUALITY against the 12-field schema (not mere presence); enum constants for
+  teacher_lane / teacher_model / calibration_status / decision; byte-exact source_user and
+  source_assistant against the corpus for ALL 1760 aggregated records; non-empty corrected_answer;
+  corrected_answer != source_assistant; 10 distinct corrected_answer sha256 digests; the
+  "Analytical stance under test: <stance>." marker present with pairwise-distinct stances;
+  ESTIMATE labelling present in every answer; quality_dimensions integer range 1-5; confidence float
+  in [0,1]; global source_id uniqueness across all batches; aggregate sequence is a strict prefix of
+  train.jsonl; and zero validation-batch-* files.
+- Final schema check: PASS. Manifest: MANIFEST.sha256 regenerated over every file in the experiment
+  directory except itself, after EXPERIMENT.md was edited, and `sha256sum -c` verified all entries.
+- Technical topics covered: weight-only quantization (WOQ) as an LLM serving-cost lever. All ten rows
+  are rubric-identical variants (29-38) of the single "define a fair comparison" scenario, so the
+  source_assistant is a grading rubric rather than an answer and the correct decision for every row is
+  rewrite. To avoid templating, each variant was bound to a distinct analytical stance:
+  (1) pre-registered skeptical null that any gain is KV capacity rather than kernels;
+  (2) cost-unit-first accounting, tracing GPU-seconds/1k output tokens through the autoscaling policy
+  to instance-hours; (3) roofline/phase decomposition used as a go-no-go gate, with Amdahl applied to
+  the byte-count bound (decode fraction f=0.4 -> ~1.33x ceiling, f=0.8 -> ~2.1x, both ESTIMATE);
+  (4) arm-identity freeze and configuration-drift forensics, asserting the arms' config symmetric
+  difference is exactly the bit-width fields; (5) quality-first gating on per-slice damage with
+  bootstrap 95% CIs on absolute deltas; (6) diagnostic posture that pre-enumerates the four possible
+  outcomes (kernel win / capacity win / tooling fallback / underpowered) and names the discriminating
+  artifact for each; (7) RC1-RC5 root-cause routing for a disappointing headline result;
+  (8) canary and rollout design, treating the benchmark as authorisation for a >=72h canary rather
+  than as the decision; (9) alternatives-first, pricing KV tuning, prefix caching, chunked-prefill
+  tuning, speculative decoding, replica right-sizing and a smaller model on the same cost unit before
+  accepting a second numeric path; (10) an ordered four-question gate sequence, each with an explicit
+  falsifier and a stop-at-first-failure rule.
+  Shared substantive content across all ten: WOQ reduces weight bytes moved per token and therefore
+  helps only in the memory-bandwidth-bound small-batch decode regime, with prefill flat or worse; the
+  byte-count bound (9e9 params x 2 B = 18 GB BF16 vs ~5.0-5.3 GB at INT4 group-128 with FP16
+  scale/zero, ratio ~3.2-3.6x) labelled ESTIMATE with its derivation inline and explicitly described
+  as a batch-1 decode upper bound rather than a throughput result; the mandatory two-arm isolation
+  running the quantized configuration once with KV capacity clamped to the baseline block count and
+  once at native capacity; comparison at the SLO intersection of each arm's own latency-throughput
+  curve rather than at fixed batch size; silent dequant-GEMM kernel-fallback detection via per-layer
+  kernel dumps and resident weight bytes; calibration/eval disjointness proven by hash; and
+  matched-window fleet GPU-hour accounting as the confirmatory cost evidence. Every answer states
+  explicitly that no figure in it is MEASURED because no telemetry accompanied the prompt.
+- Status caveat: these outputs are PROVISIONAL teacher-B blind review artifacts. They are not expert
+  gold labels, they have not been human-verified, and they say nothing about any model's domain
+  capability. Cross-lane agreement analysis against teacher-A is a separate, later step and was
+  deliberately not performed here.
+
 ## Run 2026-08-18 batch 0175
 
 - Batch file: results/train-batch-0175.jsonl
