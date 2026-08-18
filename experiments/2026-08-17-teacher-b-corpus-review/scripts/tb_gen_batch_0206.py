@@ -1,0 +1,283 @@
+import json, re
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+EXP = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+OUT = f"{EXP}/results/train-batch-0206.jsonl"
+START, N = 2050, 10
+
+# Reuse the shared frame verbatim from the previous batch generator.
+src = open(f"{EXP}/scripts/tb_gen_batch_0205.py").read()
+ns = {}
+exec(src.split("STANCES = [")[0].replace("import json", "import json"), ns)
+COMMON = ns["COMMON"]
+
+STANCES = [
+ ("Stance 60 - Attention backend and kernel selection can dominate the layout effect and must be pinned before comparing axes.",
+  "Decode latency is a sum of collective time and kernel time, and the kernel term is not constant across layouts. Head "
+  "counts per rank change with TP degree, and many attention kernels have head-count- and head-dimension-dependent fast "
+  "paths; a TP degree that leaves a ragged number of heads per rank can fall off the tuned path entirely, while the PP arm "
+  "keeps full head counts per rank and stays on it. An engineer who does not pin the backend is comparing kernel dispatch, "
+  "not parallelism. Falsifiable hypothesis H60: for at least one TP degree that divides heads unevenly or leaves fewer "
+  "heads per rank than the kernel's tuned minimum, measured decode TPOT is worse than the next-lower TP degree despite "
+  "less per-rank work, and forcing a single backend across all arms shrinks the anomaly (ESTIMATE; derivation: kernel "
+  "selection is a discrete function of per-rank head count and head dimension, so per-rank work and per-rank kernel "
+  "efficiency do not move together). Controlled experiment: pin one attention backend and one dtype across every arm, log "
+  "the actually dispatched kernel per arm, then repeat with autoselection enabled and report both. Evidence required: "
+  "dispatched kernel names per arm, heads-per-rank arithmetic for every TP degree tested, and backend and dtype pins. "
+  "Rollback gate: discard any cross-layout comparison in which the dispatched kernel differed between arms.",
+  ["Kernel autoselection makes the layout comparison a comparison of kernels rather than of parallel axes.",
+   "TP degrees that divide attention heads unevenly can be slower than a lower degree, inverting the naive expectation.",
+   "Backend defaults change across engine versions, so unpinned comparisons are not reproducible across upgrades."],
+  ["The dispatched attention kernel name and dtype for every arm.",
+   "Heads-per-rank and head-dimension arithmetic for each TP degree under test.",
+   "Explicit backend and dtype pins recorded in the run configuration."]),
+
+ ("Stance 61 - Prefill and decode have opposite parallelism preferences, so a single verdict for a mixed workload is a category error.",
+  "Prefill is compute-bound and processes many tokens at once, so TP's collectives amortise over a large GEMM and TP scales "
+  "well there. Decode is memory-bandwidth-bound and processes one token per sequence per step, so the same collectives are "
+  "pure latency overhead. A service that serves both phases in the same engine is therefore being asked to satisfy two "
+  "conflicting optima with one layout, and the reported best layout depends entirely on the input-to-output length ratio "
+  "of the traffic used to benchmark it. Falsifiable hypothesis H61: the layout ranking measured on a long-prompt, "
+  "short-output traffic mix differs from the ranking measured on a short-prompt, long-output mix at the same request rate "
+  "(ESTIMATE; derivation: prefill cost scales with prompt tokens and is compute-bound while decode cost scales with output "
+  "tokens and is latency-bound, so shifting the ratio reweights two terms that respond oppositely to TP degree). "
+  "Controlled experiment: hold everything fixed and sweep only the prompt-to-output length ratio across at least three "
+  "points per layout, reporting TTFT and TPOT separately rather than end-to-end latency. Evidence required: the input and "
+  "output length distributions of real production traffic, phase-separated TTFT and TPOT per arm, and the request mix used. "
+  "Rollback gate: refuse to publish a single layout verdict for a service whose traffic spans both regimes; publish a "
+  "ranking per regime or evaluate a disaggregated design instead.",
+  ["A single layout verdict silently assumes one traffic shape and breaks when the mix shifts.",
+   "End-to-end latency conflates prefill and decode and hides the axis that actually differs.",
+   "Benchmark traffic mixes rarely match production length distributions, biasing the verdict."],
+  ["Production prompt-length and output-length distributions, not synthetic fixed lengths.",
+   "TTFT and TPOT reported separately per arm across at least three length-ratio points.",
+   "The request mix and arrival process used for each sweep point."]),
+
+ ("Stance 62 - Evaluate whether disaggregating prefill and decode dissolves the question before optimising within it.",
+  "If prefill and decode want different layouts, the structurally honest response is to stop choosing between TP and PP for "
+  "one monolith and instead ask whether the two phases should run in separate pools with KV transferred between them. That "
+  "is the design space Mooncake-style KV-centric disaggregation and NVIDIA Dynamo's disaggregated serving occupy: each pool "
+  "picks its own parallel layout, and the new cost is a KV transfer over the fabric plus a scheduling dependency. The "
+  "question then becomes whether the transfer cost is smaller than the interference cost it removes. Falsifiable "
+  "hypothesis H62: at a mix where prefill and decode contend, a disaggregated deployment achieves lower p95 TPOT than the "
+  "best monolithic layout at equal device count, and the advantage vanishes when the KV transfer path is bandwidth-limited "
+  "relative to per-request KV volume (ESTIMATE; derivation: disaggregation removes prefill-induced decode stalls but adds "
+  "a per-request KV movement whose time is KV bytes divided by achievable transfer bandwidth; the sign of the net effect "
+  "is a comparison of those two terms). Controlled experiment: run a monolithic best-layout arm and a disaggregated arm at "
+  "equal device count and identical traffic, instrumenting KV transfer bytes and time per request. Evidence required: "
+  "per-request KV bytes, achieved transfer bandwidth on the actual fabric, decode-stall attribution in the monolithic arm, "
+  "and equal-device-count accounting. Rollback gate: reject disaggregation if measured KV transfer time exceeds the "
+  "measured interference it removes, and re-evaluate after any fabric change.",
+  ["Disaggregation adds a KV transfer dependency that can exceed the interference it removes.",
+   "Comparisons at unequal device counts make disaggregation look better than it is.",
+   "The advantage is fabric-dependent and does not transfer between clusters without re-measurement."],
+  ["Per-request KV byte volume and achieved KV transfer bandwidth on the real fabric.",
+   "Decode-stall time attributable to prefill interference in the monolithic arm.",
+   "Equal-device-count accounting for both the monolithic and disaggregated arms."]),
+
+ ("Stance 63 - Numerical equivalence across layouts must be demonstrated, not assumed, before latency is compared.",
+  "Changing the parallel axis changes reduction order. TP splits a GEMM and sums partial results across ranks; PP does not. "
+  "In reduced precision, floating-point addition is not associative, so the two layouts can produce different logits for "
+  "the same input, and a sampled generation can diverge after enough tokens. If a latency comparison is run without first "
+  "establishing output equivalence within a stated tolerance, a faster arm may simply be a differently-behaving arm, and "
+  "any downstream quality regression will be attributed to the wrong cause. Falsifiable hypothesis H63: greedy decoding on "
+  "a fixed prompt set produces token-identical outputs across layouts for a nontrivial fraction of prompts and diverges on "
+  "the remainder, with divergence probability increasing with generation length (ESTIMATE; derivation: per-step logit "
+  "differences of order the reduced-precision rounding scale occasionally cross an argmax boundary, and the chance of at "
+  "least one crossing accumulates with the number of steps). Controlled experiment: greedy-decode a fixed prompt set on "
+  "every arm with a fixed seed, report first-divergence token index and logit-difference distributions before running any "
+  "timing. Evidence required: per-arm greedy outputs on a fixed prompt set, logit difference statistics, dtype and "
+  "reduction-precision configuration, and any deterministic-kernel flags. Rollback gate: do not compare latency between "
+  "arms whose greedy outputs diverge beyond the pre-declared tolerance until the divergence is explained.",
+  ["Reduction order differs across layouts, so identical inputs need not give identical outputs.",
+   "A latency win can be an artifact of a numerically different computation rather than a faster one.",
+   "Quality regressions caused by layout changes are usually misattributed to the model or the data."],
+  ["Greedy-decode outputs on a fixed prompt set with fixed seeds for every arm.",
+   "Logit-difference distributions and first-divergence token index across arms.",
+   "Dtype, reduction precision and deterministic-kernel configuration per arm."]),
+
+ ("Stance 64 - Cross-node arms must publish their RDMA and NIC configuration or they are untraceable folklore.",
+  "The moment a layout crosses a node boundary, its result is a property of the network configuration as much as of the "
+  "algorithm. RoCEv2 without correctly configured priority-flow-control and ECN degrades under congestion in ways that "
+  "appear as sporadic tail latency, not as errors; GPUDirect RDMA either is or is not in effect depending on PCIe topology "
+  "and ACS settings, and the difference is a staging copy through host memory that no application-level metric names. Two "
+  "engineers reporting opposite cross-node results are usually both right about different clusters. Falsifiable hypothesis "
+  "H64: disabling GPUDirect RDMA so transfers stage through host memory raises inter-stage transfer time and inflates "
+  "tail TPOT for the cross-node arm, while leaving the intra-node arm unchanged (ESTIMATE; derivation: without GDR the "
+  "path gains a device-to-host and host-to-device copy plus host memory bandwidth contention, which is additive per "
+  "transfer and absent intra-node). Controlled experiment: run the cross-node arm twice, once with GDR confirmed active "
+  "and once forced off, holding everything else fixed, and report tail latency and PFC/ECN counters for both. Evidence "
+  "required: NIC and switch PFC/ECN configuration, PCIe topology and ACS state, NCCL transport logs confirming whether GDR "
+  "was used, and congestion counters over the run. Rollback gate: reject any cross-node latency claim published without "
+  "the fabric configuration attached, including in internal comparisons.",
+  ["Cross-node results are cluster-specific and do not generalise without the fabric configuration.",
+   "GPUDirect RDMA can be silently inactive, converting the measurement into a host-staged path.",
+   "Misconfigured PFC/ECN produces intermittent tail latency that is easily blamed on the parallel layout."],
+  ["NIC and switch PFC/ECN configuration and congestion counters sampled across the run.",
+   "PCIe topology and ACS settings establishing whether GPUDirect RDMA is possible.",
+   "NCCL transport logs confirming which transport and protocol were actually selected."]),
+
+ ("Stance 65 - Long context changes the arithmetic enough to invalidate a short-context verdict.",
+  "KV cache grows linearly with sequence length while weights do not, so at long context the memory picture is dominated by "
+  "KV rather than by parameters. TP shards KV across ranks and therefore raises the concurrency ceiling at a given context "
+  "length; PP does not shard KV within a stage, it only reduces the number of layers whose KV a given device holds, which "
+  "is a different and often weaker lever. Meanwhile attention cost per decode step grows with context while the "
+  "per-token collective payload does not, so the relative weight of collective overhead falls as context grows. Falsifiable "
+  "hypothesis H65: the TP arm's relative TPOT disadvantage narrows monotonically as context length increases, because "
+  "collective cost is context-independent while attention cost grows with context (ESTIMATE; derivation: decode all-reduce "
+  "payload depends on hidden size only, whereas attention reads the whole KV cache each step, so the ratio of collective "
+  "time to total step time falls as sequence length rises). Controlled experiment: sweep context length across at least "
+  "three points per layout at fixed concurrency, reporting TPOT and achieved concurrency ceiling at each point. Evidence "
+  "required: per-sequence KV byte accounting versus context length, TPOT curves per layout across the sweep, and the "
+  "measured maximum concurrency at each context point. Rollback gate: never extrapolate a short-context layout verdict to "
+  "a long-context deployment without re-running the sweep.",
+  ["Short-context benchmarks systematically understate TP's advantage at long context.",
+   "PP does not shard KV the way TP does, so it is a weaker lever for context-driven memory pressure.",
+   "Concurrency ceiling and per-token latency move in opposite directions as context grows, so one number cannot capture it."],
+  ["Per-sequence KV byte accounting as a function of context length for each layout.",
+   "TPOT and maximum sustained concurrency measured at three or more context lengths per arm.",
+   "The context-length distribution of production traffic used to weight the sweep."]),
+
+ ("Stance 66 - Write the operational runbook for each layout before choosing, because the harder one to operate loses on tail risk.",
+  "Layouts differ in how many things an on-call engineer must reason about at 03:00. A TP group is one deployment unit with "
+  "one restart procedure and one health signal. A cross-node PP deployment has stage-specific health, ordering constraints "
+  "on restart, and a failure mode where one healthy-looking stage waits forever on a dead peer. If the runbook for one "
+  "layout cannot be written without hedging, that layout carries operational risk which no steady-state latency number "
+  "captures. Falsifiable hypothesis H66: in a tabletop exercise, engineers unfamiliar with the deployment restore service "
+  "faster and with fewer incorrect actions under the layout with fewer coupled components, and the gap is larger than the "
+  "steady-state latency gap expressed in equivalent user impact (ESTIMATE; derivation: restore time scales with the number "
+  "of coupled components an operator must diagnose, while steady-state latency differences are typically small multiples "
+  "of a per-token cost). Controlled experiment: run a blind tabletop or game-day for each layout with the same injected "
+  "fault and the same runbook quality bar, measuring time to correct diagnosis and time to restore. Evidence required: the "
+  "written runbook for each layout, health-check semantics per component, game-day timings and error counts, and the "
+  "on-call staffing model. Rollback gate: do not adopt a layout whose runbook cannot be executed correctly by a "
+  "non-specialist on-call engineer within the availability budget.",
+  ["Operational complexity is a real cost that steady-state latency benchmarks never measure.",
+   "Cross-node pipelines have hang-style failures where components look healthy while the service is down.",
+   "Runbooks written by the layout's author overestimate how operable it is for others."],
+  ["The written runbook and health-check semantics for each layout under consideration.",
+   "Game-day timings, incorrect-action counts and time-to-restore per layout.",
+   "The on-call staffing and expertise model the layout will actually be operated under."]),
+
+ ("Stance 67 - Audit the benchmark client before believing anything it reports about the server.",
+  "Tail latency attributed to a parallel layout is frequently produced by the load generator: a client with too few "
+  "connections, a synchronous request loop, coordinated-omission-prone timing, or a tokenizer running inline on the client "
+  "thread will manufacture latency that tracks nothing about the server. Because the layouts differ in service time, a "
+  "client-side bottleneck also binds at different offered loads in each arm, producing a difference that looks like a "
+  "layout effect. Falsifiable hypothesis H67: moving the load generator to a second host or doubling its concurrency "
+  "changes the measured inter-layout gap, which would show that part of the gap was client-side (ESTIMATE; derivation: a "
+  "server-side effect is invariant to client placement and client concurrency, so any dependence on those factors is by "
+  "definition not server-side). Controlled experiment: replicate the headline comparison with the client on a separate "
+  "host and at two client concurrency levels, and record client-side CPU saturation and connection counts throughout. "
+  "Evidence required: client host CPU and network utilisation, connection and concurrency settings, the timing methodology "
+  "including whether queueing time before send is counted, and results from at least two client configurations. Rollback "
+  "gate: discard any latency comparison in which the client host showed saturation or in which the gap moved when the "
+  "client configuration changed.",
+  ["Client-side saturation manufactures tail latency that is misattributed to the server layout.",
+   "Coordinated omission makes a saturated system look better than it is, and asymmetrically across arms.",
+   "Inline client-side tokenisation adds per-request cost that scales with prompt length and confounds length sweeps."],
+  ["Client host CPU, network and connection utilisation timeseries during every run.",
+   "The timing methodology, including whether pre-send queueing is included in reported latency.",
+   "Repeat results from at least two client placements and two client concurrency levels."]),
+
+ ("Stance 68 - Decide the escalation and abandonment policy before starting, so the investigation cannot run forever.",
+  "An open-ended layout investigation is a common way for weeks to disappear without a decision. The disciplined form "
+  "declares up front what result triggers adoption, what result triggers rejection, what result triggers escalation to a "
+  "human owner, and what elapsed budget triggers abandonment with the current best-known configuration retained. Without "
+  "those, the investigation's stopping point is determined by fatigue, and the reported conclusion is whatever was on the "
+  "screen when the team gave up. Falsifiable hypothesis H68: with a pre-registered decision and abandonment rule, the "
+  "elapsed time to a recorded decision is shorter and the decision is no less stable on later review than for an "
+  "open-ended investigation of the same question (ESTIMATE; derivation: a pre-declared stopping rule removes the "
+  "fatigue-determined stopping point without removing information relevant to the threshold comparison). Controlled "
+  "experiment: pre-register adoption, rejection, escalation and abandonment thresholds, timestamp every arm, and record "
+  "which rule fired; review the decision's stability after a fixed interval. Evidence required: the pre-registration "
+  "document with all four thresholds, timestamps for every arm, and a record of which rule terminated the investigation. "
+  "Rollback gate: if the elapsed budget is exhausted without any threshold firing, keep the incumbent configuration and "
+  "record the investigation as inconclusive rather than reporting a weak preference.",
+  ["Open-ended layout investigations terminate on fatigue and report whatever state they stopped in.",
+   "Absent an abandonment rule, sunk cost drives continued spending on a question with no decision-relevant answer.",
+   "Weak preferences reported as conclusions propagate into capacity plans that assume they were measured."],
+  ["A pre-registration document fixing adoption, rejection, escalation and abandonment thresholds.",
+   "Timestamps for every arm and a record of which rule terminated the investigation.",
+   "A later stability review of the recorded decision against subsequent evidence."]),
+
+ ("Stance 69 - Close by naming the provenance and authority of this record so downstream consumers cannot over-read it.",
+  "This record is a provisional, single-lane rewrite produced without executing any benchmark on the asker's hardware. Its "
+  "content is mechanism and experimental design; none of its numbers are MEASURED and every quantitative claim is labelled "
+  "ESTIMATE with its derivation attached so a human can check the reasoning rather than trust the figure. The source "
+  "corpus pair is degenerate - the assistant turn is a grading rubric, not an answer - so there is no prior answer to "
+  "agree or disagree with, and the reviewer's output is not corroborated by any second party at the time of writing. "
+  "Falsifiable hypothesis H69: a downstream consumer given only these records, without the provenance statement, treats "
+  "them as adjudicated ground truth at a materially higher rate than one given the statement, which would show the "
+  "labelling does work rather than being decoration (ESTIMATE; derivation: absent an explicit authority bound, structured "
+  "confident prose is routinely read as authoritative regardless of its actual provenance). Controlled experiment: attach "
+  "the provenance block to every record, then audit downstream usage for whether any training or evaluation step treated "
+  "these as gold. Evidence required: the lane-isolation audit trail, the pre-declared inter-lane agreement metric computed "
+  "only after both lanes are frozen, and a record of every downstream consumer of this file. Rollback gate: no training, "
+  "evaluation or capability claim may cite these records as ground truth before an inter-lane agreement result exists and "
+  "is published alongside them.",
+  ["Provisional single-lane review is routinely over-read as adjudicated ground truth downstream.",
+   "Confident structured prose signals authority that the underlying provenance does not support.",
+   "Without a lane-isolation audit, an apparent agreement result may reflect contamination rather than convergence."],
+  ["An audit trail showing teacher lanes were isolated during generation.",
+   "A pre-declared inter-lane agreement metric computed only after both lanes are frozen.",
+   "A record of every downstream consumer of these records and how they were used."]),
+]
+
+CRITIQUE = (
+"Critique of the source item: the prompt is a legitimate infrastructure question and does ask for assumptions, a "
+"falsifiable hypothesis, measurements, confounders and rollback criteria, but the corpus pair is degenerate - the "
+"assistant turn contains only a rubric describing what an answer should contain, not an answer. There is therefore no "
+"substantive content to keep, and the item is rewritten into a complete response that supplies the mechanism, the "
+"boundary conditions that flip the recommendation, an explicit falsifiable hypothesis, a single-variable controlled "
+"experiment, the evidence artifacts required to adjudicate it, and a rollback gate. Every quantitative claim is labelled "
+"ESTIMATE and carries its derivation; no value here is MEASURED, because no benchmark run was performed for this review. "
+"This output is provisional teacher-B review material, not expert gold, and it is not evidence about any model's domain "
+"capability."
+)
+
+
+def main():
+    with open(CORPUS) as f:
+        lines = f.readlines()[START:START + N]
+    assert len(lines) == N, len(lines)
+    assert len(STANCES) == N
+    out = []
+    for i, line in enumerate(lines):
+        d = json.loads(line)
+        m = {x["role"]: x["content"] for x in d["messages"]}
+        su, sa = m["user"], m["assistant"]
+        title, body, risks, ev = STANCES[i]
+        ca = f"Analytical stance under test: {title}\n\n{COMMON}\n{body}\n\n{CRITIQUE}"
+        out.append({
+            "source_id": d["id"],
+            "teacher_lane": "teacher-B",
+            "teacher_model": "claude-opus-5-current",
+            "calibration_status": "provisional",
+            "decision": "rewrite",
+            "source_user": su,
+            "source_assistant": sa,
+            "corrected_answer": ca,
+            "quality_dimensions": {
+                "technical_correctness": 3,
+                "instruction_coverage": 2,
+                "operational_safety": 2,
+            },
+            "risks": [
+                "Source pair is degenerate: the assistant turn is a grading rubric rather than an answer.",
+                "A bare TP-versus-PP verdict without interconnect, context length and concurrency context is not decidable.",
+            ] + risks,
+            "evidence_required": [
+                "Interconnect topology dump and NCCL transport selection log for every arm of the comparison.",
+                "Concurrency-resolved p50/p95/p99 TTFT and TPOT curves rather than mean end-to-end latency.",
+            ] + ev,
+            "confidence": 0.62,
+        })
+    with open(OUT, "w") as f:
+        for r in out:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print("wrote", OUT, len(out))
+
+
+main()
