@@ -1,0 +1,239 @@
+import json, os
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+EXP = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review"
+OUT = f"{EXP}/results/train-batch-0223.jsonl"
+START = 2220
+N = 10
+
+FRAME = """
+Common frame (applies to every stance below).
+Assumptions (must be restated by the answering engineer, not inherited silently):
+A1. Single node, 8 GPUs, NVLink/NVSwitch intra-node; inter-node paths only appear where a stance says so explicitly.
+A2. Decode-dominant, latency-sensitive serving: the SLO is TTFT p95 and TPOT (inter-token latency) p95, never a mean.
+A3. Model weights fit in aggregate HBM with at least 20% KV-cache headroom at target concurrency.
+A4. Exactly one variable moves per arm: no simultaneous change of quantization, batching policy, or speculative decoding.
+Mechanism, stated plainly:
+- Tensor parallelism (TP) shards every layer's GEMMs. Each transformer block needs two all-reduces (after attention out-projection and after the MLP down-projection), so decode carries L * 2 * allreduce_latency of synchronous cost, where L is the layer count. TP is latency-additive in collectives but capacity- and bandwidth-multiplying: per-GPU weight bytes and per-GPU KV bytes both fall by the TP degree.
+- Pipeline parallelism (PP) shards layers into stages. Per token it adds only (PP-1) small point-to-point hidden-state sends, which are cheap, but a single request serializes through all stages and the bubble fraction is (PP-1)/(micro_batches + PP-1). At low concurrency there are too few in-flight micro-batches to fill the pipeline, so PP loses badly on single-request latency.
+Boundary conditions that flip the answer:
+- B1. On NVLink-class fabric, small-message all-reduce latency is in the single-digit microseconds and TP up to 8 is normally latency-viable. Over PCIe-only or across nodes on RoCE/IB the same collective's latency floor rises roughly an order of magnitude and TP stops paying past TP=2 (ESTIMATE; derivation: decode all-reduce payload is hidden_size * dtype_bytes per token per layer, which is small, so the collective is latency-bound rather than bandwidth-bound and the per-hop latency floor dominates).
+- B2. If the model cannot fit on one GPU, sharding is mandatory and the question reduces to which axis, not whether.
+- B3. Under high, steady concurrency the PP bubble amortizes and PP becomes competitive on throughput per GPU while still losing on single-request latency.
+Default recommendation: use TP inside the node up to the point where collective cost stops being repaid by reduced per-GPU memory traffic; use PP only to cross a node boundary or to fit a model TP alone cannot fit. PP is not a latency optimization.
+Measurement and evidence policy: every number below that was not produced by a run on this hardware is labelled ESTIMATE and carries its derivation. Only values read out of named benchmark artifacts may be labelled MEASURED. This review reports no MEASURED values, because no benchmark was executed for it.
+"""
+
+CRITIQUE = """Critique of the source item: the prompt is a legitimate infrastructure question and does ask for assumptions, a falsifiable hypothesis, measurements, confounders and rollback criteria, but the corpus pair is degenerate - the assistant turn contains only a rubric describing what an answer should contain, not an answer. There is therefore no substantive content to keep, and the item is rewritten into a complete response that supplies the mechanism, the boundary conditions that flip the recommendation, an explicit falsifiable hypothesis, a single-variable controlled experiment, the evidence artifacts required to adjudicate it, and a rollback gate. Every quantitative claim is labelled ESTIMATE and carries its derivation; no value here is MEASURED, because no benchmark run was performed for this review. This output is provisional teacher-B review material, not expert gold, and it is not evidence about any model's domain capability."""
+
+COMMON_RISK = "Source assistant turn is a grading rubric, not an answer; training on it teaches meta-commentary about answers instead of the underlying reasoning."
+COMMON_RISK2 = "No falsifiable hypothesis, no confounder list and no rollback gate, despite the prompt explicitly demanding them."
+
+STANCES = [
+ (230,
+  "Disaggregated prefill and decode, as in Mooncake-style architectures, dissolves the single-layout question because the two phases have opposite optimal sharding.",
+  "Prefill is compute-bound and processes a whole prompt in one pass, so it tolerates larger collectives and benefits from wide tensor parallelism that maximises aggregate FLOPs. Decode is memory-bandwidth-bound and issues a collective per layer per token, so it is far more sensitive to per-collective latency. A disaggregated architecture runs the two phases on separate pools and transfers the KV cache between them over the fabric, which allows each pool to choose its own parallel layout. The cost moved, not vanished: the KV transfer becomes a new term whose size scales with context length and whose latency lands directly in TTFT. Asking whether TP or PP is better for the whole service presupposes a monolithic replica that a disaggregated design no longer has.",
+  "H230: disaggregating prefill and decode improves TTFT p95 only when the KV transfer time is smaller than the prefill-decode interference it removes, and that condition fails above some context length (ESTIMATE; derivation: KV bytes to transfer scale linearly with prompt length while the interference saved is bounded by the fraction of decode steps that were previously stalled behind prefill, so the transfer term eventually dominates).",
+  "Controlled experiment: run the same trace on a monolithic replica and on a prefill/decode-disaggregated deployment at equal total GPU count; instrument KV transfer bytes and transfer latency per request as a first-class metric; sweep prompt length across the production distribution and report TTFT p95 and TPOT p95 per arm at each length.",
+  "Rollback gate: if measured KV transfer latency exceeds the declared share of the TTFT budget at the production context distribution, disaggregation is not promoted; revert to the monolithic layout and re-open only after the transfer path is improved.",
+  [COMMON_RISK,
+   "TP-versus-PP framing assumes a monolithic replica and does not survive a disaggregated prefill/decode architecture.",
+   "KV transfer between pools is a new latency term that scales with context length and is easy to omit from the accounting.",
+   "Two pools must be capacity-matched; a mismatch converts into queueing at whichever side saturates first.",
+   COMMON_RISK2],
+  ["KV transfer bytes and transfer latency per request, reported as a distribution across the prompt-length sweep.",
+   "TTFT p95 and TPOT p95 for monolithic and disaggregated arms at equal total GPU count.",
+   "Prefill-pool and decode-pool utilisation, to show whether the split is capacity-matched.",
+   "Fabric path and bandwidth used for KV transfer, since it determines whether the new term is viable."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.79),
+
+ (231,
+  "NCCL algorithm and protocol selection is autotuned per message size and topology, so two arms can differ by collective implementation rather than by parallel axis.",
+  "A collective library chooses among ring, tree and other algorithms and among low-latency and high-bandwidth protocols based on message size, rank count and detected topology. Decode all-reduces are small, which normally selects a latency-optimised path; prefill all-reduces are large and select a bandwidth-optimised one. Changing tensor-parallel degree changes rank count and message size simultaneously, which can change the selected algorithm discontinuously. The observed latency curve versus TP degree is therefore not smooth, and a comparison at two degrees may be comparing two different algorithms rather than two points on one mechanism. Without logging the selected algorithm and protocol per run, the measurement is uninterpretable.",
+  "H231: the latency-versus-TP-degree curve contains at least one discontinuity that coincides with a change in the selected collective algorithm or protocol, rather than being monotone in degree (ESTIMATE; derivation: selection is threshold-based on message size and rank count, and thresholds produce step changes; if the logged algorithm is constant across the sweep and the curve is still non-monotone, the cause lies elsewhere).",
+  "Controlled experiment: sweep TP degree with everything else pinned; for each point log the selected collective algorithm, protocol and any tuning-file override, and record a standalone collective microbenchmark at the exact message size the model uses; overlay the microbenchmark curve on the end-to-end curve to attribute discontinuities.",
+  "Rollback gate: if a layout's advantage disappears when the collective algorithm is pinned rather than autotuned, the advantage is an artifact of tuning and the layout is not promoted; revert to the incumbent and re-run with the algorithm pinned in both arms.",
+  [COMMON_RISK,
+   "Collective algorithm and protocol selection left autotuned and unlogged, so arms may differ by implementation rather than by layout.",
+   "Threshold-based selection makes the latency-versus-degree curve non-monotone, which invites wrong extrapolation from two points.",
+   "Tuning files and environment overrides can differ between benchmark and production hosts without appearing in any config diff.",
+   COMMON_RISK2],
+  ["Selected collective algorithm and protocol logged per run, per TP degree.",
+   "Standalone collective microbenchmark at the exact model message sizes, on the same fabric and rank count.",
+   "Full collective-library environment and tuning-file contents for each arm, benchmark and production.",
+   "End-to-end latency versus TP degree sweep with at least four points and three repeats each."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.80),
+
+ (232,
+  "Power and thermal limits couple the GPUs in a chassis, so a wider tensor-parallel group can clock lower than a narrow one and the measured difference is partly electrical, not architectural.",
+  "GPUs share a chassis power budget and a thermal envelope. A tensor-parallel group that keeps all eight devices busy simultaneously draws more sustained power than a pipeline arrangement in which some stages idle while waiting, and sustained draw pushes devices toward power or thermal capping. A capped device runs at a lower sustained clock, which raises per-step compute time in a way that has nothing to do with collective cost. Short benchmark runs miss this entirely because capping takes time to engage. The result is a comparison that looks favourable in a two-minute run and degrades after twenty minutes in service.",
+  "H232: TP arm steady-state clocks measured after sustained load are lower than in the first minute, and the degradation is larger for TP than for PP at equal served throughput (ESTIMATE; derivation: TP keeps more devices concurrently active per unit of served work, so aggregate sustained draw is higher and the capping controllers engage sooner; if clocks are flat over time in both arms, the chassis is not power-limited and the claim is refuted).",
+  "Controlled experiment: run each layout for a duration long enough for thermal steady state, at least twenty minutes; sample per-device clock, power draw, temperature and throttle reason at fixed intervals; report latency percentiles computed over the steady-state window only, discarding the warm-up period, and report the clock trajectory alongside.",
+  "Rollback gate: if the steady-state window violates the SLO while the warm-up window met it, the warm-up number is discarded and the layout is not promoted; revert to the incumbent until the power or cooling limit is addressed.",
+  [COMMON_RISK,
+   "Short benchmark runs measure pre-throttle clocks and overstate sustained performance.",
+   "Chassis power and thermal limits couple devices, so per-GPU behaviour is not independent across a parallel group.",
+   "Throttle reasons are recorded by the driver but rarely captured, leaving clock drops attributed to the wrong cause.",
+   COMMON_RISK2],
+  ["Per-device clock, power draw, temperature and throttle-reason samples across the full run, per layout.",
+   "Latency percentiles computed over the thermal steady-state window, with the warm-up window reported separately.",
+   "Chassis power cap and cooling configuration, plus ambient conditions during each run.",
+   "Run duration long enough to reach steady state, with evidence that steady state was reached."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.79),
+
+ (233,
+  "Continuous batching means the batch composition changes every step, so per-request latency depends on which neighbours a request happens to share a step with, and single-number comparisons hide that dependence.",
+  "A modern serving engine admits and retires requests at step granularity, so a request's decode steps are executed alongside a continually changing set of others. Its inter-token latency therefore depends on the instantaneous batch size and on whether a prefill was admitted into the same step. Tensor parallelism and pipeline parallelism react differently to this churn: TP's collective cost is nearly independent of batch size, so it degrades gracefully as the batch grows, while PP's bubble fraction depends on how many micro-batches are in flight, which the scheduler is constantly changing. Reporting a single TPOT percentile without conditioning on batch composition therefore averages over a variable that one layout is much more sensitive to.",
+  "H233: TPOT variance conditioned on instantaneous batch size is higher for the PP arm than the TP arm at equal mean throughput (ESTIMATE; derivation: the PP bubble fraction is a function of in-flight micro-batch count, which the continuous-batching scheduler varies step to step, whereas the TP collective cost is dominated by a latency floor that is largely batch-independent).",
+  "Controlled experiment: log instantaneous batch size and the prefill/decode composition of every step; for each layout report TPOT distribution conditioned on batch-size band rather than aggregated; drive both arms with the identical arrival process, replayed with the same timestamps, so scheduler behaviour is comparable.",
+  "Rollback gate: if the promoted layout's TPOT in any batch-size band that occurs materially often in production violates the SLO, it is not promoted on the strength of its aggregate; revert to the incumbent and re-evaluate with band-level acceptance criteria.",
+  [COMMON_RISK,
+   "Aggregate percentiles hide layout-specific sensitivity to continuously changing batch composition.",
+   "Prefill admitted into a decode step stalls that step, and admission policy differs in effect between the two layouts.",
+   "Replaying a trace without preserving arrival timestamps changes the scheduler's behaviour and invalidates the comparison.",
+   COMMON_RISK2],
+  ["Per-step logs of instantaneous batch size and prefill/decode composition, per layout.",
+   "TPOT distribution conditioned on batch-size band, with band occupancy frequencies from production traffic.",
+   "Identical arrival-timestamp trace replay for both arms, with evidence the arrival processes matched.",
+   "Scheduler admission policy and its configuration, pinned and recorded per arm."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.78),
+
+ (234,
+  "A dynamic inference-graph runtime such as NVIDIA Dynamo makes the parallel layout a runtime-reconfigurable property, which turns a one-off choice into a policy that needs its own evaluation.",
+  "When the serving control plane can reshape worker groups, migrate KV, and change the effective layout in response to load, the engineering question stops being which layout is better and becomes which reconfiguration policy is better. A policy carries costs that a static choice does not: reconfiguration takes time, during which capacity is reduced; it can require draining or migrating in-flight requests; and an oscillating policy can spend more time reconfiguring than serving. Evaluating such a system with a static A/B between two fixed layouts measures neither the policy nor its failure modes.",
+  "H234: under a load pattern that crosses the policy's switching threshold repeatedly, total SLO violations for the dynamic policy exceed those of the better static layout, because reconfiguration cost is paid more often than the layout advantage is earned (ESTIMATE; derivation: reconfiguration cost is incurred per switch while the layout advantage accrues per unit time in the favourable regime, so a load pattern that oscillates faster than the payback period makes the policy a net loss).",
+  "Controlled experiment: drive the dynamic system and each static layout with the same load pattern, including a deliberately oscillating segment that crosses the switching threshold; count reconfiguration events, measure capacity lost per event and requests affected, and report SLO violation counts per arm rather than latency alone.",
+  "Rollback gate: if reconfiguration events exceed a declared rate or any event drops in-flight requests, the dynamic policy is disabled and the service pinned to the better static layout; hysteresis and damping must be demonstrated before it is re-enabled.",
+  [COMMON_RISK,
+   "Static A/B evaluation does not measure a runtime that reconfigures layout dynamically.",
+   "Reconfiguration has a cost in capacity and in-flight requests that never appears in a steady-state latency comparison.",
+   "Policies without hysteresis can oscillate, spending more time reconfiguring than serving.",
+   COMMON_RISK2],
+  ["Reconfiguration event count, duration and capacity lost per event, over the full load pattern.",
+   "In-flight request outcomes across each reconfiguration: completed, migrated or dropped.",
+   "SLO violation counts for the dynamic policy and for each static layout under the identical load pattern.",
+   "Policy switching thresholds, hysteresis parameters and evidence that oscillation was tested for."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.78),
+
+ (235,
+  "Failure behaviour differs sharply between the axes, so availability and blast radius belong in the decision rather than being deferred to an operations discussion.",
+  "A tensor-parallel group fails as a unit: every rank participates in every collective, so losing one device stalls the group and the whole replica is lost. A pipeline-parallel deployment fails per stage, but because a request must traverse all stages, losing one stage also breaks the replica; the difference is in recovery, since a stage can sometimes be replaced without reloading all weights everywhere. Both axes therefore enlarge the blast radius relative to a single-GPU replica, and the enlargement is proportional to the shard count. A latency comparison that ignores this is optimising the good case while quietly buying a worse bad case, and for a latency-sensitive service the bad case is where the SLO is actually lost.",
+  "H235: mean time to recover a replica after a single-device failure is lower for the pipeline arrangement than the tensor arrangement at equal shard count, because a stage's weights are a contiguous subset that can be reloaded independently (ESTIMATE; derivation: recovery time is dominated by weight reload and group re-formation; PP reloads one stage's layers while TP re-forms a group spanning all shards; if measured recovery is equal, group re-formation rather than weight reload dominates and the claim is refuted).",
+  "Controlled experiment: inject a single-device failure into each layout under load, using the same fault injection method; measure time to detect, time to remove the replica from rotation, time to restore full capacity, and the number of in-flight requests lost; repeat at least three times per layout.",
+  "Rollback gate: if a layout cannot restore capacity within the declared error budget for a single-device failure, it is rejected regardless of steady-state latency; revert to the incumbent and revisit only after recovery is automated and measured.",
+  [COMMON_RISK,
+   "Blast radius grows with shard count on both axes and is absent from a latency-only comparison.",
+   "Recovery time and in-flight request loss are not measured, so the bad case is unquantified.",
+   "Fault detection may be slower than fault occurrence, so the replica serves errors before it is removed from rotation.",
+   COMMON_RISK2],
+  ["Fault injection results per layout: time to detect, time to drain, time to restore full capacity, three repeats.",
+   "Count of in-flight requests lost or failed per injected fault, per layout.",
+   "Health check definition and its measured detection latency for the failure mode injected.",
+   "Declared availability error budget the recovery times are judged against."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 4}, 0.80),
+
+ (236,
+  "Speculative decoding changes the number of forward passes per accepted token, which rescales the per-step collective cost and can reverse a layout ranking derived without it.",
+  "With a draft model proposing tokens and the target model verifying several at once, the target's forward pass processes multiple candidate positions per invocation. That amortises the per-step collective cost across more accepted tokens when acceptance is high, which disproportionately helps tensor parallelism, whose overhead is per step rather than per token. Pipeline parallelism gains less, because its bubble is a function of micro-batch scheduling rather than of tokens per pass. Acceptance rate is workload-dependent and drifts, so the amortisation factor is not a constant. A layout decision taken with speculative decoding disabled therefore does not transfer to a service that enables it, and vice versa.",
+  "H236: enabling speculative decoding narrows or reverses any TPOT advantage that pipeline parallelism held over tensor parallelism, and the size of the shift scales with the measured acceptance rate (ESTIMATE; derivation: TP's per-step collective cost is divided by the number of accepted tokens per verification pass, so TP's effective per-token overhead falls in proportion to acceptance while PP's bubble term does not scale the same way).",
+  "Controlled experiment: for each layout, run with speculative decoding disabled and enabled, holding the draft model, proposal length and acceptance-threshold configuration fixed; report measured acceptance rate per arm alongside TPOT p95, and reject any cross-layout comparison where acceptance rates differ beyond run-to-run dispersion.",
+  "Rollback gate: if the promoted layout's advantage depends on an acceptance rate higher than the production traffic sustains, it is not promoted; revert to the incumbent and re-decide at the measured production acceptance rate.",
+  [COMMON_RISK,
+   "Speculative decoding rescales per-step overhead and can invert a layout ranking measured without it.",
+   "Acceptance rate is workload-dependent and drifts, so the amortisation factor is not a stable constant.",
+   "Draft-model execution consumes GPU resources that compete with the target, an effect easily attributed to the layout instead.",
+   COMMON_RISK2],
+  ["Measured acceptance rate per arm, as a distribution over the trace rather than a single mean.",
+   "TPOT p95 per layout with speculative decoding both disabled and enabled, three repeats each.",
+   "Draft model identity, proposal length and acceptance-threshold configuration, pinned per arm.",
+   "Resource accounting showing where the draft model ran and what it displaced."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.78),
+
+ (237,
+  "Quantised weights shrink the weight-reading term but not the collective term, so the optimal tensor-parallel degree is a function of precision and must be re-derived whenever precision changes.",
+  "Decode is dominated by reading weights from HBM. Halving weight bytes through quantisation roughly halves that term, but the all-reduce payload is the activation tensor, whose size is set by hidden dimension and batch, not by weight precision. Consequently the ratio of collective cost to compute cost rises when weights are quantised, and the tensor-parallel degree at which collectives stop paying for themselves moves downward. An organisation that tunes TP degree at one precision and then ships a quantised model without re-tuning is running a degree that was optimal for a different cost balance.",
+  "H237: the tensor-parallel degree that minimises TPOT is lower for a quantised model than for the same model at full precision (ESTIMATE; derivation: quantisation reduces the per-GPU weight-reading term that TP divides, while leaving the collective term that TP adds roughly unchanged, so the crossover where added collective cost exceeds saved memory traffic occurs at a smaller degree).",
+  "Controlled experiment: sweep TP degree at each precision, holding batching policy, kernel backend and trace fixed; report TPOT p95 versus degree per precision and identify the minimum of each curve; verify output quality parity per precision separately so a quality regression is not mistaken for a latency win.",
+  "Rollback gate: if the quantised arm's optimal degree differs from the deployed degree, the quantisation change does not ship until the degree is re-tuned; and if quality parity fails at the declared band, the quantised arm is rejected outright.",
+  [COMMON_RISK,
+   "Optimal tensor-parallel degree treated as precision-independent when quantisation shifts the compute-to-collective ratio.",
+   "Quantisation kernels may not exist for every shard shape, silently falling back to a slower path at some degrees.",
+   "Quality regression from quantisation can be misread as a latency improvement if parity is not checked per precision.",
+   COMMON_RISK2],
+  ["TPOT p95 versus TP degree sweep at each precision, at least four degrees, three repeats each.",
+   "Per-GPU weight-byte and activation-byte accounting at each precision and degree.",
+   "Output quality parity results per precision against a pre-declared acceptance band.",
+   "Kernel backend actually selected at each precision-and-degree combination, logged from the engine."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.79),
+
+ (238,
+  "Benchmark client placement and transport overhead sit on the same wall-clock path as the server, so an unpinned client can manufacture or erase a layout difference.",
+  "End-to-end latency measured at the client includes request serialisation, network transit, server-side deserialisation, the streaming response path and the client's own scheduling. If the load generator runs on a host with different network proximity, or is itself CPU-saturated, it adds a term that varies between arms for reasons unrelated to the model. Streaming responses make this worse, because the client must process each token as it arrives, and a slow client backpressures the server. Two layouts benchmarked from differently loaded clients are not comparable, and the defect is invisible in server-side metrics.",
+  "H238: client-side overhead measured as the gap between server-reported and client-reported per-token latency is equal across layouts, and any residual difference in end-to-end latency is therefore attributable to the server (ESTIMATE; derivation: the transport and client processing path is layout-independent by construction, so a systematic gap difference indicates client-side contamination rather than a server effect).",
+  "Controlled experiment: instrument both server-side and client-side timestamps for the same requests; run all arms from the same client host with the client's CPU utilisation recorded; report the client-server gap per arm explicitly, and repeat one arm from a second client host to bound placement sensitivity.",
+  "Rollback gate: if the client-server gap differs across arms beyond dispersion, or if client CPU saturation is observed, the results are discarded and the benchmark is re-run with a provisioned client; no layout ships on contaminated measurements.",
+  [COMMON_RISK,
+   "Client-side overhead and placement included in end-to-end latency without being measured or held constant.",
+   "A CPU-saturated load generator backpressures the streaming path and looks like server slowness.",
+   "Server-side metrics alone cannot detect client contamination, so a clean-looking server profile is not sufficient evidence.",
+   COMMON_RISK2],
+  ["Paired server-side and client-side timestamps per request, with the gap reported per arm.",
+   "Client host CPU and network utilisation captured during every run.",
+   "Repeat of at least one arm from a second client host, to bound placement sensitivity.",
+   "Load generator configuration, concurrency model and version, pinned across arms."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.78),
+
+ (239,
+  "The deliverable is a decision record whose scope is the intersection of every conditioning variable identified, since each one independently bounds where the recommendation holds.",
+  "This batch identified conditioning variables that are individually sufficient to reverse a layout ranking: disaggregation of prefill and decode, collective algorithm selection, power and thermal capping, continuous-batching composition, runtime reconfiguration policy, failure blast radius, speculative decoding acceptance, weight precision, and benchmark client placement. A recommendation is valid only inside the intersection of the ranges over which all of these were held or measured. Stating the winner without stating that intersection produces a claim that is technically true of one benchmark and false of the service within weeks. The honest artifact records the envelope, the invariants, the monitors that assert them, an expiry, and a pre-tested rollback.",
+  "H239: every SLO breach observed during the validity window is preceded by at least one recorded invariant leaving its declared band, and no breach occurs with all invariants in band (ESTIMATE; derivation: the invariant set was constructed from the variables shown above to move the ranking, so a breach with all of them in band would demonstrate a missing variable and refute the completeness of the model).",
+  "Controlled experiment: publish the decision record with explicit bands for each conditioning variable, wire a monitor to each, and treat the validity window as a running experiment; at expiry re-run the comparison and score the recorded prediction against the outcome instead of starting from scratch.",
+  "Rollback gate: any monitored invariant leaving its band, or expiry without re-validation, automatically reverts the service to the incumbent layout; the revert path is rehearsed in advance and requires no new decision under pressure.",
+  [COMMON_RISK,
+   "Recommendation stated without the intersection of conditions under which it was validated, so it silently expires.",
+   "Conditioning variables identified but not converted into monitored invariants, leaving violations to surface as incidents.",
+   "No expiry and no rehearsed rollback, so the claim outlives its evidence and reverting becomes an unpractised change.",
+   COMMON_RISK2],
+  ["Decision record listing layout, validated envelope, per-variable invariant bands, monitors, expiry and rollback procedure.",
+   "Monitor definitions with alert thresholds for each conditioning variable, plus evidence they fire in test.",
+   "Rehearsal evidence that the rollback path executed successfully outside production.",
+   "Re-validation run at expiry scored against the prediction recorded at promotion time."],
+  {"technical_correctness": 3, "instruction_coverage": 2, "operational_safety": 3}, 0.81),
+]
+
+assert len(STANCES) == N
+
+corpus = [json.loads(l) for l in open(CORPUS) if l.strip()]
+sel = corpus[START:START + N]
+assert len(sel) == N
+
+with open(OUT, "w") as f:
+    for rec, st in zip(sel, STANCES):
+        num, headline, mech, hyp, exp, rb, risks, evid, qd, conf = st
+        m = {x["role"]: x["content"] for x in rec["messages"]}
+        ca = (
+            f"Analytical stance under test: Stance {num} - {headline}\n"
+            + FRAME
+            + "\n" + mech
+            + "\nFalsifiable hypothesis H" + str(num) + ": " + hyp
+            + "\n" + exp
+            + "\n" + rb
+            + "\n\n" + CRITIQUE
+        )
+        out = {
+            "source_id": rec["id"],
+            "teacher_lane": "teacher-B",
+            "teacher_model": "claude-opus-5-current",
+            "calibration_status": "provisional",
+            "decision": "rewrite",
+            "source_user": m["user"],
+            "source_assistant": m["assistant"],
+            "corrected_answer": ca,
+            "quality_dimensions": qd,
+            "risks": risks,
+            "evidence_required": evid,
+            "confidence": conf,
+        }
+        f.write(json.dumps(out, ensure_ascii=False) + "\n")
+print("WROTE", OUT, "ids", sel[0]["id"], "..", sel[-1]["id"])
