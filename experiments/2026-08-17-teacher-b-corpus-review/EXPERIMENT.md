@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0187
+
+- Batch file: results/train-batch-0187.jsonl
+- Corpus range: train.jsonl positional lines 1861-1870, ten physically consecutive rows, original
+  corpus order preserved, nothing skipped or reordered. Selection by line position, not ID arithmetic
+  (the window contains ID gaps: corpus-02053 and corpus-02060 are absent from the corpus).
+- Source IDs: corpus-02052, 02054, 02055, 02056, 02057, 02058, 02059, 02061, 02062, 02063.
+- Progress: 1870/2500 train records (74.8%). Remaining: 630. The 2500 denominator is the user-set
+  staged target adopted on 2026-08-18, replacing the original 6000-record figure. Validation target
+  is 0 for this stage; zero validation-batch files exist and none were created (verifier asserts it).
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: FAIL (1 item) on the first run of scripts/tb_verify_batch_0187.py, derived
+  from the batch-0186 verifier by literal 0186->0187 substitution rather than rewritten. The
+  anti-template checker flagged corpus-02059 ("no ESTIMATE label"): the adversarial-review stance
+  opened its Numbers paragraph with "No performance numbers are asserted by this stance", so the
+  string ESTIMATE never appeared even though the paragraph did discuss an unmeasured quantity.
+- Repair action: edited the generator (not the corpus, not any frozen batch) so that stance H47
+  explicitly labels the multiverse "fraction of specifications that reach ship" as an ESTIMATE until
+  the analysis is actually run, then regenerated batch 0187 from scratch and re-verified.
+- Final schema check: PASS. Aggregate = 1870 source_ids, globally unique, and a strict prefix of
+  train.jsonl in original order (verify_batches.py: train_processed 1870, validation_processed 0).
+- Manifest: MANIFEST.sha256 regenerated over every file in this experiment directory except itself;
+  `sha256sum -c` reports all entries OK.
+- Topics covered: this window continues the rubric-identical variant family (weight-only quantization
+  fair-comparison design, scenario variants 152-163). All ten source_assistant values are the same
+  grading rubric text, so ten distinct analytical stances (H41-H50) were written to avoid template
+  collapse: batch-composition and arrival-process effects (open-loop replay, clamped vs unclamped
+  KV capacity to separate kernel gain from capacity gain); numerical reproducibility of the
+  quantization build and the per-seed noise floor that must be measured before any BF16-vs-WOQ gap is
+  believed; prefill-vs-decode GPU-time mix and the Amdahl ceiling it imposes, including
+  prefill/decode disaggregation as the targeted remedy; safety and refusal-behaviour drift with TOST
+  equivalence testing and tool-call schema-violation rates; shared-cluster interference (drained node
+  vs co-tenanted node, NIC/RoCE and NVLink counters, NCCL collective share under tensor parallelism);
+  cold-start and elasticity with an explicit load-path span decomposition; adversarial review,
+  pre-registration hashing and blinded analysis against researcher degrees of freedom; checkpoint and
+  serving-format coupling as an unpriced lock-in and re-quantization cost; group-size granularity and
+  outlier channels with effective-bits-per-weight arithmetic; and the decision-cost gate that says a
+  study can be negative-value below a fleet-size threshold.
+- Every numeric claim in the batch is explicitly tagged ESTIMATE or MEASURED with its derivation
+  stated (e.g. the 4x weight-byte upper bound at batch 1, the 0.16 vs 0.63 bits/weight metadata
+  overhead at group size 128 vs 32, the two-proportion sample-size figure for a 5-point refusal-rate
+  change), so a human reviewer can challenge each one independently.
+- These results are PROVISIONAL teacher-B second opinions produced by a general-purpose model under
+  blind conditions. They are NOT expert gold, they have not been validated by a human domain expert,
+  and they say nothing about any trained model's domain capability.
+
 ## Run 2026-08-18 batch 0186
 
 - Batch file: results/train-batch-0186.jsonl
