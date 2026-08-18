@@ -5,6 +5,43 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0171
+
+- Batch file: results/train-batch-0171.jsonl
+- Corpus range: train.jsonl positional lines 1701-1710, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01871 through corpus-01880 (contiguous).
+- Progress: 1710/2500 train (68.4%). Remaining 790. Validation target is 0 and no validation batch
+  file was created.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on first run (scripts/tb_verify_batch_0171.py). No repairs were needed.
+- Repairs: none.
+- Final schema check: PASS — JSONL parses line by line, 10 records, all 12 required fields present,
+  teacher_lane/teacher_model/calibration_status/decision values correct, source_user and
+  source_assistant byte-identical to the corpus, corrected_answer non-empty, confidence within [0,1],
+  source_id globally unique across all 171 batches, and the aggregated train sequence is a strict
+  prefix of train.jsonl (1710 rows). No validation-batch files exist.
+- Manifest: MANIFEST.sha256 regenerated over all 308 files in the experiment directory (excluding the
+  manifest itself); sha256sum -c returned OK for all 308 entries.
+- Technical topics covered: all ten prompts are variants of "multi-GPU job hangs during collective
+  initialization", so each record was assigned a distinct root-cause mechanism to avoid a template
+  answer: (1) NCCL_SOCKET_IFNAME / NCCL_IB_HCA selecting an unroutable interface on a multi-homed
+  host; (2) /dev/shm exhaustion or private container IPC blocking the SHM transport; (3) firewall or
+  security-group rules permitting only the bootstrap port while dropping ephemeral data ports;
+  (4) heterogeneous NCCL/driver/CUDA versions across nodes; (5) GPU-to-NIC affinity and missing
+  GPUDirect RDMA (nvidia_peermem) forcing a staged path; (6) launcher mis-assignment of
+  RANK/WORLD_SIZE/CUDA_VISIBLE_DEVICES; (7) DNS/hostname resolution asymmetry for MASTER_ADDR;
+  (8) fabric congestion or a link trained down to a degraded rate; (9) application-level deadlock from
+  a collective inside a rank-conditional branch; (10) elastic-launcher rendezvous churn from a
+  repeatedly restarting agent. Every corrected_answer carries assumptions, an evidence-freeze step, a
+  falsifiable hypothesis, a controlled experiment with a stated prediction, measurements, confounders,
+  operational risks, required evidence, and an explicit rollback gate; all numeric thresholds are
+  labelled ESTIMATE or MEASURED. corrected_answer sha256 uniqueness was asserted against every prior
+  batch before writing.
+- Status: PROVISIONAL. These are a single model's blind second-opinion reviews, not expert gold
+  labels, and they say nothing about any model's domain capability. teacher-A artifacts were not read
+  at any point during this run.
+
 ## Run 2026-08-18 batch 0170
 
 - Batch file: results/train-batch-0170.jsonl
