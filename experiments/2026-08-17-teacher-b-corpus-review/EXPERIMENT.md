@@ -5,6 +5,55 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0149
+
+- Batch file: results/train-batch-0149.jsonl
+- Corpus range: train.jsonl lines 1481-1490 (0-indexed 1480-1489)
+- Source IDs: corpus-01636, corpus-01637, corpus-01639, corpus-01640, corpus-01641,
+  corpus-01642, corpus-01643, corpus-01644, corpus-01645, corpus-01646
+  (corpus order preserved verbatim; the gap at corpus-01638 exists in the source
+  corpus itself and was not introduced here — no record was skipped or reordered)
+- Progress: train 1490/5399, validation 0/601, total 1490/6000 (remaining 4510)
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run
+  (scripts/tb_verify_batches.py, written fresh for this run and independent of the
+  generator script) — JSONL line-parse, 10 records in the new batch, all 12 required
+  fields and no extra fields, teacher_lane/teacher_model/calibration_status/decision
+  values correct, quality_dimensions integers in [1,5], risks/evidence_required
+  string arrays, source_user/source_assistant character-identical to corpus,
+  corrected_answer non-empty, confidence in [0,1], global source_id uniqueness across
+  1490 records, batch-number contiguity, trailing-newline check, and the aggregate
+  train sequence is a strict prefix of train.jsonl (validation not started).
+- Repairs applied: none required.
+- Final schema check: PASS (same verifier rerun after the batch was written; MANIFEST
+  regenerated after this EXPERIMENT.md edit so it covers the updated file).
+- Manifest: MANIFEST.sha256 regenerated over all files in the experiment directory
+  except itself; sha256sum -c PASS.
+- Technical topics covered: multi-GPU collective-initialization hangs, scenario
+  variants 36-46. Each record was rewritten as a distinct diagnostic lane rather than
+  a paraphrase of one checklist: (36) stuck-rank identification via per-rank arrival
+  timestamps and stack dumps, separating a dead rank from a merely slow one;
+  (37) device visibility and duplicate CUDA-device binding, asserting per-host GPU UUID
+  uniqueness under container device masking; (39) separating the bootstrap/rendezvous
+  layer (TCPStore, MASTER_ADDR/PORT, stale store keys) from NCCL transport by running a
+  gloo-only barrier; (40) minimal 4-byte all-reduce reproducer swept over world size to
+  find the smallest hanging configuration; (41) NIC/HCA selection — NCCL_SOCKET_IFNAME,
+  NCCL_IB_HCA, NCCL_IB_GID_INDEX — and the silent fallback to the management NIC;
+  (42) timeout semantics, treating a raised process-group timeout as an observation
+  instrument only and never as a fix; (43) bisection over the node set with repeated
+  trials to localize a bad host or switch port; (44) software/environment skew across
+  ranks, fingerprinted and pinned by image digest rather than tag; (45) intra-node
+  transport isolation (P2P/SHM, IOMMU/ACS, /dev/shm, container IPC) with explicit
+  bandwidth-regression gates on NCCL_P2P_DISABLE / NCCL_SHM_DISABLE; (46) a bounded
+  preflight collective gate validated by retrospective replay and shadow mode before it
+  is allowed to block submissions. Every record states assumptions, a numbered
+  falsifiable hypothesis, a controlled experiment with an explicit falsification
+  condition, measurements with units, expected confounders, and rollback criteria.
+- Status: these outputs are PROVISIONAL teacher-B second opinions produced blind
+  (no teacher-A artifact was read, opened, or searched during this run). They are NOT
+  expert gold labels and do NOT represent any measured model domain capability.
+  Agreement analysis against teacher-A is a separate, later step outside this task.
+
 ## Run 2026-08-18 batch 0148
 
 - Batch file: results/train-batch-0148.jsonl
