@@ -1,0 +1,236 @@
+import json
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+EXP = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review"
+OUT = f"{EXP}/results/train-batch-0227.jsonl"
+START, END = 2260, 2270
+
+rows = [json.loads(l) for l in open(CORPUS) if l.strip()]
+sel = rows[START:END]
+assert len(sel) == 10
+
+COMMON = """Common frame (applies to every stance below).
+Assumptions (must be restated by the answering engineer, not inherited silently):
+A1. Single node, 8 GPUs, NVLink/NVSwitch intra-node; inter-node paths only appear where a stance says so explicitly.
+A2. Decode-dominant, latency-sensitive serving: the SLO is TTFT p95 and TPOT (inter-token latency) p95, never a mean.
+A3. Model weights fit in aggregate HBM with at least 20% KV-cache headroom at target concurrency.
+A4. Exactly one variable moves per arm: no simultaneous change of quantization, batching policy, or speculative decoding.
+Mechanism, stated plainly:
+- Tensor parallelism (TP) shards every layer's GEMMs. Each transformer block needs two all-reduces (after attention out-projection and after the MLP down-projection), so decode carries L * 2 * allreduce_latency of synchronous cost, where L is the layer count. TP is latency-additive in collectives but capacity- and bandwidth-multiplying: per-GPU weight bytes and per-GPU KV bytes both fall by the TP degree.
+- Pipeline parallelism (PP) shards layers into stages. Per token it adds only (PP-1) small point-to-point hidden-state sends, which are cheap, but a single request serializes through all stages and the bubble fraction is (PP-1)/(micro_batches + PP-1). At low concurrency there are too few in-flight micro-batches to fill the pipeline, so PP loses badly on single-request latency.
+Boundary conditions that flip the answer:
+- B1. On NVLink-class fabric, small-message all-reduce latency is in the single-digit microseconds and TP up to 8 is normally latency-viable. Over PCIe-only or across nodes on RoCE/IB the same collective's latency floor rises roughly an order of magnitude and TP stops paying past TP=2 (ESTIMATE; derivation: decode all-reduce payload is hidden_size * dtype_bytes per token per layer, which is small, so the collective is latency-bound rather than bandwidth-bound and the per-hop latency floor dominates).
+- B2. If the model cannot fit on one GPU, sharding is mandatory and the question reduces to which axis, not whether.
+- B3. Under high, steady concurrency the PP bubble amortizes and PP becomes competitive on throughput per GPU while still losing on single-request latency.
+Default recommendation: use TP inside the node up to the point where collective cost stops being repaid by reduced per-GPU memory traffic; use PP only to cross a node boundary or to fit a model TP alone cannot fit. PP is not a latency optimization.
+Measurement and evidence policy: every number below that was not produced by a run on this hardware is labelled ESTIMATE and carries its derivation. Only values read out of named benchmark artifacts may be labelled MEASURED. This review reports no MEASURED values, because no benchmark was executed for it."""
+
+CRITIQUE = """Critique of the source item: the prompt is a legitimate infrastructure question and does ask for assumptions, a falsifiable hypothesis, measurements, confounders and rollback criteria, but the corpus pair is degenerate - the assistant turn contains only a rubric describing what an answer should contain, not an answer. There is therefore no substantive content to keep, and the item is rewritten into a complete response that supplies the mechanism, the boundary conditions that flip the recommendation, an explicit falsifiable hypothesis, a single-variable controlled experiment, the evidence artifacts required to adjudicate it, and a rollback gate. Every quantitative claim is labelled ESTIMATE and carries its derivation; no value here is MEASURED, because no benchmark run was performed for this review. This output is provisional teacher-B review material, not expert gold, and it is not evidence about any model's domain capability."""
+
+BASE_RISKS = [
+    "Source assistant turn is a grading rubric, not an answer; training on it teaches meta-commentary about answers instead of the underlying reasoning.",
+    "No falsifiable hypothesis, no confounder list and no rollback gate, despite the prompt explicitly demanding them.",
+]
+
+S = [
+ dict(n=270,
+  t="Speculative decoding changes which layout is optimal, because it converts decode's one-token-per-step regime into a multi-token verification step that amortizes TP collectives.",
+  body="""A draft-and-verify scheme proposes k tokens cheaply and then verifies them in a single forward pass of the target model. That verification pass carries k tokens instead of one, so the per-layer all-reduce is amortized over k times more useful arithmetic. The collective's share of per-token time therefore falls roughly in proportion to the accepted-token count, which is precisely the term that made wide TP expensive in plain decode.
+The catch is that the benefit is proportional to the acceptance rate, not to k. A draft model that proposes eight tokens of which one survives has paid the full verification cost of eight and delivered the amortization of one plus the drafting overhead. Acceptance rate is workload-dependent and drifts as traffic changes, so a layout tuned assuming a high acceptance rate degrades silently when the prompt mix shifts.""",
+  h="H270: enabling speculative decoding raises the TP degree that minimizes TPOT p95, and the size of that shift scales with the measured mean accepted-token count rather than with the proposal length k (ESTIMATE; derivation: per-step collective cost is fixed per layer while useful work per step scales with accepted tokens, so the ratio of collective to work falls as acceptance rises and the optimum moves toward wider TP. If the optimal degree is unchanged, or tracks k rather than acceptance, the claim is refuted).",
+  exp="Measure the plain-decode TP sweep first as a baseline, then repeat the identical sweep with speculation enabled, changing nothing else - same trace, same quantization, same batching policy, same target model hash. Instrument mean and p95 accepted-token count per step, drafting overhead per step, and TPOT p95 at each TP degree. Segment the trace by prompt category and report acceptance per segment, so a favourable overall mean cannot hide a segment where speculation is a net loss.",
+  gate="Rollback gate: speculation is promoted only if TPOT p95 improves on every traffic segment, not just in aggregate, and only if the layout is re-swept under speculation rather than inherited; a segment where accepted-token count falls below the break-even implied by drafting overhead disables speculation for that segment or reverts it entirely.",
+  risks=["A layout tuned with speculation enabled is wrong when speculation is disabled for a segment or fails open, and the fallback path is rarely benchmarked.",
+         "Acceptance rate drifts with traffic mix, so a benchmark-time win can decay into a loss without any config change.",
+         "Aggregate acceptance means can hide a segment where drafting overhead exceeds the verification saving."],
+  ev=["Mean and p95 accepted-token count per step, reported per traffic segment rather than only in aggregate.",
+      "Drafting overhead per step measured separately from verification time.",
+      "TPOT p95 versus TP degree, swept both with and without speculation on an identical trace.",
+      "Break-even acceptance rate derived from the measured drafting overhead, stated numerically."],
+  qd=(3,2,3), conf=0.79),
+
+ dict(n=271,
+  t="Collective algorithm and buffer-size selection sit between the layout and the hardware, so an all-reduce latency number is a property of the tuned configuration and not of the fabric.",
+  body="""A collective library picks an algorithm - ring, tree, or a direct topology-aware variant - and a protocol and chunk size, usually by an internal heuristic keyed on message size, group size and detected topology. For the tiny messages decode produces, tree and direct algorithms are typically far better than ring, because ring latency grows with group size while tree latency grows only logarithmically. A default that selects ring for the decode message size will make wide TP look catastrophic for reasons that have nothing to do with the interconnect.
+Chunk and buffer-size settings matter for the same reason: a chunk size tuned for training's large gradient all-reduces is badly wrong for decode's small activation all-reduces, and the resulting latency floor is an artifact of tuning rather than a physical limit.""",
+  h="H271: for decode-sized messages, changing only the collective algorithm and chunk-size configuration - with layout, model and trace fixed - shifts all-reduce p95 latency by a margin comparable to the margin between TP degrees, so any layout comparison run on defaults is confounded by tuning (ESTIMATE; derivation: ring all-reduce latency scales roughly linearly in group size while tree scales logarithmically, so at group size 8 the algorithm choice alone can dominate; if a tuning sweep moves latency far less than the inter-degree margin, the confounding concern is refuted).",
+  exp="Before comparing layouts, run a standalone collective benchmark at exactly the message sizes decode produces, sweeping algorithm, protocol and chunk size on the fixed topology, and record the latency distribution for each configuration. Pin the best configuration explicitly rather than leaving heuristics active, then run the layout sweep with that pinning identical across arms. Dump the library's selected algorithm and topology decision in every arm and assert it did not change between arms.",
+  gate="Rollback gate: a layout result is admissible only when every arm records an identical pinned collective configuration and an identical selected algorithm; if the algorithm differed between arms the comparison is void and must be re-run. Any promotion is reverted if the pinned configuration cannot be reproduced after a library upgrade.",
+  risks=["Default heuristics can select different collective algorithms for different group sizes, silently confounding a TP-degree sweep.",
+         "Chunk sizes inherited from training workloads are wrong for decode-sized messages and inflate the apparent latency floor.",
+         "Collective-library upgrades change heuristics, so a pinned-by-default configuration can shift without any deliberate change."],
+  ev=["Standalone collective latency distribution at decode message sizes, per algorithm, protocol and chunk size.",
+      "Library algorithm and topology selection dump for every layout arm, asserted identical across arms.",
+      "Pinned collective environment configuration recorded verbatim per arm.",
+      "Collective-library and driver version manifest, so upgrade-induced drift is attributable."],
+  qd=(3,2,3), conf=0.8),
+
+ dict(n=272,
+  t="Warmup, graph capture and autotuning make the first minutes of any run unrepresentative, so a layout comparison that includes cold-start time measures startup, not steady state.",
+  body="""On first execution a serving stack pays for kernel autotuning, CUDA graph capture, allocator pool growth, and any just-in-time compilation, and the collective library performs its own connection setup and buffer registration. These costs are paid once and are strongly layout-dependent: a wider TP group has more peer connections to establish and more graphs to capture, so its cold phase is longer even where its steady-state latency is better.
+A benchmark that starts measuring at process start therefore penalizes exactly the layouts that would win in production, where processes live for hours. The converse error also exists: a service that restarts frequently, or scales out under load, genuinely pays cold-start cost repeatedly, and for that service the cold phase is a real production property rather than an artifact.""",
+  h="H272: discarding a warmup interval changes the inter-layout TPOT p95 margin by more than the run-to-run spread, and the required warmup length grows with TP degree (ESTIMATE; derivation: autotuning, graph capture and peer-connection setup are per-rank and per-pair costs, so total cold work grows with group size; if the margin is unchanged whether or not warmup is discarded, the claim is refuted and cold-start is negligible here).",
+  exp="Instrument the latency time series from process start and locate the knee where p95 stabilizes, per layout, rather than assuming a fixed warmup. Report the inter-layout margin computed two ways - including and excluding the cold phase - and report the measured time-to-steady-state per layout as its own metric. Separately measure scale-out latency: time from container start to first token served at SLO, per layout, because that is the number an autoscaler actually experiences.",
+  gate="Rollback gate: promotion requires the steady-state margin to hold and the measured time-to-steady-state to fit inside the autoscaler's scale-out budget; a layout whose cold phase exceeds that budget is rejected for elastic deployments even if its steady-state latency is best.",
+  risks=["Including cold-start in a steady-state comparison systematically penalizes wider groups and can invert the verdict.",
+         "Excluding cold-start hides a real cost for services that restart or scale out frequently.",
+         "Warmup length is layout-dependent, so a single fixed warmup interval is not fair across arms."],
+  ev=["Latency time series from process start per layout, with the stabilization knee identified rather than assumed.",
+      "Inter-layout margin computed both with and without the cold phase, reported side by side.",
+      "Measured time from process start to first token served at SLO, per layout.",
+      "Autoscaler scale-out budget stated numerically, so cold-start can be judged against it."],
+  qd=(3,2,3), conf=0.8),
+
+ dict(n=273,
+  t="Long-context workloads shift the bottleneck from weight bandwidth to KV bandwidth, which strengthens the capacity argument for TP independently of any collective-cost argument.",
+  body="""In short-context decode, the dominant memory traffic per step is reading the weights. As context length grows, attention must read the entire KV cache for every resident sequence every step, and KV bytes scale linearly with context length while weight bytes stay constant. Past some context length the KV read dominates, and at that point the per-GPU bandwidth relief TP provides by sharding KV becomes the primary reason to widen it, even though the collective cost is unchanged.
+Pipeline parallelism does not help here in the same way: KV for a sequence lives on whichever stage owns those layers, so PP shards KV by layer rather than by head, which relieves capacity but does not spread the per-step read of any single layer's KV across devices the way TP does.""",
+  h="H273: there exists a context length above which increasing TP degree improves TPOT p95, even at a degree that was net-negative at short context, because the KV-read term that TP shards has overtaken the fixed collective term it adds (ESTIMATE; derivation: per-step bytes read is weight_bytes + kv_bytes_per_token * context_length * batch, and only the second term grows with context; TP divides both by the degree while adding a constant per-layer collective, so the crossover moves with context length. If the optimal degree is flat across a wide context sweep, the claim is refuted).",
+  exp="Sweep context length across at least a decade while holding batch composition, layout policy and quantization fixed, and at each context length re-sweep TP degree. Record TPOT p95, per-GPU KV bytes read per step, and the collective-time fraction. Plot optimal TP degree against context length and identify the crossover. Use a real prompt-length distribution for the final validation rather than uniform synthetic lengths, because the tail of the distribution is where the crossover matters.",
+  gate="Rollback gate: a context-driven layout change is promoted only if it improves TPOT p95 at the production prompt-length distribution, including its tail, and does not regress the short-context segment beyond the agreed tolerance; a layout optimal only at the long tail requires either routing by length or reversion.",
+  risks=["A layout chosen at short context can be badly wrong for a long-context segment, and length distributions have heavy tails.",
+         "KV-cache quantization changes the crossover, so the two must not be varied together.",
+         "Routing by prompt length to different layouts adds a scheduling dependency that can itself become a latency source."],
+  ev=["Optimal TP degree versus context length, from a nested sweep with everything else pinned.",
+      "Per-GPU KV bytes read per step at each context length and degree.",
+      "Production prompt-length distribution including its upper percentiles, not just the mean.",
+      "TPOT p95 broken out by prompt-length bucket, so a tail win is not averaged away."],
+  qd=(3,2,3), conf=0.79),
+
+ dict(n=274,
+  t="A mixture-of-experts model replaces the TP-versus-PP question with an expert-parallelism question whose dominant cost is a load-imbalanced all-to-all, not an all-reduce.",
+  body="""When the feed-forward block is a set of experts with a router, the natural sharding axis is expert parallelism: experts are distributed across devices and tokens are dispatched to whichever device holds their chosen expert. The per-layer communication becomes an all-to-all whose payload depends on the routing decision, and the step completes only when the most loaded expert finishes. Routing is data-dependent and typically skewed, so the effective cost is set by the tail of the expert-load distribution rather than the mean.
+This changes the diagnosis entirely. Capacity factors, token dropping and expert replication become the tuning knobs, and a device holding a popular expert becomes a straggler that the synchronous step waits on. Applying dense-model TP intuition here will mis-attribute an imbalance problem to fabric bandwidth.""",
+  h="H274: for a routed model, per-step latency correlates more strongly with the maximum per-expert token count than with total tokens dispatched, so relieving imbalance through expert replication or capacity tuning reduces TPOT p95 more than widening any parallel degree (ESTIMATE; derivation: the step is a synchronous all-to-all whose completion is set by the slowest device, and that device's work is proportional to its assigned token count, so max load and not mean load is the driver. If latency tracks total dispatched tokens and is insensitive to the max, the claim is refuted).",
+  exp="Instrument the per-expert token count distribution per step over a production-representative trace, recording mean, max and the identity of the hottest experts over time. Correlate per-step latency against max load and against total load separately. Then run single-variable arms that change only expert replication of the hottest experts, only the capacity factor, and only the parallel degree, and compare which arm moves TPOT p95 most. Record token-drop rate and any output-quality effect in every arm.",
+  gate="Rollback gate: any capacity-factor or drop-threshold change is promoted only if held-out output quality stays within tolerance and token-drop rate stays under the agreed ceiling; a latency gain bought by dropping tokens is reverted regardless of the latency number.",
+  risks=["Routing skew makes the hottest expert a straggler, and a mean-load view of the same data shows a balanced system.",
+         "Capacity factors that cap per-expert tokens buy latency by dropping tokens, which is an output-quality regression disguised as a performance win.",
+         "Expert popularity shifts with traffic, so a replication plan tuned once decays without monitoring."],
+  ev=["Per-expert token count distribution per step, with max and hottest-expert identity tracked over time.",
+      "Correlation of per-step latency against max per-expert load versus total dispatched tokens.",
+      "Token-drop rate and held-out output quality for every capacity-factor arm.",
+      "All-to-all payload bytes and completion time per step, separated from compute time."],
+  qd=(3,2,3), conf=0.78),
+
+ dict(n=275,
+  t="Multi-tenant colocation makes the fabric and the memory system shared resources, so a layout validated in isolation can fail in production for reasons no isolated benchmark can surface.",
+  body="""A layout benchmark usually runs on a quiet node. Production frequently does not: other replicas, other models, sidecars and monitoring agents contend for the same PCIe root complex, the same host memory bandwidth, the same NIC, and on shared fabric the same switch buffers. TP's synchronous per-layer collectives are the most sensitive workload to this contention, because every collective is a barrier and any transient delay on any participant becomes replica-wide latency.
+Congestion control adds a further nonlinearity on lossless Ethernet fabrics: pause frames or congestion notifications triggered by an unrelated tenant throttle the offending link, and the resulting latency excursion appears in the tail rather than the median, exactly where the SLO lives.""",
+  h="H275: introducing a controlled background tenant on the same node and fabric degrades TPOT p95 by a fraction that grows with TP degree, while the median is left comparatively untouched, so isolated-node benchmarks systematically understate the tail cost of wide TP (ESTIMATE; derivation: each collective waits on its slowest participant, so a group of N ranks samples the contention tail N times per collective while the median is set by uncontended steps. If the degradation is flat in group size, the amplification model is wrong and the claim is refuted).",
+  exp="Run each layout twice: once on a quiet node, once with a calibrated, reproducible background load whose intensity is recorded. Report median and p95 for both conditions and compute the degradation ratio per layout. On shared fabric, collect switch-level congestion and pause-frame counters during the window, and correlate latency excursions against them rather than inferring causation from timing alone.",
+  gate="Rollback gate: promotion requires the SLO to hold under the contended condition, not merely the quiet one; a layout that meets the SLO only on a quiet node is either rejected or promoted with a hard isolation requirement recorded in the decision record and enforced by the scheduler.",
+  risks=["Quiet-node benchmarks understate tail latency for synchronous collectives, and the tail is where the SLO is defined.",
+         "Congestion-control events from unrelated tenants create latency excursions that look like layout instability.",
+         "Isolation requirements assumed but not enforced by the scheduler will be violated silently after any placement change."],
+  ev=["Latency median and p95 per layout under both quiet and calibrated-contention conditions, with contention intensity recorded.",
+      "Switch and NIC congestion, pause-frame and drop counters for the measurement window.",
+      "Placement and isolation policy actually enforced by the scheduler, not merely assumed.",
+      "Host-level contention telemetry: PCIe utilization, host memory bandwidth, CPU steal."],
+  qd=(3,2,3), conf=0.79),
+
+ dict(n=276,
+  t="The routing and load-balancing layer above the replicas can dominate tail latency, so a layout comparison that ignores queueing attributes to the layout what belongs to the queue.",
+  body="""End-to-end p95 is queue wait plus service time. If the router balances by connection count or round-robin rather than by in-flight tokens or KV occupancy, some replicas accumulate long-running generations while others idle, and the resulting queue wait can exceed the entire inter-layout service-time margin. Layouts differ in service time by design; routers differ in queue wait by policy, and the two are measured at different points in the stack.
+This matters more for layouts with different concurrency characteristics: a layout that supports fewer concurrent sequences due to KV footprint will queue sooner at the same offered load, so part of what looks like a service-time difference is actually an admission-control difference.""",
+  h="H276: at production offered load, the difference in end-to-end p95 between two routing policies at a fixed layout exceeds the difference between two layouts at a fixed routing policy, so routing is the higher-leverage variable (ESTIMATE; derivation: queue wait grows nonlinearly as utilization approaches capacity while service-time differences are roughly constant, so near saturation the queue term dominates; if measured queue wait is a small fraction of end-to-end latency at production load, the claim is refuted and layout is the right lever).",
+  exp="Instrument queue wait and service time separately at the router, then run a two-factor experiment: routing policy crossed with layout, one variable per arm, on the same replayed trace at the same offered load. Report end-to-end p95 decomposed into its two components for every cell. Include a KV-occupancy-aware routing arm specifically, since it targets the admission-control coupling directly.",
+  gate="Rollback gate: no layout change is promoted while measured queue wait exceeds the inter-layout service-time margin at production load; in that regime the routing policy must be fixed first and the layout comparison re-run afterwards, because the earlier comparison is not interpretable.",
+  risks=["Attributing queue-driven tail latency to the layout leads to expensive hardware changes that do not fix the SLO.",
+         "Connection-count balancing ignores generation length, so long requests pile up on a subset of replicas.",
+         "Layouts with smaller KV capacity queue sooner, coupling admission control to the layout being measured."],
+  ev=["End-to-end p95 decomposed into queue wait and service time, measured at the router.",
+      "Per-replica in-flight sequence count and KV occupancy time series during the run.",
+      "Two-factor results for routing policy crossed with layout on an identical trace and offered load.",
+      "Offered load relative to measured saturation point, so the queueing regime is explicit."],
+  qd=(3,2,3), conf=0.8),
+
+ dict(n=277,
+  t="Numerical results can differ between layouts, so a layout change is a model-behavior change and must pass an output-equivalence check before it is treated as purely a performance change.",
+  body="""Changing the TP degree changes how reductions are partitioned, and floating-point addition is not associative, so partial sums accumulate in a different order and the resulting logits differ in the low-order bits. Usually this is immaterial. Sometimes it is not: near-tied top-k candidates can flip, and in a long autoregressive generation a single flipped token diverges the entire remaining output. Different collective algorithms have the same effect for the same reason, as do different kernel implementations selected by autotuning at different shard shapes.
+The operational consequence is that a layout rollout can change user-visible outputs without any weight or prompt change, which breaks caches keyed on output, invalidates golden-output tests, and can be mistaken for a model regression during an incident.""",
+  h="H277: greedy decoding on a fixed prompt set produces token-level divergence between two TP degrees at a nonzero rate, and that rate rises with sequence length because a single early flip propagates (ESTIMATE; derivation: reduction order differs by shard count, so logits differ at the ULP level; divergence occurs whenever the top-two logit gap is smaller than that perturbation, and the per-token probability compounds over the sequence. If greedy outputs are bit-identical across degrees on a large prompt set, the claim is refuted for this stack).",
+  exp="With sampling disabled and a fixed seed, generate a fixed prompt set under each candidate layout and diff outputs token by token, reporting the fraction of prompts that diverge and the position of first divergence. Separately, run the quality evaluation set under each layout and compare scores with confidence intervals, so an immaterial bitwise difference is not confused with a real quality change. Record the collective algorithm and kernel selections alongside, since they are part of the numeric configuration.",
+  gate="Rollback gate: a layout is promoted only if aggregate quality scores are within the pre-registered equivalence tolerance and any output-keyed caches or golden-output tests have been invalidated and regenerated as part of the rollout; an unexplained quality shift beyond tolerance blocks promotion regardless of latency gains.",
+  risks=["Output changes from a layout change can be misdiagnosed as a model regression during an incident.",
+         "Golden-output tests and output-keyed caches silently break on a layout rollout unless invalidated deliberately.",
+         "Bitwise divergence is often dismissed as noise without an aggregate quality check to confirm it is immaterial."],
+  ev=["Token-level divergence rate and first-divergence position between layouts under greedy decoding with a fixed seed.",
+      "Quality evaluation scores per layout with confidence intervals and the evaluation set hash recorded.",
+      "Collective algorithm and kernel selection dumps per layout, as part of the numeric configuration.",
+      "An inventory of output-keyed caches and golden tests affected, with the invalidation plan."],
+  qd=(3,2,3), conf=0.79),
+
+ dict(n=278,
+  t="A layout must be justified on cost per sustained token at the SLO, because latency and throughput comparisons at unequal GPU count are not comparisons at all.",
+  body="""It is always possible to reduce latency by adding hardware. A layout that meets the SLO using twelve GPUs is not better than one that meets it using eight unless the extra four are cheaper than the alternative, and that comparison is invisible in any plot whose axes are latency and throughput alone. The decision quantity is cost per sustained token subject to the SLO holding: for each layout, find the maximum load at which p95 still meets the ceiling, divide the hardware cost by that sustained rate, and compare.
+This also disciplines the sweep. Degrees that meet the SLO only by leaving capacity idle show up immediately as expensive, and degrees that look attractive on peak throughput but violate the SLO are excluded before cost is even computed.""",
+  h="H278: ranking candidate layouts by cost per sustained token at the SLO produces a different winner than ranking them by minimum achievable latency or by peak throughput, because the latter two ignore the hardware required to reach the operating point (ESTIMATE; derivation: minimum latency is achieved at low utilization where cost per token is highest, and peak throughput is achieved at high utilization where p95 typically violates the ceiling, so both extremes are off the cost-optimal point. If all three rankings agree, the claim is refuted and the cheaper metrics suffice).",
+  exp="For each layout, find the maximum sustained offered load at which TPOT p95 and TTFT p95 both hold, using a load sweep on an identical trace with at least three repeats per point. Record total GPU count, sustained tokens per second, and derived cost per token, stating explicitly that the cost figure is an ESTIMATE derived from GPU-hour price multiplied by GPU count divided by sustained token rate. Rank layouts by all three metrics and show where the rankings disagree.",
+  gate="Rollback gate: promotion requires a cost-per-sustained-token improvement at equal or better SLO attainment, with run-to-run spread smaller than the claimed advantage; a latency improvement achieved only by increasing GPU count is not promoted unless the cost comparison is presented and still favors it.",
+  risks=["Comparing layouts at unequal GPU count converts a hardware increase into an apparent layout win.",
+         "Peak-throughput rankings select operating points that violate the latency SLO.",
+         "Cost figures derived from list prices can misrepresent actual committed-capacity economics and must be labelled as estimates."],
+  ev=["Maximum sustained load at which both latency percentiles hold, per layout, with repeats and spread.",
+      "Total GPU count per layout arm, stated alongside every latency and throughput number.",
+      "Cost per sustained token with its derivation and price assumptions written out and labelled ESTIMATE.",
+      "Ranking under all three metrics side by side, with disagreements highlighted."],
+  qd=(3,2,3), conf=0.8),
+
+ dict(n=279,
+  t="The rollout mechanism is part of the layout decision, because a layout that cannot be changed without dropping requests forces a conservatism that a safely reversible layout does not.",
+  body="""Changing TP or PP degree generally requires restarting the serving processes with a new world size; it is not a runtime knob. That means every layout change is a rolling replacement with capacity headroom, drain and warmup, and the ability to revert quickly depends on keeping the previous configuration deployable and its weights loadable. If reversion takes as long as the original rollout, the effective blast radius of a bad layout is the full rollout duration times the traffic rate.
+This is why the safe pattern is a shadow or canary deployment carrying a small fraction of real traffic under the new layout while the incumbent serves the rest, with an automatic revert wired to the SLO rather than to human judgment during an incident.""",
+  h="H279: a canary rollout detects an SLO-violating layout regression at a fraction of the request-loss of a full rolling replacement, and the detection latency is bounded by the time needed to accumulate enough canary traffic for a p95 estimate rather than by the rollout duration (ESTIMATE; derivation: requests exposed to the bad layout equal canary traffic fraction times detection time, versus full traffic times rollout duration in the replace-everything case; the canary wins whenever detection completes before the rollout would have. If p95 cannot be estimated at the canary fraction within the rollout window, the claim is refuted and canarying gives no early warning).",
+  exp="Deploy the candidate layout to a small traffic fraction alongside the incumbent, with identical routing and identical trace exposure, and compute the p95 difference with a confidence interval as canary traffic accumulates. Pre-register the SLO breach threshold and the automatic revert action before the canary starts. Rehearse the revert path end to end on a non-production replica and measure the time from decision to full restoration of the incumbent, including weight load and warmup.",
+  gate="Rollback gate: the canary auto-reverts on any pre-registered SLO breach without human adjudication, and full rollout proceeds only after the canary interval accumulates enough traffic for the p95 confidence interval to exclude regression; a rehearsed revert time exceeding the error budget blocks the rollout entirely.",
+  risks=["A layout change requires a process restart, so an unrehearsed revert path makes a bad rollout unbounded in duration.",
+         "Canary sample size too small for a p95 estimate produces false confidence rather than early warning.",
+         "Reverting requires the previous configuration and weights to remain deployable, which erodes silently after cleanup jobs run."],
+  ev=["Canary traffic fraction, exposure duration, and the p95 confidence interval achieved before promotion.",
+      "Pre-registered SLO breach threshold and the automatic revert action, recorded before the canary starts.",
+      "Rehearsed revert time from decision to full incumbent restoration, including weight load and warmup.",
+      "Verification that the previous configuration and weights remain deployable at rollout time."],
+  qd=(3,2,3), conf=0.8),
+]
+
+assert len(S) == 10
+
+out = []
+for row, s in zip(sel, S):
+    m = {x["role"]: x["content"] for x in row["messages"]}
+    ans = (
+        f"Analytical stance under test: Stance {s['n']} - {s['t']}\n\n"
+        f"{COMMON}\n\n"
+        f"{s['body'].strip()}\n"
+        f"Falsifiable hypothesis H{s['n']}: {s['h']}\n"
+        f"Controlled experiment: {s['exp']}\n"
+        f"{s['gate']}\n\n"
+        f"{CRITIQUE}"
+    )
+    qd = s["qd"]
+    out.append({
+        "source_id": row["id"],
+        "teacher_lane": "teacher-B",
+        "teacher_model": "claude-opus-5-current",
+        "calibration_status": "provisional",
+        "decision": "rewrite",
+        "source_user": m["user"],
+        "source_assistant": m["assistant"],
+        "corrected_answer": ans,
+        "quality_dimensions": {
+            "technical_correctness": qd[0],
+            "instruction_coverage": qd[1],
+            "operational_safety": qd[2],
+        },
+        "risks": s["risks"] + BASE_RISKS,
+        "evidence_required": s["ev"],
+        "confidence": s["conf"],
+    })
+
+with open(OUT, "w") as f:
+    for r in out:
+        f.write(json.dumps(r, ensure_ascii=False) + "\n")
+print("WROTE", OUT, len(out))
+print("IDS", [r["source_id"] for r in out])
