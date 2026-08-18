@@ -5,6 +5,56 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0134
+
+- Batch file: results/train-batch-0134.jsonl
+- Corpus range: train.jsonl lines 1331-1340 (0-indexed 1330..1339)
+- Source IDs: corpus-01474, corpus-01475, corpus-01476, corpus-01477, corpus-01478,
+  corpus-01479, corpus-01480, corpus-01481, corpus-01482, corpus-01483
+- Progress: train 1340/5399, validation 0/601, total 1340/6000, remaining 4660
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (ad-hoc verifier /tmp/tb_verify.py — 10 lines parse as JSONL, all 12
+  required fields present, teacher_lane/teacher_model/calibration_status/decision values correct,
+  source_user and source_assistant byte-identical to corpus, corrected_answer non-empty, confidence
+  in [0,1], quality_dimensions are 1-5 integers, risks/evidence_required are arrays, source_id
+  globally unique across all 134 batches, aggregated train sequence is a strict prefix of train.jsonl)
+- Repairs applied: none required this run.
+- Final schema check: PASS (train 1340, validation 0, total 1340)
+- Manifest: MANIFEST.sha256 regenerated over 228 files; `sha256sum -c` all OK.
+
+### Technical topics covered by this batch
+
+All ten items are scenario variants 174-183 of the same prompt family: intermittent OOM in a
+long-context LLM serving workload under concurrency, with an explicit requirement for a falsifiable
+hypothesis and a controlled experiment. The source assistant text is an identical grading rubric for
+all ten, so all ten were marked `rewrite`: a rubric enumerates topics but supplies no mechanism, no
+arithmetic, no thresholds and no rollback gate.
+
+To avoid ten near-duplicate answers, each item was given a distinct primary analytical angle, each
+with its own hypothesis, experiment design and dominant mitigation:
+
+1. corpus-01474 — admission control and the concurrency ceiling as the binding constraint.
+2. corpus-01475 — allocator external fragmentation vs true capacity exhaustion (largest-free-block test).
+3. corpus-01476 — first-principles KV bytes-per-token arithmetic and GQA/MQA sizing errors.
+4. corpus-01477 — prefix/prompt cache retention as a pinned, non-evicting consumer.
+5. corpus-01478 — long-tail input length distribution and rare co-arrival of p99 requests.
+6. corpus-01479 — transient prefill activation peak vs steady KV growth; chunked prefill.
+7. corpus-01480 — co-resident processes, MIG/MPS neighbours and NCCL buffers stealing HBM.
+8. corpus-01481 — KV quantization as a capacity lever with a pre-registered accuracy margin.
+9. corpus-01482 — preemption / recompute / CPU swap as graceful degradation instead of hard OOM.
+10. corpus-01483 — tensor-parallel rank imbalance from non-sharded state (vocab-parallel logits).
+
+Shared across all ten: the KV demand equation, declared hardware assumptions (8x A30 24 GB, PCIe
+Gen4, no NVLink), confounder control (interleaved A/B arms, fixed engine/driver/model revision, SM
+clock logging because A30 down-clocks under sustained load), boundary conditions where the analysis
+does not hold (host-RAM OOM, speculative decoding/beam search multiplying resident tokens, late block
+free on client cancellation), and quantitative rollback gates (p99 TTFT +20%, throughput -10%, >1%
+silent rejection, breach of the long-context non-inferiority margin).
+
+**Status caveat:** these outputs are PROVISIONAL teacher-B review artifacts produced blind (teacher-A
+outputs were not read at any point during this run). They are NOT expert gold labels, have not been
+validated against a real deployment, and say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0133
 
 - Batch file: results/train-batch-0133.jsonl
