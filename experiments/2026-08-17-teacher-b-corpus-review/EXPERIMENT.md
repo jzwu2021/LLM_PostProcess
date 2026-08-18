@@ -5,6 +5,46 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0154
+
+- Batch file: results/train-batch-0154.jsonl
+- Corpus range: train.jsonl lines 1531-1540 (0-indexed 1530-1539)
+- Source IDs: corpus-01689 through corpus-01698 (contiguous in corpus order)
+- Progress: train 1540/5399, validation 0/601, total 1540/6000, remaining 4460
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on first run of scripts/adhoc_verify_batch_0154.py
+- Repair actions: none
+- Final schema check: PASS - 10 records, all 12 required fields present and no extra fields,
+  teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional,
+  decision in {keep,rewrite,reject}, source_user/source_assistant byte-identical to
+  research/ai-infra-expert/corpus/train.jsonl, corrected_answer non-empty and sha256-unique
+  within the batch, confidence in [0,1], quality_dimensions integers 1-5,
+  source_id globally unique across all batches, train aggregate is a strict prefix of the
+  train corpus, batch numbering contiguous 0001-0154.
+- Manifest: MANIFEST.sha256 regenerated after this EXPERIMENT.md edit; `sha256sum -c` all OK.
+- Technical topics covered: all ten items are rubric-style "multi-GPU job hangs during collective
+  initialization" variants (89-98), so every record was rewritten rather than kept - the source
+  assistant text is a grading rubric, not an answer. Each variant was assigned a distinct
+  mechanism so the batch is not a template: NCCL bootstrap interface auto-selection on
+  non-routable NICs (01689); process-group construction divergence across ranks with mismatched
+  TP/PP subgroups (01690); RoCE GID index / RoCEv2 mismatch in RDMA transport setup, with
+  NCCL_IB_DISABLE as a diagnostic-only control (01691); non-bijective rank-to-device mapping from
+  double remapping of CUDA_VISIBLE_DEVICES and LOCAL_RANK (01692); intra-node SHM fallback blocked
+  by a 64MB /dev/shm plus ACS/IOMMU-disabled P2P (01693); c10d store rendezvous participation
+  shortfall vs scheduler allocation, with bounded init timeout (01694); single faulty GPU/node
+  wedging the barrier, localized by node-set bisection and Xid evidence (01695); heterogeneous
+  NCCL/driver/image versions breaking capability negotiation, with a negative-control reproduction
+  (01696); minimal two-rank all-reduce probe to separate application-layer setup from the
+  collective stack, including scale-dependent false negatives (01697); and effective per-process
+  environment divergence read from /proc/<pid>/environ rather than the submit script (01698).
+  Every corrected_answer states an explicit mechanism, a named falsifiable hypothesis with a
+  prediction, a one-variable-at-a-time controlled experiment, boundary conditions under which the
+  control is invalid, the concrete evidence to collect, confounders, and a rollback gate.
+- These results are PROVISIONAL teacher-B output from a blind review pass. They are NOT expert gold
+  labels, have not been validated against ground truth or a human SME, and do not constitute
+  evidence of any model domain capability. teacher-A artifacts were not read at any point during
+  this batch.
+
 ## Run 2026-08-18 batch 0153
 
 - Batch file: results/train-batch-0153.jsonl
