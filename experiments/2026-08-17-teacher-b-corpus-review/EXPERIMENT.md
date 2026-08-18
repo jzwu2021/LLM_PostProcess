@@ -5,6 +5,43 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0175
+
+- Batch file: results/train-batch-0175.jsonl
+- Corpus range: train.jsonl positional lines 1741-1750, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01919, corpus-01920, corpus-01921, corpus-01922, corpus-01923, corpus-01924,
+  corpus-01925, corpus-01926, corpus-01927, corpus-01928.
+- Progress: 1750/2500 train records (70.0%). Remaining: 750. Validation target is 0 for this stage
+  and no validation-batch file exists or was created.
+- Decisions this batch: keep 0, rewrite 10, reject 0.
+- Technical topics covered: weight-only quantization (WOQ) for LLM serving cost reduction — all ten
+  rows are rubric-style variants (19-28) of one scenario, asking for a fair BF16 vs INT4/INT8
+  weight-only comparison with a falsifiable hypothesis and controlled experiment. The rewrites were
+  authored as ten distinct engineering answers rather than paraphrases, each taking a different
+  analytical stance: design brief, diagnostic posture, roofline/phase-decomposition analysis,
+  confounder-control checklist, skeptical null-hypothesis framing, RC1-RC5 root-cause routing,
+  cost-unit-first accounting, and a four-question decomposition. Shared substantive content includes:
+  the weight-bandwidth mechanism for why WOQ helps decode but not prefill; the byte-count upper bound
+  (9B BF16 ~18 GB vs INT4 group-128 with FP16 scales ~5.0-5.3 GB, ratio ~3.2-3.6x) labeled ESTIMATE
+  with its derivation shown; the mandatory clamped-KV-capacity arm that separates kernel/bandwidth
+  gains from KV-headroom batching gains; comparison at the latency-throughput SLO intersection rather
+  than at fixed batch size; kernel-fallback detection via per-layer kernel dumps; calibration/eval
+  disjointness proven by hash; and fleet-level GPU-hour accounting as the confirmatory cost measurement.
+- Rationale for uniform rewrite: every source_assistant is a grading rubric ("Answer should state
+  assumptions...") rather than an answer, so none can be kept as a training target.
+- Blind protocol: no file under experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened,
+  grepped, or listed while producing this batch. Only research/ai-infra-expert/corpus/train.jsonl was read.
+- Initial schema check: PASS on first run (scripts/adhoc_verify_batch_0175.py) — 10 records, all 12
+  required fields present, lane/model/status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], 1750 globally unique
+  source_ids, aggregate sequence a strict prefix of train.jsonl.
+- Fix actions this run: none required.
+- Final schema check: PASS.
+- Manifest: MANIFEST.sha256 regenerated after this EXPERIMENT.md edit; sha256sum -c verified all files OK.
+- Status: these results are PROVISIONAL teacher-B review output. They are not expert gold labels, have
+  not been validated by a human domain expert, and say nothing about any model's domain capability.
+
 ## Run 2026-08-18 batch 0174
 
 - Batch file: results/train-batch-0174.jsonl
