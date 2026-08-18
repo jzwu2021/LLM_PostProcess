@@ -5,6 +5,62 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0127
+
+- Batch file: results/train-batch-0127.jsonl
+- Corpus range: train.jsonl lines 1261-1270 (0-indexed 1260..1269)
+- Source IDs: corpus-01395, corpus-01396, corpus-01397, corpus-01398, corpus-01399,
+  corpus-01400, corpus-01401, corpus-01403, corpus-01404, corpus-01408
+- Progress: train 1270/5399, validation 0/601, total 1270/6000, remaining 4730
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_batches.py, first run, no repairs needed)
+- Repairs: none. Housekeeping only: two temporary helper scripts (tmp_dump.py,
+  tmp_gen.py) used to inspect the corpus slice and emit the batch were deleted
+  before manifest regeneration so they do not enter the manifest.
+- Lock: previous run's lock (/tmp/teacher-b-corpus-review.lock, owner
+  cron-1787007193) was older than the 10-minute staleness threshold
+  (age ~45785 s); stale lock cleanup was recorded, the lock removed, and a fresh
+  lock acquired for this run.
+- Final schema check: PASS (train 1270, validation 0, total 1270, unique_ids 1270,
+  strict-prefix check against train.jsonl OK, VERIFY_PASS)
+- Manifest: MANIFEST.sha256 regenerated; `sha256sum -c` all OK
+- Topics covered: long-context intermittent OOM under concurrent serving,
+  scenario variants 95-108 of the same base prompt, split across Troubleshooting,
+  Performance Analysis and System Design. The source assistant text for all ten is
+  a grading rubric ("Answer should state assumptions...") rather than an answer,
+  which is why every item is a rewrite: training on a rubric teaches meta-commentary
+  about answers instead of the domain reasoning itself. Rewrites give the device
+  memory budget as an explicit sum (weights + activation/workspace peak + KV pool +
+  fragmentation + CUDA/NCCL context), the KV bytes-per-token formula
+  2 * n_layers * n_kv_heads * head_dim * dtype_bytes / TP with an explicit warning
+  that using attention heads instead of KV heads under GQA is the most common
+  sizing error, and the capacity inequality max_t sum(prompt_len + max_tokens) <= T.
+  Three competing falsifiable hypotheses are separated by distinct predictions:
+  H1 co-arrival KV pool exhaustion (falsified by a flat long-soak memory trend),
+  H2 leak / unbounded non-paged cache (monotonic growth that never returns to
+  baseline), H3 single pathological max-length prefill (falsified by replaying it
+  alone at concurrency 1). Discriminating measurements include >=1 Hz engine
+  metrics (aliasing warning for 1-minute Prometheus scrapes), reserved-vs-allocated
+  gap as the fragmentation fingerprint, per-process nvidia-smi to exclude a
+  co-tenant, and device-OOM vs host OOM-killer classification via dmesg. The
+  controlled experiment fixes the replay trace and sweeps max_num_seqs /
+  max_num_batched_tokens, with confounders named explicitly (warmup, CUDA graph
+  capture, prefix-cache hit differences from trace reordering, and the memory cost
+  of memory-history recording itself). Mitigations are ordered by reversibility:
+  P0 chunked prefill, concurrency caps, max_model_len, expandable_segments;
+  P1 token-aware admission control and gateway-enforced max_tokens ceilings;
+  P2 FP8/INT8 KV, higher TP to shard KV, and prefill/decode disaggregation in the
+  NVIDIA Dynamo / Mooncake style with the KV transfer costed against RDMA/RoCE NIC
+  bandwidth, GPUDirect RDMA PCIe affinity and lossless-fabric prerequisites.
+  Raising gpu_memory_utilization is called out as an anti-first-move. Rollback
+  gates are numeric (p99 TTFT +20%, throughput -10%, any OOM, preemption >1% over a
+  30-minute canary) and KV quantization additionally requires an offline quality
+  gate before shipping.
+- Status: PROVISIONAL. These are single-model teacher-B opinions produced blind
+  (no teacher-A artifact was read while generating this batch). They are not expert
+  gold labels, have not been human-verified, and say nothing about any model's
+  domain capability.
+
 ## Run 2026-08-17 batch 0125
 
 - Batch file: results/train-batch-0125.jsonl
