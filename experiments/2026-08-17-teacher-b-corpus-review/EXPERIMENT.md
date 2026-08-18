@@ -20,15 +20,23 @@ is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
   Validation target is 0 for this stage; zero validation-batch files exist and none were created
   (asserted by the verifier, not merely promised).
 - Decisions this batch: keep 0, rewrite 10, reject 0.
-- Initial schema check: PASS on first run (scripts/tb_verify_batch_0176.py). No repair actions were
-  required, so no batch content was rewritten. The original corpus and all prior batches were left
-  untouched.
+- Initial schema check: PASS on the in-experiment verifier, but an independent post-commit re-check
+  under /tmp FAILED one assertion the in-experiment verifier had left as a placeholder: the ten
+  answers shared their first 200 characters, because the invariant preamble was emitted before the
+  per-variant stance block. That is exactly the "same opening, diverging later" templating the
+  200-char check exists to catch. Repair action: the generator was changed to lead each answer with
+  its stance marker, hypothesis and stance-specific body, moving the shared preamble below them; the
+  batch was regenerated, the in-experiment verifier's placeholder assertion was tightened to require
+  10 distinct 200-char openings, and both verifiers were re-run.
+- Final schema check: PASS on both the in-experiment verifier and the independent /tmp re-check.
+  Neither the original corpus nor any prior batch was touched to satisfy any assertion.
 - Verifier assertions exercised: trailing newline on every batch file; contiguous batch numbering
   0001..0176; field-set EQUALITY against the 12-field schema (not mere presence); enum constants for
   teacher_lane / teacher_model / calibration_status / decision; byte-exact source_user and
   source_assistant against the corpus for ALL 1760 aggregated records; non-empty corrected_answer;
   corrected_answer != source_assistant; 10 distinct corrected_answer sha256 digests; the
-  "Analytical stance under test: <stance>." marker present with pairwise-distinct stances;
+  "Analytical stance under test: <stance>." marker present with pairwise-distinct stances and ten
+  distinct 200-char answer openings;
   ESTIMATE labelling present in every answer; quality_dimensions integer range 1-5; confidence float
   in [0,1]; global source_id uniqueness across all batches; aggregate sequence is a strict prefix of
   train.jsonl; and zero validation-batch-* files.

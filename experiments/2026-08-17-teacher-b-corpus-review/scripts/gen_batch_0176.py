@@ -137,10 +137,10 @@ Order matters: Q1 is cheapest and most likely to disqualify a configuration; Q4 
 ]
 
 def build(st):
-    return (PREAMBLE
-      + "\n\nAnalytical stance under test: " + st['name'] + ".\n\n"
+    return ("Analytical stance under test: " + st['name'] + ".\n\n"
       + "Falsifiable hypothesis\n" + st['hyp'] + "\n\n"
       + st['body'] + "\n\n"
+      + PREAMBLE + "\n\n"
       + "Measurements and units\n" + st['meas'] + "\n\n"
       + "Expected confounders\n" + st['conf'] + "\n\n"
       + "Evidence required to close this question\nArm-identity hashes for both arms with their field-level diff; both full latency-throughput curves with >=5 concurrency points and >=3 repeats each; the clamped-KV and native-capacity quantized arms reported separately; per-slice quality deltas with bootstrap 95% CIs; per-layer kernel name/time tables proving no silent dequant fallback; resident weight bytes compared against the ~5.0-5.3 GB byte-count ESTIMATE; and a matched-window fleet accounting of GPU-hours and output tokens. Absent any one of these, the conclusion is 'not established', not 'negative'.\n\n"

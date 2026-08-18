@@ -56,7 +56,7 @@ for r in B:
     ck(m is not None, 'missing stance marker '+r['source_id'])
     if m: mechs.append(m.group(1))
 ck(len(set(mechs)) == len(mechs), 'duplicate stances in batch')
-ck(len({r['corrected_answer'][:200] for r in B}) >= 1, 'x')
+ck(len({r['corrected_answer'][:200] for r in B}) == 10, 'shared 200-char opening')
 
 # global uniqueness + prefix
 ids = [r['source_id'] for _, r in recs]
