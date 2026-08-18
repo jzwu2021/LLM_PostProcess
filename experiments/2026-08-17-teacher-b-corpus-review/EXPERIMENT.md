@@ -5,6 +5,38 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0132
+
+- Batch file: results/train-batch-0132.jsonl
+- Corpus range: train.jsonl lines 1311-1320 (0-indexed 1310..1319)
+- Source IDs: corpus-01452, corpus-01453, corpus-01454, corpus-01456, corpus-01457,
+  corpus-01458, corpus-01460, corpus-01461, corpus-01462, corpus-01463
+- Progress: train 1320/5399, validation 0/601, total 1320/6000, remaining 4680
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_batches.py — 10 lines, 12 required fields, lane/model/status/decision
+  values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty,
+  confidence in [0,1], source_id globally unique, train sequence a strict prefix of train.jsonl)
+- Repair actions: none required this run
+- Final schema check: PASS (train=1320/5399 validation=0/601 total=1320, VERIFY_PASS)
+- Manifest: MANIFEST.sha256 regenerated over 221 files, sha256sum -c → 221 OK, 0 mismatch
+- Technical topics covered: intermittent OOM in long-context LLM serving under concurrency.
+  All 10 items are scenario variants 152-163 of the same long-context OOM prompt, split across
+  Troubleshooting / Performance Analysis / System Design categories. Rewrites give a per-token KV
+  capacity model (2 * layers * kv_heads * head_dim * dtype_bytes / TP) and the max_concurrent_tokens
+  derivation; a category-specific falsifiable hypothesis (admission oversubscription vs caching-allocator
+  fragmentation via reserved-minus-allocated vs missing length-aware admission contract); separation of
+  device OOM from host cgroup OOM kill; prefill activation/logits workspace spikes as a non-KV allocation
+  source; a 4-arm single-variable replay experiment (baseline / token budget / expandable_segments /
+  clamped max_model_len) with OOM-per-10k as primary metric and p99 TTFT, ITL, throughput, 429 rate as
+  guardrails; confounders (429s masking dropped traffic, synthetic prefix-cache inflation, warm-up,
+  power/thermal capping on a dense 8x A30 chassis, co-resident processes); and explicit rollback gates.
+  Interconnect boundary conditions are stated for the A30 PCIe-only topology: TP all-reduce cost per layer,
+  and disaggregated prefill/decode (Dynamo / Mooncake style) requiring KV transfer that without
+  RDMA/GPUDirect falls back to host memory over PCIe and can dominate TTFT.
+- Status: PROVISIONAL. These are teacher-B second-opinion outputs from a blind review lane. They are
+  NOT expert gold labels, have not been validated against ground truth or teacher-A, and say nothing
+  about any model's domain capability. Agreement analysis with teacher-A is a separate later step.
+
 ## Run 2026-08-17 batch 0131
 
 - Batch file: results/train-batch-0131.jsonl
