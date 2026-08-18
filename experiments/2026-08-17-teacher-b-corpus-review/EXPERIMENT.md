@@ -5,6 +5,65 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0164
+
+- Batch file: results/train-batch-0164.jsonl
+- Corpus range: train.jsonl lines 1631-1640 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01795 .. corpus-01804 (contiguous, no gaps in this window).
+- Progress: train 1640/2500, validation 0/0, total 1640/2500, remaining 860
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/adhoc_verify_batch_0164.py) — 10 lines, 12 fields each,
+  exactly-12-key assertion, lane/model/status/decision enums, byte-exact source_user and source_assistant
+  against the corpus, non-empty corrected_answer, confidence in [0,1], global source_id uniqueness across
+  all 164 batch files, aggregate train sequence a strict prefix of train.jsonl, zero validation-batch files,
+  and pairwise-distinct corrected_answer sha256 within the batch.
+- Repairs performed: none required.
+- Final schema check: VERIFY_PASS (batch lines 10, aggregate train 1640, batch files 164).
+- Manifest: MANIFEST.sha256 regenerated over the whole experiment directory (excluding itself);
+  `sha256sum -c` reported all entries OK.
+
+### Technical topics covered by this batch
+
+All ten rows are rubric-identical variants (scenario variants 195-204) of the same prompt: diagnosing a
+multi-GPU job that hangs during collective initialization, with an explicit falsifiable hypothesis and a
+controlled experiment. The reference answers are byte-identical rubric text listing section headings only,
+so every row was scored instruction_coverage 2 and marked `rewrite`.
+
+To avoid template collapse across a homogeneous variant batch, each variant was assigned a distinct
+dominant failure mechanism, with its own falsification condition, measurement plan and controls:
+
+1. corpus-01795 — rendezvous/TCPStore deadlock from a WORLD_SIZE vs launched-rank mismatch.
+2. corpus-01796 — `NCCL_SOCKET_IFNAME` selecting a non-routable interface (docker0/lo/virbr0).
+3. corpus-01797 — CUDA device-visibility collision, two ranks bound to the same physical GPU UUID.
+4. corpus-01798 — intra-node P2P/NVLink path disabled or broken (IOMMU, PCIe ACS, MIG partitioning).
+5. corpus-01799 — rank-divergent collective call order / shape mismatch (a genuine application deadlock).
+6. corpus-01800 — RDMA/RoCE fabric misconfiguration: GID index v1/v2, PFC/ECN, MTU mismatch.
+7. corpus-01801 — GPUDirect RDMA unavailable: `nvidia_peermem`/dma-buf missing, host-bounce fallback stall.
+8. corpus-01802 — firewall permitting MASTER_PORT but dropping NCCL bootstrap ephemeral ports.
+9. corpus-01803 — hostname/DNS split rendezvous, MASTER_ADDR resolving to 127.0.0.1 on some nodes.
+10. corpus-01804 — timeout/backoff misconfiguration masking a slow-but-progressing init (not a true hang).
+
+Every rewrite shares a common scaffold that the reference answer lacks: three-stage discrimination
+(rendezvous vs NCCL bootstrap vs transport/first collective) before any env-var tuning; an independent
+`nccl-tests all_reduce_perf` baseline to separate fabric faults from application faults; a stated null
+hypothesis; explicit confounders (a second gloo PG on another interface, zombie processes, container
+networking, a single sick node, Xid/ECC errors); a required negative control (the fix must fail again when
+reverted); and rollback gates that treat `NCCL_IB_DISABLE` / `NCCL_P2P_DISABLE` / `NCCL_NET_GDR_LEVEL=0`
+as diagnostics rather than fixes because they cost interconnect bandwidth.
+
+All numeric statements are explicitly labelled ESTIMATE with their derivation written out (e.g. the 60 s
+single-node init bound and the 10% busbw regression rollback threshold); no value in this batch is claimed
+as MEASURED, because the prompts supply no telemetry from any real cluster.
+
+### Status caveat
+
+These results are **provisional** teacher-B blind review output. They are not expert gold labels, they have
+not been human-verified, and they say nothing about any model's domain capability. Agreement analysis
+against teacher-A is a separate, later step and was deliberately not performed here: no file under
+experiments/2026-08-14-teacher-a-corpus-calibration/ was read, opened or grepped during this run, so the
+blind-review invariant holds.
+
 ## Run 2026-08-18 batch 0163
 
 - Batch file: results/train-batch-0163.jsonl
