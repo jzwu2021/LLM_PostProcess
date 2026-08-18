@@ -5,6 +5,46 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0166
+
+- Batch file: results/train-batch-0166.jsonl
+- Corpus range: train.jsonl lines 1651-1660 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01817, corpus-01819, corpus-01820, corpus-01821, corpus-01822, corpus-01823,
+  corpus-01824, corpus-01825, corpus-01826, corpus-01827. The gap (01818) is absent from train.jsonl
+  itself; positional contiguity is what is asserted, and the aggregate-prefix check proves no row was
+  skipped.
+- Progress: train 1660/2500, validation 0/0, total 1660/2500, remaining 840
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/adhoc_verify_batch_0166.py) — trailing-newline check,
+  10 lines, all 12 required fields per record, lane/model/status/decision enums, byte-exact source_user
+  and source_assistant against the corpus, non-empty corrected_answer, integer 1-5 quality dimensions,
+  string-array risks/evidence_required, confidence float in [0,1], distinct corrected_answer within the
+  batch, contiguous batch numbering 0001..0166, global source_id uniqueness, and the aggregate train
+  sequence being a strict prefix of train.jsonl (1660 rows). Zero validation-batch files exist.
+- Repairs performed: none required. scripts/__pycache__ was removed before verification so it never
+  enters the manifest or the commit.
+- Final schema check: VERIFY_RESULT = PASS (batch records 10, aggregate train 1660).
+- Manifest: MANIFEST.sha256 regenerated over the whole experiment directory (excluding itself);
+  `sha256sum -c` reported all entries OK.
+- Technical topics covered by this batch: all ten rows are the same rubric-style prompt ("multi-GPU job
+  hangs during collective initialization", scenario variants 217-227) whose source_assistant is a grading
+  rubric rather than an answer, so every row was rewritten. Each rewrite is assigned a distinct root-cause
+  mechanism: PCIe ACS / NCCL topology blocking P2P; RLIMIT_MEMLOCK and cgroup limits stalling pinned-memory
+  registration; RoCE MTU/PFC mismatch dropping the first large message; shared-filesystem storage stalls
+  masquerading as a collective hang; non-uniform process-group creation order across ranks; zombie
+  processes from a prior run holding GPUs and the bootstrap port; clock skew / expired credentials breaking
+  the rendezvous backend; power/thermal capping and Xid-degraded GPUs delaying CUDA context creation;
+  disaggregated serving stacks (Mooncake transfer engine, NVIDIA Dynamo worker registration) whose
+  handshake stall is misattributed to training-collective init; and an observability meta-hypothesis
+  (no timeout, no NCCL_DEBUG) making every other hypothesis unfalsifiable. Each answer carries a
+  falsifiable hypothesis, a controlled experiment with a stated prediction, the measurements to collect,
+  expected confounders, operational risks, required evidence, and an explicit rollback gate. All numeric
+  thresholds are tagged ESTIMATE or MEASURED.
+- Status caveat: these outputs are PROVISIONAL teacher-B blind review, not expert gold labels, and they
+  say nothing about any model's domain capability. They are a second independent opinion to be compared
+  against teacher-A later in a separate, non-blind agreement-analysis step.
+
 ## Run 2026-08-18 batch 0165
 
 - Batch file: results/train-batch-0165.jsonl
