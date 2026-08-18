@@ -5,6 +5,62 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0165
+
+- Batch file: results/train-batch-0165.jsonl
+- Corpus range: train.jsonl lines 1641-1650 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01805, corpus-01807, corpus-01808, corpus-01809, corpus-01810, corpus-01812,
+  corpus-01813, corpus-01814, corpus-01815, corpus-01816. The gaps (01806, 01811) are absent from
+  train.jsonl itself (they live in other splits); positional contiguity is what is asserted, and the
+  aggregate-prefix check proves no row was skipped.
+- Progress: train 1650/2500, validation 0/0, total 1650/2500, remaining 850
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/adhoc_verify_batch_0165.py) — trailing-newline check,
+  10 lines, exactly-12-key assertion per record, lane/model/status/decision enums, byte-exact source_user
+  and source_assistant against the corpus, non-empty corrected_answer distinct from source_assistant,
+  integer 1-5 quality dimensions, non-empty risks/evidence_required string arrays, confidence float in
+  [0,1], per-record ESTIMATE/MEASURED tagging present, pairwise-distinct mechanisms and corrected_answer
+  within the batch, global source_id uniqueness across all 165 batch files, aggregate train sequence a
+  strict prefix of train.jsonl, and zero validation-batch files.
+- Repairs performed: none required.
+- Final schema check: VERIFY_PASS (batch lines 10, aggregate train 1650, batch files 165).
+- Manifest: MANIFEST.sha256 regenerated over the whole experiment directory (excluding itself);
+  `sha256sum -c` reported all entries OK.
+
+### Technical topics covered by this batch
+
+All ten rows are rubric-identical variants (scenario variants 205-216) of the same prompt: diagnosing a
+multi-GPU job that hangs during collective initialization, with an explicit falsifiable hypothesis and a
+controlled experiment. The reference answers are byte-identical rubric text listing section headings only,
+so every row was scored instruction_coverage 2 and marked `rewrite`.
+
+To avoid template-identical outputs across a homogeneous variant block, each row was assigned a distinct
+primary failure mechanism, each with its own falsifiable hypothesis, controlled experiment, measurement
+set, confounders, and rollback gate: (1) rendezvous store — MASTER_ADDR resolving to loopback on a subset
+of nodes; (2) NCCL interface selection binding a non-routable NIC (docker0/virbr0/lo) via
+NCCL_SOCKET_IFNAME; (3) launcher env skew producing a duplicate or missing RANK so the RANK set is not
+range(WORLD_SIZE); (4) device-visibility collision — two ranks on one GPU UUID via mis-set
+CUDA_VISIBLE_DEVICES / unapplied LOCAL_RANK; (5) RoCE GID-index and RoCEv1-vs-v2 mismatch stalling the IB
+verbs QP handshake, probed with ib_write_bw and show_gids plus PFC/ECN counters; (6) firewall/security-group
+drops on the ephemeral bootstrap port range, isolated by a gloo-backend barrier plus tcpdump SYN/SYN-ACK
+census; (7) container shared-memory limits — 64 MB /dev/shm or unshared IPC namespace breaking the NCCL SHM
+path and cudaIpc handles; (8) NCCL/CUDA-driver version skew across nodes, bisected on a version-homogeneous
+subset; (9) straggler rank with no init timeout — slow CUDA context init, cold checkpoint page cache, or ECC
+page retirement, diagnosed with per-rank py-spy dumps; (10) double rendezvous / stale communicator id from a
+previous job splitting ranks into two half-groups, tested with a fresh uuid rdzv_id.
+
+Every rewritten answer shares a common evidence-freezing preamble (capture per-rank env, NCCL_DEBUG=INFO
+last line, py-spy dumps and nvidia-smi before mutating any configuration) and a common closing procedure
+(scale bisection single-process -> single-node -> two-node -> full world, nccl-tests all_reduce_perf as the
+minimal probe rather than the training job, one-variable-per-trial discipline, explicit init timeout as an
+observability fix only, and a global rollback gate requiring reversion to last-known-good after two
+non-narrowing trials). All numeric thresholds are explicitly tagged ESTIMATE or MEASURED with their
+derivation stated.
+
+These outputs are **provisional** teacher-B review records. They are not expert gold, they have not been
+validated by a human domain expert, and they say nothing about any model's domain capability.
+
 ## Run 2026-08-18 batch 0164
 
 - Batch file: results/train-batch-0164.jsonl
