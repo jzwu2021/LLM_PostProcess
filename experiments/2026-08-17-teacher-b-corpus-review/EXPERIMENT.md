@@ -5,6 +5,21 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0136
+
+- Batch file: results/train-batch-0136.jsonl
+- Corpus range: train.jsonl lines 1351-1360 (0-indexed 1350..1359)
+- Source IDs: corpus-01495 .. corpus-01504
+- Progress: train 1360/5399, validation 0/601, total 1360/6000, remaining 4640
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run of /tmp/tb_verify.py
+- Repairs: none required
+- Final schema check: PASS — train=1360/5399, validation=0/601, total=1360, ERRORS: 0
+- Manifest: MANIFEST.sha256 regenerated over 231 files, `sha256sum -c` all OK
+- Technical topics covered: all ten items are the same rubric family — intermittent CUDA OOM in a long-context serving workload under concurrency. To avoid ten near-identical answers, each record was written from a distinct diagnostic axis: (1) KV-cache byte accounting vs free-HBM budget, (2) allocator fragmentation vs true capacity exhaustion (reserved-minus-allocated, expandable_segments), (3) token-budget admission control and scheduler backpressure, (4) preemption/recompute and swap-space path, (5) prefix/radix cache sharing as a capacity multiplier, (6) KV and weight quantization (fp8 KV) as a budget lever with an accuracy gate, (7) tensor/pipeline parallelism topology and per-GPU KV sharding vs NCCL buffer growth, (8) memory-utilization fraction vs non-KV consumers (CUDA graphs, activation workspace, comm buffers), (9) multi-tenant co-residency and noisy-neighbour HBM contention, (10) the decode tail — unbounded max_tokens as the binding variable. Every answer states assumptions, an explicit falsifiable hypothesis with a prediction, a single-variable controlled experiment on a replayed trace, named confounders, required evidence, and a rollback gate tied to p99 latency / goodput / accuracy / OOM recurrence.
+- Rubric-source note: the corpus `assistant` field for this family is a grading rubric, not a model answer, so `decision=rewrite` throughout with instruction_coverage scored 2.
+- Status: these results are PROVISIONAL teacher-B blind review output produced by the current conversation model. They are NOT expert gold labels, have not been validated by a human domain expert, and say nothing about any trained model's domain capability. Blind protocol held: no teacher-A artifact was read, opened, or searched during this batch.
+
 ## Run 2026-08-17 batch 0135
 
 - Batch file: results/train-batch-0135.jsonl
