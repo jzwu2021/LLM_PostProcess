@@ -5,6 +5,42 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0131
+
+- Batch file: results/train-batch-0131.jsonl
+- Corpus range: train.jsonl lines 1301-1310 (0-indexed 1300..1309)
+- Source IDs: corpus-01441, corpus-01442, corpus-01443, corpus-01444, corpus-01445,
+  corpus-01446, corpus-01447, corpus-01448, corpus-01449, corpus-01451
+- Progress: train 1310/5399, validation 0/601, total 1310/6000, remaining 4690
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (verify_batches.py — 10 lines, 12 required fields, lane/model/status/decision
+  values correct, source_user and source_assistant byte-identical to corpus, corrected_answer non-empty,
+  confidence in [0,1], source_id globally unique, train sequence is a strict prefix of train.jsonl)
+- Repair actions: none required this run
+- Final schema check: PASS (train=1310/5399 validation=0/601 total=1310, VERIFY_PASS)
+- Manifest: MANIFEST.sha256 regenerated over 220 files; `sha256sum -c` all OK
+
+Technical topics covered by this batch: intermittent out-of-memory failures in long-context
+LLM serving under concurrency. Each rewritten answer grounds the diagnosis in an explicit
+per-token KV capacity model (2 x n_layers x n_kv_heads x head_dim x dtype_bytes / TP), worked
+against a 9B-class model on 24 GB A30 devices, and then advances one of four discriminating
+falsifiable hypotheses — length-blind admission control, caching-allocator fragmentation,
+KV block leakage on client disconnect/abort, and prefix-cache retention competing with live
+requests — each paired with a controlled single-variable experiment on a replayed, byte-identical
+production trace. Answers enumerate the required measurements (KV pool free-block time series,
+prompt/max_tokens tail distribution, reserved-vs-allocated at failure, out-of-process nvidia-smi
+cross-check, dmesg to exclude host OOM kill), the expected confounders (co-tenant HBM consumers,
+CUDA graph and NCCL buffers outside framework accounting, warm-up allocations, retry storms),
+a reversibility-ordered mitigation list, and explicit rollback thresholds. Tensor parallelism is
+treated as a last resort with its PCIe-fabric all-reduce cost stated, since the assumed A30 node
+has no NVLink; KV quantization is gated on a pre-registered accuracy check and barred from
+in-incident use.
+
+These results are PROVISIONAL model-generated review output. They are not expert gold labels,
+they have not been validated by a human domain expert, and they say nothing about any model's
+domain capability. They are a blind second opinion produced without any access to teacher-A
+artifacts, intended solely as input to a later, separate agreement analysis.
+
 ## Run 2026-08-17 batch 0130
 
 - Batch file: results/train-batch-0130.jsonl
