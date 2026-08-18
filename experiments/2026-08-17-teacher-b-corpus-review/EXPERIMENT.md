@@ -5,6 +5,75 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0180
+
+- Batch file: results/train-batch-0180.jsonl
+- Corpus range: train.jsonl positional lines 1791-1800, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. Selection was made by line position, not by numeric ID
+  arithmetic.
+- Source IDs: corpus-01972, corpus-01973, corpus-01974, corpus-01975, corpus-01976, corpus-01977,
+  corpus-01978, corpus-01979, corpus-01981, corpus-01983. Note the ID gaps: corpus-01980 and
+  corpus-01982 do not exist in train.jsonl. These are corpus-side numbering gaps, not skipped
+  records; the batch is ten physically consecutive lines.
+- Progress: 1800/2500 train records (72.0%). Remaining: 700. The 2500 denominator is the
+  user-set staged target adopted on 2026-08-18, replacing the original 6000-record figure.
+  Validation target is 0 for this stage; zero validation-batch files exist and none were created
+  (the verifier asserts this explicitly).
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: pass (0 errors) on the first run of scripts/tb_verify_batch_0180.py.
+- Repair actions: none. No corpus file, no prior batch, no teacher-A artifact and no frozen
+  artifact was read or modified. The generator was written to a script file (never an inline -c)
+  and passed lint before execution.
+- Final schema check: pass. Checks run: per-line JSONL parse, batch count == 10, all 12 required
+  fields present, teacher_lane/teacher_model/calibration_status/decision value constraints,
+  byte-exact equality of source_user and source_assistant against
+  research/ai-infra-expert/corpus/train.jsonl, non-empty corrected_answer,
+  corrected_answer != source_assistant, presence of an explicit ESTIMATE label and a stance-marker
+  opening line in every answer, ten distinct answer bodies and ten distinct 200-character
+  openings (anti-template), quality_dimensions integers in [1,5], non-empty risks and
+  evidence_required string arrays, confidence within [0,1], global source_id uniqueness across all
+  180 batches, strict-prefix equality of the aggregated 1800-ID sequence against train.jsonl, and
+  absence of any validation-batch file.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself;
+  sha256sum -c passes for all entries.
+- Technical topics covered by this batch: all ten rows continue the weight-only quantization (WOQ)
+  fair-comparison stem (scenario variants 72-83, task_type design_or_diagnosis, difficulty hard,
+  categories rotating Performance Analysis / System Design / Troubleshooting). The source_assistant
+  is the same grading rubric for every variant, so the decision is rewrite for all ten. Each answer
+  is organised around a distinct analytical stance not used in earlier batches, so the batch is not
+  ten paraphrases: (1) hardware-substitution-first, pricing a bandwidth-richer device and
+  configuration levers against quantization on the same cost unit before any engineering;
+  (2) kernel-portability-and-shape-coverage-first, treating the speedup as a property of a
+  kernel-shape-layout triple with group-size versus per-TP-shard-K divisibility as a first-order
+  correctness issue; (3) request-mix-stratification-first, with the falsifiable prediction that
+  gain must be monotonic in each stratum's decode-token fraction; (4) tenant-and-SLO-class-first,
+  gating per SLO class because interactive and batch classes sit in opposite regimes;
+  (5) randomized-interleaved-assignment-first, using paired shadow replay and a mid-run arm-to-node
+  swap to remove drift and node bias; (6) incident-and-on-call-first, treating diagnosability,
+  continuous quality canary and a rehearsed timed rollback as design constraints, and pricing the
+  permanent dual-numeric-path burden; (7) artifact-supply-chain-first, requiring a reproducible
+  hashed conversion build and two independently converted checkpoints so checkpoint-to-checkpoint
+  spread is the real error bar; (8) validity-of-the-quality-instrument-first, measuring judge
+  test-retest agreement, injected-degradation sensitivity and order/verbosity bias before any
+  quality delta is trusted; (9) queueing-first, expressing the benefit as a change in sustainable
+  arrival rate at fixed p95 with the bound 1/(1 - f + f/s) (f=0.6, s=2 gives ~1.43x, ESTIMATE);
+  (10) energy-and-thermal-first, using joules per 1,000 output tokens as a cost unit and power/clock
+  traces to convert thermal drift from unexplained variance into an observable. Shared across all
+  ten: the WOQ mechanism is bytes of weights moved per decode step, so gains are confined to
+  memory-bandwidth-bound decode and decay toward 1.0x with batch size while TTFT is flat or worse;
+  the Q-clamped versus Q-native arm pair separates the kernel effect from the KV-capacity effect;
+  the cost unit is GPU-seconds per 1,000 output tokens at a fixed p95 SLO, compared at each arm's
+  own SLO intersection rather than a fixed batch size; arm identity is frozen and hashed with the
+  configuration symmetric difference required to be exactly the bit-width fields; an A/A noise floor
+  bounds any claimed delta; and every numeric claim is labelled ESTIMATE with its derivation inline
+  (9B BF16 = 18 GB versus INT4 group-128 ~5.0-5.3 GB giving a ~3.2-3.6x batch-1 byte-count upper
+  bound, and the Amdahl ceilings f=0.4 -> ~1.33x, f=0.8 -> ~2.1x). No MEASURED value is asserted
+  anywhere in this batch because no measurement was performed.
+- Status caveat: these records are PROVISIONAL teacher-B review output produced by the current
+  conversation model under blind conditions. They are not expert gold, they have not been
+  human-verified, and they say nothing about any trained model's domain capability. No teacher-A
+  artifact was read, opened, or grepped at any point during this batch.
+
 ## Run 2026-08-18 batch 0179
 
 - Batch file: results/train-batch-0179.jsonl
