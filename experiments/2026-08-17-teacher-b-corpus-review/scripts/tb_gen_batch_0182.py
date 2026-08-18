@@ -1,0 +1,123 @@
+import json
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+EXP = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review"
+OUT = f"{EXP}/results/train-batch-0182.jsonl"
+START = 1810
+N = 10
+
+rows = [json.loads(l) for l in open(CORPUS) if l.strip()]
+sel = rows[START:START + N]
+assert len(sel) == N
+
+COMMON_TAIL = """
+
+--- Shared substrate (identical across this study, stated once so the stance above is the only variable) ---
+
+Mechanism. Weight-only quantization (WOQ) reduces the BYTES OF WEIGHTS READ PER FORWARD PASS. It therefore helps only where the kernel is memory-bandwidth bound, which in LLM serving means small-batch autoregressive decode. Prefill is compute bound; dequantization adds arithmetic there, so TTFT is flat or slightly worse. As batch size rises, decode GEMMs become compute bound too and the advantage decays monotonically toward 1.0x. Any claim of a uniform speedup across the concurrency range is mechanically wrong and should be treated as an instrumentation bug until explained.
+
+Byte-count ceiling (ESTIMATE, derivation inline, not a throughput result). A 9B-parameter model in BF16 is 9e9 x 2 B = 18 GB of weights. INT4 with group-128 FP16 scale and zero point costs about 0.5 + ~0.06 B/param, i.e. ~5.0-5.3 GB. Ratio ~3.2-3.6x. This is pure byte counting with no kernel-efficiency model and no attention or KV traffic included; it is an upper bound on batch-1 decode speedup ONLY. Applying Amdahl with a decode-weight-read fraction f: f=0.4 bounds end-to-end gain near 1.33x, f=0.8 near 2.1x (ESTIMATE).
+
+Mandatory two-arm-plus-one design. Run the quantized configuration TWICE: (a) with KV cache block count clamped to the BF16 baseline's block count, which isolates the kernel/bandwidth effect; (b) at native capacity, which shows the deployable benefit. Freed HBM becomes additional KV blocks and raises throughput by batching alone. If the clamped arm is flat, the honest conclusion is "we bought KV headroom", and tuning KV settings on the BF16 arm must be priced as the cheaper alternative before shipping a second numeric path.
+
+Arm identity is frozen and hashed. Checkpoint hash, bit width, group size, symmetric/asymmetric, outlier or mixed-precision policy, calibration dataset hash, library and engine build, TP/PP layout, activation precision, KV precision, block size, max_num_seqs, max_model_len, chunked-prefill state, speculative-decoding state. The configuration symmetric difference between arms must be exactly the bit-width fields; anything else invalidates the comparison. Weight-only means weight-only: "INT4 plus FP8 KV" is two experiments, and the KV change usually explains most of the throughput delta while none of the quality delta gets attributed correctly.
+
+Comparison point. Compare arms at the intersection of each arm's own latency-throughput frontier with the p95 SLO, never at a fixed batch size; the two arms have different optimal batch sizes, and fixed-batch comparison is the single most common way these studies mislead. Cost unit is GPU-seconds per 1,000 output tokens at that fixed p95 SLO, converted to currency last.
+
+Measurement protocol. At least five concurrency points, at least three repeats per point, steady state with a fixed warmup-exclusion rule, greedy decoding and fixed seed for quality, bootstrap 95% CIs on ABSOLUTE quality deltas. Quality is sliced: long context, structured/JSON output, code, math, safety and refusal behaviour; aggregate scores can stay flat while repetition or truncation degrades, so sampled side-by-side output diffs are part of the evidence, not a nicety. A BF16-vs-BF16 A/A control across seeds and physical GPUs establishes the noise floor that any claimed delta must clear.
+
+Confounders to control and report. Autotune cache warmth; clock and thermal drift over long runs; asymmetric telemetry overhead; prefill/decode mix drift between arms; silent kernel fallback to a dequantize-then-GEMM path (dump per-layer kernel names and timings and diff the arms - a null result with a fallback in the logs is a tooling defect, not a verdict on the method); calibration-set leakage into the eval set, disproved by hash comparison; library defaults silently changing group size across versions.
+
+Evidence required before any decision. Per-request raw records (arrival, TTFT, per-token timestamps, output length, status); per-layer kernel name and achieved-bandwidth traces for both arms; the arm configuration manifest with hashes; per-slice quality scores with CIs plus raw generations; the HBM ledger with KV blocks as the residual and a measured high-water mark; the A/A noise-floor numbers; and matched-window fleet GPU-hour and token accounting, because benchmarks propose and production billing disposes.
+
+Rollback gates, pre-committed. Revert if p95 TTFT or TPOT exceeds SLO at target concurrency; if any eval slice falls more than 1.0 point absolute with a 95% CI excluding zero; if structured-output compliance falls more than 2 points; if measured cost improvement is under 25%; if preemption or recompute rates rise without explanation; or if kernel-fallback evidence appears, in which case fix the tooling and re-run rather than concluding anything. Keep the BF16 arm warm and routable throughout so rollback is a routing flip rather than a redeploy, and rehearse the revert once before the canary.
+
+Declared unknowns. Kernel efficiency on the specific shapes and TP degree in use, per-layer sensitivity of the specific checkpoint, and the production decode-token fraction are all MEASURED quantities in this design; none of them are asserted here. Every number above is labelled ESTIMATE and carries its derivation."""
+
+STANCES = [
+    ("Analytical stance under test: sensitivity-analysis-first - decide which INPUT the conclusion is fragile to before measuring anything.",
+     "Falsifiable hypothesis H1: the sign of the shipping decision is invariant to plus-or-minus 20 percent perturbation of every input the study does not control (decode-token fraction, arrival burstiness, prefix-cache hit rate, output-length distribution, replica headroom policy). If any single 20 percent perturbation flips the decision, the study is not decision-grade and must be re-scoped, not re-run.",
+     "Build a one-page decision model first: inputs are f (decode weight-read fraction), measured clamped-arm speedup s, replica count N, headroom policy h, and the per-release recalibration cost R. Output is annualised saving. Sweep each input independently across its plausible production range and record the decision (ship / do not ship / indifferent) at each point. Only inputs whose perturbation flips the decision deserve expensive measurement; the rest can be bounded cheaply and documented as insensitive. This inverts the usual order and typically reveals that f and N dominate while kernel micro-efficiency does not. Publish the tornado ordering with the protocol so a reviewer can see which measurements were prioritised and why, and so the post-hoc temptation to re-weight inputs after seeing results is visibly foreclosed."),
+
+    ("Analytical stance under test: prefill-decode-disaggregation-first - the deployment topology decides whether WOQ can help at all.",
+     "Falsifiable hypothesis H2: in a disaggregated prefill/decode deployment, WOQ applied to both pools yields end-to-end gain attributable almost entirely to the decode pool, and the prefill pool shows a non-negative TTFT delta. If the prefill pool also speeds up materially, the arms differ in something other than weight precision and the study is void.",
+     "Instrument the two pools separately: prefill-pool GPU-seconds per 1,000 prompt tokens, decode-pool GPU-seconds per 1,000 output tokens, and KV transfer bytes and latency between them. WOQ shrinks weight reads in both pools but only decode is bandwidth bound, and KV transport - often the actual bottleneck in disaggregated setups - is untouched by weight quantization. The correct cost model therefore quantizes the decode pool first and evaluates the prefill pool as a separate decision with its own gate. A single blended end-to-end number hides that the two pools may want opposite verdicts, and it also hides that quantizing prefill can raise TTFT while the blended metric still improves. Report per-pool replica counts before and after, because the saving is realised only where a pool sheds an integer replica."),
+
+    ("Analytical stance under test: statistical-decision-rule-first - write the accept/reject arithmetic before any data exists.",
+     "Falsifiable hypothesis H3: with the pre-registered noise floor and effect size, the planned run has at least 80 percent power to detect the minimum economically material speedup; if the achieved power computed from the observed variance is below that, the run is declared underpowered and no directional claim is made regardless of the point estimate.",
+     "Fix the decision rule as arithmetic, signed before the first request is sent: the minimum economically material effect derived from replica granularity (1/N of fleet capacity), the noise floor from the A/A control, the number of repeats needed to separate them, and an explicit indifference zone in which the correct action is to keep BF16 because it carries no additional maintenance surface. Then pre-commit to three and only three verdicts: ship, do not ship, underpowered. Making 'underpowered' a first-class publishable outcome is what stops the study from degenerating into reruns until a favourable number appears. Record the stopping rule and the analysis code hash in the protocol, and treat any post-hoc change to either as a new study with a new registration."),
+
+    ("Analytical stance under test: model-family-and-architecture-first - WOQ sensitivity is a property of the architecture, not of quantization in general.",
+     "Falsifiable hypothesis H4: the per-layer relative weight error introduced by the chosen group size and bit width is concentrated in a small, identifiable set of projections, and masking that set back to BF16 recovers most of the quality delta at a small fraction of the memory saving. If mixed-precision masking does not recover quality, the damage is diffuse and the recipe needs a different group size or an outlier-aware scheme rather than a patch.",
+     "Measure before theorising: per-layer relative weight error, then per-layer activation-output divergence against BF16 in cosine and relative L2 on a held-out prompt set. Rank layers by divergence and test the masking hypothesis directly by restoring the top-k layers to BF16 and re-measuring both quality and the HBM ledger. Architecture matters here - grouped-query attention changes the KV picture but not the weight picture, MoE routers are tiny and disproportionately damaging when quantized, and LM-head-adjacent projections are commonly sensitive. Treat all of that as hypotheses to be verified on this checkpoint, never as inherited folklore. The deliverable is a per-layer precision policy with its memory cost, not a single bit-width claim, and the policy must be re-derived per checkpoint release."),
+
+    ("Analytical stance under test: procurement-and-contract-first - the comparison must be fair to the alternative you would actually buy.",
+     "Falsifiable hypothesis H5: on the single agreed cost unit, WOQ beats every non-WOQ lever available in the same quarter (KV block tuning, prefix caching, chunked-prefill tuning, speculative decoding, replica right-sizing, a smaller model, and a bandwidth-richer accelerator at its real acquisition price). If any alternative matches within the indifference zone at lower engineering and maintenance cost, WOQ does not ship.",
+     "Price the alternatives at stage zero using existing telemetry, before any quantization engineering is funded. A bandwidth-richer device helps attention and KV traffic too, so it dominates WOQ at low decode-weight fractions; prefix caching can dwarf both on workloads with shared system prompts. Include in the WOQ column the full lifetime cost: conversion pipeline, calibration data governance, per-release recalibration and re-qualification, a second numeric path in every incident, and dual-stack CI. Express everything as annualised cost per 1,000 output tokens at the fixed p95 SLO so the comparison is one number against one number. A study that only compares WOQ against an untuned BF16 baseline is not a procurement decision, it is a demonstration."),
+
+    ("Analytical stance under test: observability-contract-first - specify the telemetry that would let a stranger falsify the result six months later.",
+     "Falsifiable hypothesis H6: every headline number in the final report can be recomputed from the retained raw artifacts by a third party with no access to the authors, and the recomputation lands within the A/A noise floor of the published value. If it cannot, the number is withdrawn rather than defended.",
+     "Define the retention contract before the run: per-request records with arrival timestamp, admission timestamp, first-token-to-client timestamp, per-token timestamps, output length and terminal status; per-arm configuration manifests with hashes; per-layer kernel traces; raw generations for every quality slice; power and clock traces; and the exact analysis scripts with their hash. Verify that TTFT is measured at first token delivered to the client rather than at scheduler admission, that TPOT excludes the first token, and that clock skew between load generator and server is bounded and recorded. Then perform the recomputation drill once during the study, not after it: hand the bundle to someone uninvolved and have them regenerate the headline table. Numbers that survive this are evidence; numbers that do not are anecdotes with error bars."),
+
+    ("Analytical stance under test: multi-node-and-collective-boundary-first - establish what fraction of the step WOQ can even touch when the model is sharded.",
+     "Falsifiable hypothesis H7: with tensor parallelism degree T, the weight bytes read per GPU per token fall by the quantization ratio while all-reduce volume per token is unchanged, so measured end-to-end decode gain is bounded by the weight-read share of per-step time as measured on this interconnect. If observed gain exceeds that bound, the arms differ in collective configuration or the measurement is wrong.",
+     "Decompose one decode step on the actual topology: weight read, attention and KV read, collective communication, and framework overhead. On NVLink-connected GPUs the all-reduce share is modest; across a slower fabric it can dominate and cap the achievable win near unity, which is a go/no-go answer obtainable before any quantization work. Check the correctness precondition explicitly: the quantization group size must divide the per-shard K dimension, so changing TP degree invalidates a previously validated recipe and requires re-qualification. Verify that collective algorithm selection, buffer sizes and any environment tuning are byte-identical between arms, since a different collective path is a classic hidden variable. Report the decomposition alongside the speedup so the bound and the observation can be checked against each other."),
+
+    ("Analytical stance under test: user-visible-outcome-first - measure what a request experiences, not what a GPU experiences.",
+     "Falsifiable hypothesis H8: at matched p95 SLO the quantized arm shows no degradation in end-to-end request success rate, no increase in truncated or malformed outputs, and no increase in retry-driven load. If throughput improves while retries rise, the apparent gain is partly manufactured demand and must be netted out.",
+     "Define the outcome metrics first: successful useful completions per GPU-hour, not tokens per second. Tokens are an intermediate; a response that is retried, truncated at max_model_len, or rejected by a downstream JSON parser consumed capacity and delivered nothing. Instrument client-side terminal status, schema-validation pass rate for structured endpoints, and retry counts attributable to each arm, then recompute the cost unit on useful completions only. Quantization damage often shows up first as slightly longer, more repetitive outputs, which inflate token throughput while lowering useful completions per GPU-hour - a metric inversion that a token-centric study reports as success. Pair this with sampled human-read side-by-side diffs on the worst slice, because no automatic metric reliably catches degeneration onset."),
+
+    ("Analytical stance under test: change-management-and-blast-radius-first - treat the rollout, not the benchmark, as the object being designed.",
+     "Falsifiable hypothesis H9: a staged canary at 1 percent, then 5, then 25 percent of traffic detects any quality regression exceeding the signed per-slice budget within one exposure window, using the continuous quality canary alone and without reference to the offline benchmark. If the canary cannot detect an injected synthetic regression at the budget magnitude, it is not a control and the rollout does not proceed.",
+     "Design the deployment first and let it constrain the experiment. The quantized failure mode is silent quality drift, which no liveness or latency probe catches, so the canary must carry a continuous quality signal: a fixed prompt panel scored every window, structured-output compliance rate, and output-length distribution drift, each with pre-set alarm thresholds. Validate the detector by injecting a known degradation before the real rollout - an untested detector is decoration. Bound the blast radius by tenant class, keep the BF16 fleet warm and routable so revert is a routing flip, rehearse the revert once with a stopwatch and record the time-to-safe, and give a named on-call owner the unilateral authority to revert without a meeting. The benchmark authorises a canary of at least 72 hours spanning a weekly traffic cycle; it does not authorise a fleet-wide change."),
+
+    ("Analytical stance under test: falsification-tournament-first - run the study as an attempt to kill the claim rather than to support it.",
+     "Falsifiable hypothesis H10: the claim 'WOQ reduces our serving cost by at least the material threshold at fixed p95 SLO' survives five pre-registered attacks - arm-order and node swap, fixed-batch versus frontier-matched re-analysis, KV-capacity clamp, kernel-selection audit, and an independently authored quality rubric on the worst-case slice. Surviving fewer than five means the result ships as provisional with the failing attack named in the summary.",
+     "Assign a named adversary who does not own the quantization work and who writes the attacks before results exist. Attack one swaps arm execution order and physical nodes to expose thermal, clock and node-identity bias, with a half-window sign flip read as environment rather than arm. Attack two re-analyses the same raw data at fixed batch size versus frontier-matched comparison and reports both, since a gain that exists only under fixed-batch comparison is an artifact. Attack three is the clamped-KV arm, which separates kernel effect from capacity effect. Attack four audits per-layer kernel selection for silent dequant-GEMM fallback in either arm. Attack five re-scores the worst slice with a rubric written by someone who has not seen the first rubric. Publish the attack list, the outcomes, and the surviving claim in that order, so the strength of the conclusion is legible without trusting the authors' framing."),
+]
+
+out = []
+for i, (row, (stance, hyp, body)) in enumerate(zip(sel, STANCES)):
+    m = {x["role"]: x["content"] for x in row["messages"]}
+    ans = f"{stance}\n\n{hyp}\n\n{body}{COMMON_TAIL}"
+    out.append({
+        "source_id": row["id"],
+        "teacher_lane": "teacher-B",
+        "teacher_model": "claude-opus-5-current",
+        "calibration_status": "provisional",
+        "decision": "rewrite",
+        "source_user": m["user"],
+        "source_assistant": m["assistant"],
+        "corrected_answer": ans,
+        "quality_dimensions": {
+            "technical_correctness": 3,
+            "instruction_coverage": 2,
+            "operational_safety": 3,
+        },
+        "risks": [
+            "source_assistant is a grading rubric, not an answer; training on it teaches the model to restate evaluation criteria instead of performing the analysis",
+            "rubric omits the bandwidth-bound mechanism, so a model following it can assert a uniform speedup that is mechanically wrong",
+            "rubric does not require isolating the KV-capacity confound, permitting a batching gain to be reported as a quantization gain",
+            "no ESTIMATE-versus-MEASURED labelling requirement, so byte-count bounds can be presented as throughput results",
+            "no rollback threshold or canary requirement, so an unsafe fleet-wide change is not excluded",
+        ],
+        "evidence_required": [
+            "per-request raw records: arrival, admission, first-token-to-client, per-token timestamps, output length, terminal status",
+            "arm configuration manifests with checkpoint, calibration-set, engine and library hashes showing a bit-width-only symmetric difference",
+            "per-layer kernel name and achieved-bandwidth traces for both arms, to exclude silent dequant-GEMM fallback",
+            "clamped-KV arm and native-capacity arm results reported separately",
+            "per-slice quality scores with bootstrap 95% CIs on absolute deltas, plus raw generations and sampled side-by-side diffs",
+            "BF16-vs-BF16 A/A noise-floor measurement across seeds and physical GPUs",
+            "matched-window fleet GPU-hour, token and replica-count accounting confirming the saving was realised",
+        ],
+        "confidence": 0.62,
+    })
+
+with open(OUT, "w") as f:
+    for r in out:
+        f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+print("WROTE", OUT, len(out))
+print("IDS", ",".join(r["source_id"] for r in out))
+print("OPENINGS_DISTINCT", len({r["corrected_answer"][:200] for r in out}))

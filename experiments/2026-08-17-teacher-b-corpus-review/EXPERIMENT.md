@@ -5,6 +5,57 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0182
+
+- Batch file: results/train-batch-0182.jsonl
+- Corpus range: train.jsonl positional lines 1811-1820, ten physically consecutive rows, original
+  corpus order preserved, nothing skipped or reordered. Selection by line position, not ID arithmetic.
+- Source IDs: corpus-01995, corpus-01997, corpus-01998, corpus-01999, corpus-02000, corpus-02001,
+  corpus-02002, corpus-02003, corpus-02004, corpus-02005. Note the ID gap: corpus-01996 does not
+  exist in train.jsonl. That is a corpus-side numbering gap, not a skipped record.
+- Progress: 1820/2500 train records (72.8%). Remaining: 680. The 2500 denominator is the user-set
+  staged target adopted on 2026-08-18, replacing the original 6000-record figure. Validation target
+  is 0 for this stage; zero validation-batch files exist and none were created (verifier asserts it).
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: pass (0 errors) on the first run of scripts/tb_verify_batch_0182.py.
+- Repair actions: none. No corpus file, no prior batch, no teacher-A artifact and no frozen artifact
+  was read or modified. Generator written to a script file (never an inline -c) and lint-clean
+  before execution.
+- Final schema check: pass. Checks: per-line JSONL parse, batch count == 10, all 12 required fields,
+  teacher_lane/teacher_model/calibration_status/decision value constraints, byte-exact equality of
+  source_user and source_assistant against research/ai-infra-expert/corpus/train.jsonl, non-empty
+  corrected_answer, corrected_answer != source_assistant, explicit ESTIMATE label and stance-marker
+  opening in every answer, ten distinct answer bodies and ten distinct 200-character openings
+  (anti-template), quality_dimensions integers in [1,5], non-empty risks and evidence_required string
+  arrays, confidence in [0,1], global source_id uniqueness across all 182 batches, strict-prefix
+  equality of the aggregated 1820-ID sequence against train.jsonl, and absence of any
+  validation-batch file.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except itself;
+  sha256sum -c passes for all entries.
+- Technical topics covered by this batch: all ten rows continue the weight-only quantization (WOQ)
+  fair-comparison stem (scenario variants 95-105; task_type design_or_diagnosis; difficulty hard;
+  categories Performance Analysis / System Design / Troubleshooting). The stems are rubric-identical,
+  so the ten rewrites are differentiated by analytical stance, and this batch deliberately uses a
+  fifth, previously unspent stance set: sensitivity-analysis-first (tornado ordering of decision
+  fragility before measurement), prefill-decode-disaggregation-first (per-pool cost accounting; KV
+  transport untouched by WOQ), statistical-decision-rule-first (pre-registered power, indifference
+  zone, "underpowered" as a first-class verdict), model-family-and-architecture-first (per-layer
+  divergence ranking and mixed-precision masking as a testable recovery hypothesis),
+  procurement-and-contract-first (alternatives priced at stage zero including a bandwidth-richer
+  device and dual-stack lifetime cost), observability-contract-first (third-party recomputation drill;
+  TTFT/TPOT definition and clock-skew audit), multi-node-and-collective-boundary-first (all-reduce
+  volume unchanged by WOQ; group-size divisibility against per-shard K under tensor parallelism),
+  user-visible-outcome-first (useful completions per GPU-hour, retry and truncation netting),
+  change-management-and-blast-radius-first (validated continuous quality canary with injected-
+  regression detector test, rehearsed routing-flip rollback), and falsification-tournament-first
+  (five pre-registered attacks with the surviving claim published in that order). Every answer
+  carries the shared bandwidth-bound mechanism, the clamped-KV isolation arm, the frozen arm-identity
+  manifest, frontier-matched SLO comparison, and pre-committed rollback gates; every numeric claim is
+  labelled ESTIMATE with its derivation shown inline.
+- Status: these outputs are PROVISIONAL teacher-B second opinions produced by a reviewer model under
+  blind conditions. They are NOT expert gold labels, have not been human-verified, and say nothing
+  about any trained model's domain capability.
+
 ## Run 2026-08-18 batch 0181
 
 - Batch file: results/train-batch-0181.jsonl
