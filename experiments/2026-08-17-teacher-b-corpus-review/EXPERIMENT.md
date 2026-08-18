@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0146
+
+- Batch file: results/train-batch-0146.jsonl
+- Corpus range: train.jsonl lines 1451-1460
+- Source IDs: corpus-01605 through corpus-01614 (contiguous; corpus order preserved verbatim)
+- Progress: train 1460/5399, validation 0/601, total 1460/6000 (remaining 4540)
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run (scripts/tb_verify_batch_0146.py) —
+  JSONL line-parse, 10 records, all 12 required fields, fixed-value fields correct,
+  source_user/source_assistant byte-identical to corpus, corrected_answer non-empty,
+  confidence in [0,1], global source_id uniqueness (1460 unique), and train/validation
+  aggregate sequences are strict prefixes of their corpora.
+- Repairs applied: none required.
+- Final schema check: PASS (train_total=1460, validation_total=0, grand_total=1460).
+- Manifest: MANIFEST.sha256 regenerated over 240 files (excluding itself);
+  `sha256sum -c` passed with 240 OK and no mismatches. __pycache__ pruned before hashing.
+
+Technical topics covered by this batch:
+All ten items are `design_or_diagnosis` / `hard`, concept tag `NCCL startup`,
+scenario variants 5-14 of "multi-GPU job hangs during collective initialization".
+The rewritten answers decompose the hang into four separable faults — rendezvous
+never completing, NCCL bootstrap/transport negotiation failure, cross-rank
+collective mismatch (shape/dtype/order), and a silently stalled transport — and
+attach a falsifiable hypothesis plus a discriminating experiment to each:
+gloo-backend control run to exonerate or implicate NCCL, NCCL_DEBUG=INFO with
+NCCL_DEBUG_SUBSYS=INIT,GRAPH,ENV,NET read as a progress marker (Bootstrap line,
+ring/tree graph, "Init COMPLETE"), TORCH_NCCL_ASYNC_ERROR_HANDLING plus a short
+init timeout to convert an unobservable hang into a watchdog abort naming the
+unarrived ranks, py-spy per-rank stacks, device-UUID assertions for rank-to-GPU
+mapping, /dev/shm and ulimit -l checks for container-induced shm-transport
+failure, NCCL_SOCKET_IFNAME/NCCL_IB_HCA pinning on multi-homed hosts, RoCEv2 GID
+index / PFC-ECN / nvidia_peermem checks for the GDR path, NCCL_IB_DISABLE=1 and
+NCCL_NET_GDR_LEVEL as isolation levers, and TORCH_DISTRIBUTED_DEBUG=DETAIL for
+collective-ordering divergence. A layered escalation ladder (1 GPU → 2 GPU local
+→ full local world → 2 nodes × 1 GPU nccl-tests → TCP-forced → full world) orders
+the steps by information gain. Safety framing is explicit: NCCL_IB_DISABLE=1 is a
+diagnostic and never a fix, shortened timeouts can abort healthy large-scale init,
+fabric changes (PFC/MTU/GID) carry cluster-wide blast radius and need a two-node
+canary within 5 percent of pre-change busbw, one variable per run, and the fix is
+validated only after three consecutive clean cold starts at full world size.
+
+These outputs are PROVISIONAL teacher-B review artifacts. They are not expert gold
+labels, they have not been validated against a real cluster, and they say nothing
+about any model's domain capability. Agreement analysis against teacher-A is a
+separate, later step and was deliberately not performed here (blind review).
+
 ## Run 2026-08-18 batch 0145
 
 - Batch file: results/train-batch-0145.jsonl
