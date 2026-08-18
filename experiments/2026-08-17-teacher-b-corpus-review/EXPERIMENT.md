@@ -5,6 +5,49 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0172
+
+- Batch file: results/train-batch-0172.jsonl
+- Corpus range: train.jsonl positional lines 1711-1720, ten consecutive rows, original corpus order
+  preserved, nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01881, corpus-01882, corpus-01883, corpus-01884, corpus-01885, corpus-01886,
+  corpus-01887, corpus-01889, corpus-01890, corpus-01894 (corpus ID numbering has gaps at 01888 and
+  01891-01893; the positional sequence is still contiguous and nothing was skipped by this worker).
+- Progress: 1720/2500 train (68.8%). Remaining 780. Validation target is 0 and no validation batch
+  file was created.
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on first run (scripts/tb_verify_batch_0172.py). No repairs were needed.
+- Repairs: none.
+- Final schema check: PASS — JSONL parses line by line, 10 records, all 12 required fields present,
+  enum fields correct, source_user and source_assistant byte-identical to the corpus,
+  corrected_answer non-empty, confidence in [0,1], rubric integers in 1..5, source_id globally unique
+  across all 172 batches, and the aggregate train sequence is exactly the first 1720 IDs of
+  train.jsonl (prefix property holds). No validation artifacts present.
+- Manifest: MANIFEST.sha256 regenerated after the EXPERIMENT.md edit; `sha256sum -c --quiet` passed
+  for every covered file.
+- Blind-review compliance: experiments/2026-08-14-teacher-a-corpus-calibration/ was not read,
+  listed, or grepped at any point during this run. teacher-A corrected_answer values remain unseen.
+- Topics covered: all ten rows are the same templated family — "multi-GPU job hangs during
+  collective initialization" (Scenario variants 281-294), with the assistant turn being a grading
+  rubric rather than an answer, hence rewrite for all ten. Each rewrite is assigned a distinct
+  primary mechanism, all disjoint from batch 0171's set: (1) torch.distributed store/rendezvous
+  deadlock diagnosed by stack frame rather than NCCL logs; (2) collective-order divergence between
+  ranks caught with the NCCL flight recorder / desync debug; (3) absent collective timeout turning a
+  recoverable fault into an indefinite hang; (4) ECC/Xid-faulted GPU with a wedged CUDA context;
+  (5) aws-ofi-nccl / SHARP network-plugin load failure with NCCL_NET=Socket as a functional control;
+  (6) cgroup / MIG / compute-mode device-visibility mismatch; (7) startup checkpoint I/O on a
+  degraded shared filesystem masquerading as a collective hang; (8) pathological ring/topology
+  selection across PCIe host bridge or cross-NUMA instead of NVLink — slow, not stuck;
+  (9) RoCE MTU inconsistency or asymmetric PFC/ECN causing a message-size threshold stall;
+  (10) host resource exhaustion (RLIMIT_MEMLOCK, file descriptors, CPU oversubscription of proxy
+  threads). Every answer states assumptions, one falsifiable hypothesis with its falsifier, a
+  single-variable controlled experiment with a prediction, the measurements to collect, expected
+  confounders, an evidence-before-mutation ordering rule, intervention risks, required evidence,
+  and a numeric rollback gate. All numeric figures are labelled ESTIMATE or MEASURED.
+- Status: PROVISIONAL. These are one model's blind second-opinion reviews. They are not expert gold
+  labels, have not been validated by a human domain expert, and say nothing about any model's
+  domain capability. Cross-lane agreement analysis against teacher-A is a separate later step.
+
 ## Run 2026-08-18 batch 0171
 
 - Batch file: results/train-batch-0171.jsonl
