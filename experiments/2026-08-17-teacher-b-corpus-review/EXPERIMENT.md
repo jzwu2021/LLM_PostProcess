@@ -5,6 +5,43 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0147
+
+- Batch file: results/train-batch-0147.jsonl
+- Corpus range: train.jsonl lines 1461-1470
+- Source IDs: corpus-01615 through corpus-01624 (contiguous; corpus order preserved verbatim)
+- Progress: train 1470/5399, validation 0/601, total 1470/6000 (remaining 4530)
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema/ad-hoc check: PASS on first run (scripts/tb_verify_batch_0147.py) —
+  JSONL line-parse, 10 records, all 12 required fields, fixed-value fields correct,
+  source_user/source_assistant byte-identical to corpus, corrected_answer non-empty,
+  confidence in [0,1], global source_id uniqueness (1470 unique), and train/validation
+  aggregate sequences are strict prefixes of their corpora.
+- Repairs applied: none required.
+- Final schema check: PASS (rerun after manifest regeneration ordering).
+- Manifest: MANIFEST.sha256 regenerated over all files except itself; sha256sum -c PASS.
+- Technical topics covered: NCCL collective-initialization hangs across ten scenario
+  variants (Performance Analysis / System Design / Troubleshooting). Each rewrite
+  partitions the fault space into rendezvous failure, bootstrap/transport negotiation
+  failure, collective mismatch, and silently stalled transport; specifies
+  instrumentation-before-mutation (NCCL_DEBUG=INFO with INIT,GRAPH,ENV,NET,TUNING;
+  bounded init_process_group timeout plus TORCH_NCCL_ASYNC_ERROR_HANDLING to convert
+  a hang into a labelled watchdog abort; multi-sample py-spy to separate deadlock from
+  straggler); states five falsifiable hypotheses (rendezvous incomplete, wrong NIC
+  selection, RDMA/RoCE or GDR fault, collective mismatch, GPU visibility/topology) each
+  with a prediction and a controlled experiment; defines a cheapest-first world-size
+  bisection ladder; enumerates confounders (zombie ports, ephemeral-port firewalling,
+  RoCE MTU mismatch, heterogeneous NCCL versions, dataloader/checkpoint stalls); and sets
+  rollback gates (revert diagnostic env vars, treat NCCL_IB_DISABLE=1 as an explicitly
+  budgeted degraded mode, escalate to fabric owners when host-to-host ib_write_bw fails).
+  Per-variant angles add init-duration SLOs, fail-fast preflight design, time-boxed
+  triage, bootstrap vs data-plane phase attribution, standing canary jobs, straggler vs
+  deadlock discrimination, blast-radius distributions, rendezvous-store architecture
+  (TCPStore over NFS file store), causal verification of fixes, and CI guardrails.
+- Status: PROVISIONAL. These are second-opinion reviewer outputs, not expert gold
+  labels, and they say nothing about any model's domain capability. No teacher-A
+  artifact was read while producing this batch (blind lane maintained).
+
 ## Run 2026-08-18 batch 0146
 
 - Batch file: results/train-batch-0146.jsonl
