@@ -5,6 +5,44 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-17 batch 0133
+
+- Batch file: results/train-batch-0133.jsonl
+- Corpus range: train.jsonl lines 1321-1330 (0-indexed 1320..1329)
+- Source IDs: corpus-01464, corpus-01465, corpus-01466, corpus-01467, corpus-01468,
+  corpus-01469, corpus-01470, corpus-01471, corpus-01472, corpus-01473
+- Progress: train 1330/5399, validation 0/601, total 1330/6000, remaining 4670
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (ad-hoc verifier — 10 lines parse as JSONL, all 12 required fields present,
+  teacher_lane/teacher_model/calibration_status/decision values correct, source_user and source_assistant
+  byte-identical to corpus, corrected_answer non-empty, confidence in [0,1], quality_dimensions are
+  1-5 integers, risks/evidence_required are string arrays, source_id globally unique across all batches,
+  aggregated train sequence is a strict prefix of train.jsonl)
+- Repair actions: none required this run (verification passed on first execution)
+- Final schema check: PASS (train=1330/5399, validation=0/601, ERRORS 0)
+- Manifest: MANIFEST.sha256 regenerated over 227 files, sha256sum -c --quiet → all OK, 0 mismatch
+- Technical topics covered: intermittent OOM in long-context LLM serving under concurrency,
+  scenario variants 164-173. Each rewrite shares a common capacity spine — per-token KV bytes
+  (2 * num_layers * num_kv_heads * head_dim * dtype_bytes / TP) and max_concurrent_tokens, with the
+  binding quantity being the in-flight sum of (prompt + generated) tokens rather than request count —
+  but carries a distinct secondary falsifiable hypothesis H2 so the batch is not a template clone:
+  caching-allocator fragmentation (reserved-minus-allocated plus alloc-retry signature,
+  expandable_segments remediation); max_model_len / max_num_batched_tokens over-provisioning against the
+  empirical p99.9 prompt-length CDF; preemption and recompute storms correlated at 1 s resolution;
+  prefix-cache retention and eviction bounding; multi-tenant interference and per-tenant token budgets;
+  weight and KV quantization trading HBM against a gated accuracy band; NCCL communicator and collective
+  staging buffer overhead shrinking the pool at higher TP degree; CUDA-graph capture workspace invisible
+  to naive weights+KV accounting; bursty arrival where p99.9/mean in-flight tokens exceeds 2 despite safe
+  mean utilisation; and explicit leak-versus-saturation discrimination via a monotonically rising idle
+  memory floor over >=6 idle points. Every item states a controlled single-variable replay experiment
+  (>=3 repetitions, >=30 min per arm, OOM per 10k requests as primary metric), named confounders
+  (autoscaling, warm cache asymmetry, client retries, GPU co-tenancy) and quantitative rollback gates
+  (p99 TTFT >10%, ITL >15%, 5xx above baseline, quality outside pre-agreed band). Platform-specific
+  constants are deliberately not asserted; they are listed as evidence to be measured.
+- Status: these teacher-B judgements are PROVISIONAL. They are an independent blind second opinion
+  produced without any access to teacher-A outputs. They are NOT expert gold labels, have not been
+  validated against hardware, and say nothing about any model's domain capability.
+
 ## Run 2026-08-17 batch 0132
 
 - Batch file: results/train-batch-0132.jsonl
