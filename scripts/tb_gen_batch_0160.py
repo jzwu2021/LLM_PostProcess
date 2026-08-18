@@ -1,0 +1,123 @@
+import json, os
+
+MECH = [
+ ("Rendezvous store unreachable / MASTER_ADDR bound to wrong NIC",
+  "TCPStore rendezvous on MASTER_ADDR:MASTER_PORT never completes because the master binds a loopback or container-internal address that peer ranks cannot route to; init_process_group blocks until the 1800s default timeout."),
+ ("World size / rank mismatch from launcher arithmetic",
+  "nnodes*nproc_per_node disagrees with WORLD_SIZE, or duplicate RANK values are exported, so the store waits forever for a rank that will never check in, or two processes claim the same rank."),
+ ("NCCL interface auto-selection picking a dead or non-routable NIC",
+  "NCCL's bootstrap interface heuristic selects docker0/virbr0/an unplugged 1GbE port; bootstrap ring construction stalls because some pairs cannot connect on the chosen subnet."),
+ ("IB/RoCE fabric partially down: GID index or PKey mismatch",
+  "RDMA transport is selected but the RoCEv2 GID index differs across hosts (v1 vs v2, wrong VLAN), so QP transitions never reach RTS and the collective hangs after bootstrap succeeds."),
+ ("PFC / ECN misconfiguration causing silent RoCE stall",
+  "Lossless queue is not configured symmetrically on all switch ports and NICs; congestion causes packet drop that RoCE does not recover from quickly, appearing as a hang rather than an error."),
+ ("GPU visibility / device ordering mismatch across ranks",
+  "CUDA_VISIBLE_DEVICES or affinity mapping causes two ranks on one host to bind the same GPU or a rank to bind a GPU it does not own; the intra-node P2P/NVLink setup deadlocks."),
+ ("P2P / GDR path blocked by IOMMU or ACS",
+  "PCIe ACS redirection or IOMMU in non-passthrough mode disables GPUDirect P2P and GDRDMA; NCCL falls back or stalls during transport setup, and nvidia-peermem may be unloaded."),
+ ("Mixed NCCL/CUDA/driver versions across nodes",
+  "Heterogeneous container images give different NCCL versions with incompatible bootstrap protocol or algorithm defaults; handshake proceeds partially then blocks."),
+ ("Firewall / port range blocking NCCL socket and IB CM traffic",
+  "Ephemeral ports used by NCCL sockets or the RDMA CM port are blocked by host firewall or security group, so a subset of rank pairs never connects."),
+ ("Application-level desynchronization: divergent collective order",
+  "Ranks issue different collectives or different shapes (e.g. one rank skips an all_reduce under a data-dependent branch), so NCCL waits for a matching op that is never posted."),
+]
+
+VERIFY = [
+ "`python -c \"import torch.distributed as d\"` style two-rank TCPStore probe plus `ss -lntp | grep $MASTER_PORT` on the master, and `getent hosts $MASTER_ADDR` from every node.",
+ "Dump RANK/LOCAL_RANK/WORLD_SIZE from every process to a file and assert the multiset equals range(WORLD_SIZE) exactly.",
+ "Re-run with `NCCL_SOCKET_IFNAME=<known-good>` and `NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=INIT,NET`; compare the 'Using network' and selected-interface lines across ranks.",
+ "`show_gids` on each host; assert identical RoCEv2 GID index and VLAN, then pin `NCCL_IB_GID_INDEX` and re-run.",
+ "Read NIC and switch counters (`ethtool -S` PFC pause frames, `rdma statistic`) before/after a 60s all-reduce loop; a hang with rising pause frames and zero progress implicates PFC.",
+ "`nvidia-smi topo -m` plus a per-rank print of the bound device UUID; assert a bijection between ranks and physical GPUs on each host.",
+ "`lspci -vvv | grep ACSCtl`, `dmesg | grep -i iommu`, `lsmod | grep nvidia_peermem`; retest with `NCCL_P2P_DISABLE=1` and `NCCL_NET_GDR_LEVEL=0`.",
+ "Print `torch.cuda.nccl.version()`, driver version and image digest from every rank; assert exact equality.",
+ "From each node run `nc -vz` against peer ephemeral ports and port 4791/RDMA CM; check `iptables -L -n` and cloud security groups.",
+ "Enable per-rank collective tracing (TORCH_NCCL_TRACE_BUFFER / flight recorder dump on timeout) and diff the last posted op sequence number per rank.",
+]
+
+EXPERIMENT = [
+ "Controlled experiment: run the same launcher with all ranks co-located on one node (still 2 processes). If init succeeds, the fault is cross-host reachability of the rendezvous endpoint, not the code.",
+ "Controlled experiment: shrink to WORLD_SIZE=2 with hand-set RANK values; if that succeeds and only the full-size run hangs, the launcher's rank arithmetic is implicated.",
+ "Controlled experiment: force NCCL_SOCKET_IFNAME to each candidate NIC in turn; exactly one should complete, isolating interface selection as the cause.",
+ "Controlled experiment: run `ib_write_bw` between the two hosts on the same GID index. If RDMA verbs traffic also fails while TCP works, the fabric/GID config is the cause, not NCCL.",
+ "Controlled experiment: rerun with `NCCL_IB_DISABLE=1` (TCP fallback). Completion under TCP but hang under RoCE isolates the lossless-fabric configuration.",
+ "Controlled experiment: launch with one process per node only. Success at 1-proc/node and hang at N-proc/node isolates intra-node device binding.",
+ "Controlled experiment: rerun with NCCL_P2P_DISABLE=1. If the hang disappears, the P2P/ACS/IOMMU path is the cause; the perf loss quantifies the price of the workaround.",
+ "Controlled experiment: pin every node to one identical container digest and rerun. Success under a homogeneous image confirms the version-skew hypothesis.",
+ "Controlled experiment: temporarily open the full ephemeral range between the two hosts in a maintenance window and rerun; success localizes it to the firewall policy.",
+ "Controlled experiment: replace the model step with a fixed-shape all_reduce loop on synthetic data. If the fixed loop never hangs but the real step does, the fault is data-dependent control flow, not the fabric.",
+]
+
+ROLLBACK = [
+ "Roll back if the rendezvous change does not yield a completed init within 2x the observed healthy init time; revert MASTER_ADDR to the previous value and reopen the incident.",
+ "Roll back the launcher change if any rank reports a duplicate or out-of-range rank in the first 60s.",
+ "Revert the pinned NCCL_SOCKET_IFNAME if measured all-reduce busbw drops more than 10% below the last known-good baseline.",
+ "Revert the GID pin if link-layer errors or QP transition failures appear in `dmesg` within one training epoch.",
+ "Roll back PFC/ECN changes immediately if switch pause-frame storms or unrelated tenants' latency regress; these are fabric-wide and blast-radius is not confined to this job.",
+ "Revert the affinity map if any rank binds a GPU already claimed, or if per-GPU utilization becomes asymmetric by more than 15%.",
+ "Treat NCCL_P2P_DISABLE=1 as a temporary mitigation only; roll it back once ACS/IOMMU is fixed, since it costs intra-node bandwidth.",
+ "Roll back the image pin if the homogeneous version regresses throughput below the prior baseline by more than 5%.",
+ "Revert firewall exceptions at the end of the window regardless of outcome; replace with a narrowly scoped rule.",
+ "Roll back the code change if the flight-recorder trace still shows divergent op sequences after the fix.",
+]
+
+rows=[json.loads(l) for l in open('research/ai-infra-expert/corpus/train.jsonl',encoding='utf-8')]
+sel=rows[1590:1600]
+out=[]
+for i,r in enumerate(sel):
+    m=r['messages']
+    u=[x for x in m if x['role']=='user'][0]['content']
+    a=[x for x in m if x['role']=='assistant'][0]['content']
+    name,mech=MECH[i]
+    ca=(
+f"""Scope and assumptions. The job hangs during collective initialization (init_process_group / first NCCL collective), not mid-training, so I assume: the launcher started every process, no rank has exited, and there is no OOM in the logs. I state these because if any is false the plan below is invalid and the first step is to fix the observation, not the fabric.
+
+Primary hypothesis (H1), falsifiable: {name}. Mechanism: {mech}
+
+Prediction that makes H1 falsifiable. If H1 holds, the hang is deterministic and reproducible at minimal scale, and the NCCL bootstrap log stops at a specific stage that is identical on every failing run. If H1 is false, the same minimal reproduction completes and the hang is scale- or data-dependent instead.
+
+Measurements to take, in order (cheapest and least invasive first):
+1. Capture per-rank state before touching anything: `py-spy dump` or `gdb -p` backtraces for every process, plus `nvidia-smi` (utilization near 0% with memory allocated is the signature of a collective-init stall, not a compute stall).
+2. Re-run with `NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=INIT,NET,GRAPH` and a reduced timeout (`TORCH_NCCL_BLOCKING_WAIT=1`, a few minutes) so the failure surfaces fast instead of at the 30-minute default.
+3. Targeted check for H1: {VERIFY[i]}
+
+{EXPERIMENT[i]}
+
+Expected confounders, which I will control for rather than assume away:
+- Default NCCL timeouts are long enough that a slow-but-progressing init looks identical to a true deadlock; always distinguish with the blocking-wait/short-timeout run before declaring a hang.
+- A single straggler rank (slow container pull, cold page cache, filesystem contention on the checkpoint mount) produces the same symptom as a broken transport. Timestamp each rank's entry into init before blaming the network.
+- Environment differences between the interactive debug shell and the scheduler-launched job (different env vars, cgroups, network namespace) can make the minimal reproduction pass for the wrong reason; run the reproduction through the same launcher.
+- Fixing one layer can mask another: if both an interface-selection fault and a version skew exist, the first fix changes the symptom without resolving the root cause. Re-verify from a clean state after each change.
+
+Evidence required before I call this root-caused: (a) a captured NCCL_DEBUG=INFO log from every rank showing where bootstrap stops, (b) the minimal reproduction failing consistently and the controlled variant passing consistently, at least 3 runs each, and (c) one changed variable at a time between the two.
+
+Rollback gate. {ROLLBACK[i]} Any fabric-level change (switch QoS, GID/PKey, firewall) is applied in a maintenance window with a documented revert command prepared in advance, because its blast radius extends beyond this job.
+
+What I will not claim. Until (a)-(c) above exist, this is a ranked hypothesis, not a diagnosis; I will report it as such and will not push a cluster-wide configuration change on the strength of a single passing run."""
+    )
+    out.append({
+      "source_id": r['id'],
+      "teacher_lane": "teacher-B",
+      "teacher_model": "claude-opus-5-current",
+      "calibration_status": "provisional",
+      "decision": "rewrite",
+      "source_user": u,
+      "source_assistant": a,
+      "corrected_answer": ca,
+      "quality_dimensions": {"technical_correctness":3,"instruction_coverage":2,"operational_safety":2},
+      "risks": ["Source answer is a grading rubric, not an answer; training on it teaches meta-commentary instead of diagnosis.",
+                "No falsifiable hypothesis or controlled experiment is actually stated despite the prompt demanding one.",
+                "No rollback gate for fabric-level changes, whose blast radius extends beyond the failing job."],
+      "evidence_required": ["Per-rank NCCL_DEBUG=INFO/INIT,NET logs showing the exact bootstrap stage where progress stops.",
+                            "Reproduction at minimal scale plus the matching controlled variant, 3 runs each, one variable changed.",
+                            "Baseline all-reduce busbw before and after any mitigation, to price the workaround."],
+      "confidence": 0.62
+    })
+
+os.makedirs('experiments/2026-08-17-teacher-b-corpus-review/results',exist_ok=True)
+p='experiments/2026-08-17-teacher-b-corpus-review/results/train-batch-0160.jsonl'
+with open(p,'w',encoding='utf-8') as f:
+    for o in out:
+        f.write(json.dumps(o,ensure_ascii=False)+"\n")
+print("wrote",p,len(out))

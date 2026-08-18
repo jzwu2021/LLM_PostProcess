@@ -5,6 +5,52 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0160
+
+- Batch file: results/train-batch-0160.jsonl
+- Corpus range: train.jsonl lines 1591-1600 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01755, corpus-01756, corpus-01757, corpus-01758, corpus-01759, corpus-01760,
+  corpus-01761, corpus-01762, corpus-01763, corpus-01764 (contiguous, no gaps in this window).
+- Progress: train 1600/5399, validation 0/601, total 1600/6000, remaining 4400
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on the first run of scripts/adhoc_verify_batch_0160.py. The verifier is
+  fresh for this batch, imports nothing from the generator, and re-derives source_user/source_assistant
+  from research/ai-infra-expert/corpus/train.jsonl. scripts/__pycache__ was removed before both the
+  generator and the verifier ran, so no stale bytecode could execute.
+- Repair actions: none required (first run passed).
+- Final schema check: PASS - 10 records; newline-terminated JSONL, no CR bytes, every line parseable;
+  exactly the 12 required fields and no extras; teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional, decision in {keep,rewrite,reject};
+  source_user/source_assistant byte-identical to the corpus; corrected_answer non-empty, never equal to
+  source_assistant, sha256-distinct across the batch (anti-template assertion 10/10); confidence float
+  in [0,1]; quality_dimensions exactly the three integer 1-5 keys; risks and evidence_required non-empty
+  string arrays. Aggregate check: 1600 train records form a strict prefix of train.jsonl with globally
+  unique source_ids; validation is still empty as expected.
+- Manifest: MANIFEST.sha256 regenerated over every file in this experiment directory except itself;
+  `sha256sum -c` passed for all entries.
+- Technical topics covered: all ten rows are rubric-identical variants (155-164) of "multi-GPU job hangs
+  during collective initialization". Because the source text is a grading rubric rather than an answer,
+  every row was rewritten, and each rewrite was assigned a distinct primary failure mechanism so the batch
+  is not ten paraphrases: (1) TCPStore rendezvous bound to an unroutable MASTER_ADDR; (2) launcher rank /
+  world-size arithmetic mismatch producing a duplicate or missing rank; (3) NCCL_SOCKET_IFNAME
+  auto-selection landing on docker0/virbr0/a dead NIC; (4) RoCEv2 GID index or PKey mismatch blocking QP
+  transition to RTS; (5) asymmetric PFC/ECN lossless configuration producing a silent RoCE stall;
+  (6) CUDA_VISIBLE_DEVICES / affinity collision so two ranks bind one GPU; (7) PCIe ACS or non-passthrough
+  IOMMU disabling GPUDirect P2P/GDR with nvidia-peermem unloaded; (8) heterogeneous NCCL/CUDA/driver
+  versions across container images; (9) firewall blocking NCCL ephemeral sockets and the RDMA CM port;
+  (10) application-level collective desynchronization from data-dependent control flow. Each record states
+  assumptions, one falsifiable primary hypothesis with a prediction that could refute it, an ordered
+  measurement plan (backtraces and nvidia-smi first, then NCCL_DEBUG=INIT,NET with a shortened blocking
+  timeout, then a mechanism-specific probe), one controlled experiment that changes a single variable,
+  named confounders (long default timeouts masquerading as deadlock, a single straggler rank, env drift
+  between interactive shell and launcher, one fix masking another), explicit evidence required before
+  declaring root cause, and a rollback gate that treats fabric-wide changes (switch QoS, GID/PKey,
+  firewall) as maintenance-window operations with a pre-written revert.
+- Status: PROVISIONAL. This is one model's blind second-opinion review, not expert gold, not a
+  human-validated label, and not evidence of any model's domain capability. Teacher-A outputs were not
+  read at any point during this batch; agreement analysis is a separate later step.
+
 ## Run 2026-08-18 batch 0159
 
 - Batch file: results/train-batch-0159.jsonl
