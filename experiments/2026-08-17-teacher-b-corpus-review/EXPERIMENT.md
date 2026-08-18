@@ -5,6 +5,45 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0155
+
+- Batch file: results/train-batch-0155.jsonl
+- Corpus range: train.jsonl lines 1541-1550 (0-indexed 1540-1549)
+- Source IDs: corpus-01699 through corpus-01710 (corpus has an ID gap after 01705;
+  positional corpus order was preserved exactly, nothing skipped or reordered)
+- Progress: train 1550/5399, validation 0/601, total 1550/6000, remaining 4450
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on first run of scripts/tb_verify_adhoc_0155.py
+  (verifier written independently of the generator script)
+- Repair actions: none
+- Final schema check: PASS - 10 records, all 12 required fields present, teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional, decision in
+  {keep,rewrite,reject}, source_user/source_assistant byte-identical to
+  research/ai-infra-expert/corpus/train.jsonl, corrected_answer non-empty and sha256-unique
+  within the batch, confidence in [0,1], quality_dimensions integers 1-5,
+  source_id globally unique across all batches, train aggregate (1550 records) is a strict
+  positional prefix of the train corpus.
+- Manifest: MANIFEST.sha256 regenerated after this EXPERIMENT.md edit; `sha256sum -c` all OK.
+- Technical topics covered: all ten items are rubric-style "multi-GPU job hangs during collective
+  initialization" variants (99-110), so every record was rewritten rather than kept - the source
+  assistant turn is a grading rubric, not an answer. Each of the ten was assigned a distinct
+  root-cause mechanism to avoid template memorisation: TCPStore rendezvous with a partial world
+  (01699); NCCL_SOCKET_IFNAME selecting a non-routable container bridge (01700); RoCEv2 GID index
+  and PFC/ECN inconsistency (01701); duplicate GPU binding from double-applied
+  CUDA_VISIBLE_DEVICES + set_device(LOCAL_RANK) (01702); intra-node P2P/NVLink blocked by PCIe ACS
+  or strict IOMMU (01703); jumbo-frame MTU mismatch with blackholed PMTUD (01704); firewall DROP of
+  NCCL ephemeral peer ports leaving sockets in SYN_SENT (01705); NCCL/CUDA-driver/container image
+  version skew across nodes (01708); collective-order desynchronisation from a rank-conditional
+  branch or stalled dataloader (01709); GPUDirect RDMA unavailable because nvidia_peermem is not
+  loaded, masked by an inflated process-group timeout (01710). Every answer states assumptions, one
+  falsifiable hypothesis, the mechanism, a controlled experiment with a named control arm, the
+  measurements and units to collect, expected confounders, and explicit rollback gates (including
+  the rule that diagnostic env vars such as NCCL_P2P_DISABLE / NCCL_IB_DISABLE /
+  NCCL_NET_GDR_LEVEL=LOC / inflated timeouts must never be left in a production launcher).
+- Status: these results are PROVISIONAL teacher-B blind review output. They are NOT expert gold
+  labels, have not been validated by a human domain expert, and say nothing about any model's
+  domain capability. No teacher-A artifact was read, opened, or grepped during this run.
+
 ## Run 2026-08-18 batch 0154
 
 - Batch file: results/train-batch-0154.jsonl
