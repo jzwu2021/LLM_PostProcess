@@ -5,6 +5,66 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0161
+
+- Batch file: results/train-batch-0161.jsonl
+- Corpus range: train.jsonl lines 1601-1610 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01765, corpus-01766, corpus-01767, corpus-01768, corpus-01769, corpus-01770,
+  corpus-01771, corpus-01772, corpus-01773, corpus-01774 (contiguous, no gaps in this window).
+- Progress: train 1610/5399, validation 0/601, total 1610/6000, remaining 4390
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on the first run of scripts/tb_adhoc_verify_0161.py. The verifier is fresh
+  for this batch, shares no code with the generator, and re-derives source_user/source_assistant directly
+  from research/ai-infra-expert/corpus/train.jsonl. scripts/__pycache__ was removed before both the
+  generator and the verifier ran, so no stale bytecode could execute.
+- Repair actions: none required (first run passed).
+- Final schema check: PASS - 10 records; newline-terminated JSONL, no CR bytes, every line parseable;
+  exactly the 12 required fields and no extras; teacher_lane=teacher-B,
+  teacher_model=claude-opus-5-current, calibration_status=provisional, decision in {keep,rewrite,reject};
+  source_user/source_assistant byte-identical to the corpus; corrected_answer non-empty and never equal to
+  source_assistant; quality_dimensions integers in [1,5]; confidence float in [0,1]; source_id globally
+  unique; the aggregated train sequence is exactly the first 1610 rows of train.jsonl in order (strict
+  prefix) and validation is still empty.
+- Anti-template check: the ten corrected_answer strings hash to 10 distinct sha256 values.
+- Manifest: MANIFEST.sha256 regenerated over every file in this experiment directory except the manifest
+  itself, after EXPERIMENT.md was updated; `sha256sum -c` passed for all entries.
+
+### Technical topics covered by this batch
+
+All ten source rows are rubric-style variants (165-174) of the same scenario: a multi-GPU job that hangs
+during collective initialization, each asking for a falsifiable hypothesis plus a controlled experiment.
+The source assistant text is a grading rubric, not an answer, so every row was marked `rewrite`. To avoid
+producing ten near-identical answers, each row was assigned a distinct root-cause mechanism, and each
+answer states assumptions, one falsifiable hypothesis, a single-variable controlled experiment,
+measurements to capture before touching anything, expected confounders, the fix if confirmed, and explicit
+rollback gates:
+
+1. corpus-01765 - TCPStore rendezvous unreachable (MASTER_ADDR on a non-routable interface); gloo-only
+   control run isolates rendezvous from NCCL.
+2. corpus-01766 - world-size / rank-set mismatch; 2/4/8 world-size ladder and per-rank heartbeat files.
+3. corpus-01767 - wrong NIC selected by NCCL's socket bootstrap; NCCL_SOCKET_IFNAME paired runs, with the
+   warning that pinning to a management NIC silently destroys bandwidth.
+4. corpus-01768 - two ranks bound to the same GPU (CUDA_VISIBLE_DEVICES / local-rank binding); GPU UUID
+   uniqueness assertion.
+5. corpus-01769 - RDMA/RoCE transport down (HCA port, GID index, PFC); NCCL_IB_DISABLE=1 as a diagnostic
+   only, plus a standalone ib_write_bw fabric test.
+6. corpus-01770 - rank-divergent collective order/shape; TORCH_DISTRIBUTED_DEBUG=DETAIL and drop_last
+   paired runs, py-spy stack comparison.
+7. corpus-01771 - the "hang" is really a too-long or infinite process-group timeout masking a fast
+   failure; finite timeout plus async error handling surfaces the real error.
+8. corpus-01772 - intra-node path (P2P/NVLink, /dev/shm, IOMMU/ACS); single-node nccl-tests ladder with
+   P2P and SHM disabled in turn.
+9. corpus-01773 - NCCL/CUDA/driver version skew across nodes; image-digest comparison rather than tags.
+10. corpus-01774 - disaggregated serving (NVIDIA Dynamo / Mooncake style): the stall is a prefill/decode
+    KV-transfer handshake, not a training collective; covers buffer-layout registration mismatch, the
+    metadata/discovery store, MR-table exhaustion, and rollback to co-located serving against TTFT SLO.
+
+- Status caveat: these results are **provisional** teacher-B blind review output. They are a second
+  independent opinion produced without any visibility into teacher-A's outputs, they are **not** expert
+  gold labels, and they say nothing about any model's domain capability. Agreement analysis against
+  teacher-A is a separate, later step and was deliberately not performed here.
+
 ## Run 2026-08-18 batch 0160
 
 - Batch file: results/train-batch-0160.jsonl
