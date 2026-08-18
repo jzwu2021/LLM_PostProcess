@@ -5,6 +5,50 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0184
+
+- Batch file: results/train-batch-0184.jsonl
+- Corpus range: train.jsonl positional lines 1831-1840, ten physically consecutive rows, original
+  corpus order preserved, nothing skipped or reordered. Selection by line position, not ID arithmetic.
+- Source IDs: corpus-02018, corpus-02020, corpus-02021, corpus-02022, corpus-02023, corpus-02024,
+  corpus-02025, corpus-02027, corpus-02028, corpus-02029. ID gaps at corpus-02019 and corpus-02026
+  are corpus-side numbering gaps, not skipped records.
+- Progress: 1840/2500 train records (73.6%). Remaining: 660. The 2500 denominator is the user-set
+  staged target adopted on 2026-08-18, replacing the original 6000-record figure. Validation target
+  is 0 for this stage; zero validation-batch files exist and none were created (verifier asserts it).
+- Decisions: keep 0, rewrite 10, reject 0.
+- Initial schema check: PASS on the first run of scripts/tb_verify_batch_0184.py (verifier derived
+  from tb_verify_batch_0183.py by `sed 's/0183/0184/g'`, not rewritten). No repair actions were
+  needed this run. Final schema check: PASS (VERIFY_PASS, TOTAL 1840, aggregate is a strict prefix
+  of train.jsonl, no duplicate source_id, all ten openings distinct).
+- Manifest: MANIFEST.sha256 regenerated over the whole experiment directory (excluding itself and
+  __pycache__); `sha256sum -c` reports all files OK.
+- Technical topics covered by this batch: all ten prompts are variants of the same weight-only
+  quantization (WOQ) cost-comparison scenario, so the ten answers hold the shared mechanism substrate
+  fixed and vary only the analytical stance, giving ten non-interchangeable rewrites. Stances H11-H20
+  cover: baseline legitimacy (an untuned BF16 arm manufactures most of the apparent win, with effort
+  symmetry accounting); calibration-data governance (calibration set as an uncontrolled variable,
+  three disjoint sets, leakage disproved by hashing); HBM memory-ledger reconciliation (clamped-KV
+  vs native-capacity arms separating bandwidth effect from batching effect); workload
+  representativeness (production trace replay, decode-token fraction as the Amdahl denominator);
+  numerical correctness of the deployed graph (per-layer reference comparison, on-device dtype and
+  group-size audit, determinism check before any benchmarking); long-context and attention scaling
+  (speedup decays toward unity as KV traffic dominates; explicit crossover context length);
+  maintenance burden of a second numeric path (per-release requantization, dual-stack CI, incident
+  surface); capacity realisation as integer replica reduction (a gain that crosses no integer
+  boundary saves nothing); incident forensics and operability (numeric path as a dashboard dimension,
+  rehearsed rollback with measured time-to-safe, standing quality canary); and claim-scope hygiene
+  (MEASURED / ESTIMATE / ASSUMED labelling, explicit non-licensed scope, expiry on engine bump).
+  The shared substrate retains the byte-count ceiling as an explicit ESTIMATE with inline derivation
+  (9B BF16 = 18 GB; INT4 group-128 ~5.0-5.3 GB; ratio ~3.2-3.6x, an upper bound on batch-1 decode
+  only), the two-arm-plus-clamp design, frontier-matched comparison at fixed p95 SLO, the A/A noise
+  floor, and pre-committed rollback gates.
+- Status: these teacher-B outputs are PROVISIONAL second-opinion review artifacts produced by a
+  general-purpose model under blind conditions. They are NOT expert gold labels, have not been
+  validated by a human AI-infrastructure expert, and constitute no evidence whatsoever about any
+  model's domain capability. No teacher-A artifact was read, opened, grepped or otherwise consulted
+  during this run; agreement analysis remains a separate later step.
+
 ## Run 2026-08-18 batch 0183
 
 - Batch file: results/train-batch-0183.jsonl
