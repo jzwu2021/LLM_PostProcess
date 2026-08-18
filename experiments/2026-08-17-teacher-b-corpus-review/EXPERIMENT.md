@@ -5,6 +5,51 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0140
+
+- Batch file: results/train-batch-0140.jsonl
+- Corpus range: train.jsonl lines 1391-1400 (0-indexed 1390..1399)
+- Source IDs: corpus-01537, 01538, 01539, 01540, 01541, 01542, 01544, 01545,
+  01546, 01547 (corpus order preserved verbatim; the gap at 01543 is present in
+  the source corpus itself and was NOT introduced here)
+- Progress: train 1400/5399, validation 0/601, total 1400/6000, remaining 4600
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS (0 errors) on first run — JSONL line-parse, 10 records,
+  12 required fields present, teacher_lane/teacher_model/calibration_status/decision
+  values correct, byte-exact source_user and source_assistant vs corpus,
+  non-empty corrected_answer, confidence in [0,1], globally unique source_id
+  across all 1400 aggregated records, and the aggregated train sequence is a
+  strict prefix of train.jsonl.
+- Repairs performed: none required this run.
+- Final schema check: PASS (VERIFY_PASS, train 1400 aggregated, validation 0).
+- Manifest: MANIFEST.sha256 regenerated over all files in this directory except
+  itself (231 entries); `sha256sum -c` verified all entries OK.
+- Technical topics covered: all ten items are the same rubric prompt family
+  (intermittent CUDA OOM in a long-context LLM serving deployment under
+  concurrency), so diversification is by primary mechanism hypothesis rather
+  than by topic. The ten angles are: (1) prefill token-budget spikes vs. decode
+  steady state and chunked prefill; (2) PyTorch caching-allocator fragmentation
+  vs. true capacity exhaustion, discriminated by reserved-minus-allocated at
+  abort; (3) automatic prefix-cache retention as a hidden unbounded consumer of
+  the block pool; (4) tensor-parallel rank skew from vocab-parallel shards and
+  NCCL communication buffers; (5) sampling-parameter amplification via
+  n/best_of/beam and full-vocabulary logprobs; (6) the preemption/swap path
+  itself as the real failure boundary (swap_space sizing, recompute vs. swap);
+  (7) multi-tenancy and orphaned processes invalidating the startup capacity
+  assumption; (8) distinguishing device CUDA OOM from a host cgroup OOM-killer
+  SIGKILL; (9) an explicit arithmetic capacity model (weights + KV at max
+  concurrency + activation scratch vs. usable VRAM, with GQA vs. MHA called out
+  as the common error); (10) observability and guardrails so the next incident
+  uniquely discriminates among the preceding nine signatures. Each record states
+  assumptions, a falsifiable hypothesis, the mechanism, measurements to take
+  first, a controlled single-variable experiment on a fixed replayed trace,
+  expected confounders, prioritised mitigations, and an explicit numeric
+  rollback gate.
+- Status: PROVISIONAL teacher-B output. This is a blind second-opinion lane
+  produced without reading any teacher-A artifact. It is NOT expert gold, has
+  not been validated against ground truth, and says nothing about any model's
+  domain capability. Agreement analysis vs. teacher-A is a separate, later step.
+
 ## Run 2026-08-18 batch 0139
 
 - Batch file: results/train-batch-0139.jsonl
