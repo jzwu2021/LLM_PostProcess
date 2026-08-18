@@ -5,6 +5,49 @@ Lane: teacher-B
 Reviewer model: claude-opus-5 (provider: copilot), pinned explicitly so this lane
 is NOT the same model that produced teacher-A (gpt-5.6-luna-current).
 
+## Run 2026-08-18 batch 0167
+
+- Batch file: results/train-batch-0167.jsonl
+- Corpus range: train.jsonl lines 1661-1670 (positional), ten consecutive rows, original order preserved,
+  nothing skipped or reordered. The original corpus was not modified.
+- Source IDs: corpus-01828, corpus-01829, corpus-01830, corpus-01831, corpus-01832, corpus-01833,
+  corpus-01834, corpus-01835, corpus-01836, corpus-01837 (contiguous, no gap in this batch).
+- Progress: train 1670/2500, validation 0/0, total 1670/2500, remaining 830
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/adhoc_verify_batch_0167.py) — trailing newline, 10 lines,
+  all 12 required fields, lane/model/status/decision enums, byte-exact source_user and source_assistant
+  against the corpus, non-empty corrected_answer, integer 1-5 quality dimensions, string-array
+  risks/evidence_required, float confidence in [0,1], distinct corrected_answer within the batch,
+  contiguous batch numbering 0001..0167, global source_id uniqueness, and aggregate train sequence a strict
+  prefix of train.jsonl (1670 rows). Zero validation-batch files exist.
+- Independent ad-hoc re-check (/tmp/tb_adhoc_0167.py, written outside the experiment tree and not reusing the
+  batch verifier): exactly 12 keys per record, sha256 of corrected_answer distinct across all ten rows,
+  ESTIMATE/MEASURED tagging present in every answer, no validation-batch files, 167 batch files / 1670 rows.
+  Result: ADHOC_INDEPENDENT=PASS.
+- Repairs performed: the build script initially unpacked the 8-field mechanism tuples as 7 fields (Pyright
+  flagged it before execution); fixed by unpacking `evid` explicitly and deleting the dead
+  evidence_required back-fill loops. No output file was ever written in the broken state.
+  scripts/__pycache__ removed before verification so it never enters the manifest or the commit.
+- Final schema check: VERIFY_RESULT = PASS (batch records 10, aggregate train 1670).
+- Manifest: MANIFEST.sha256 regenerated over the whole experiment directory (excluding itself);
+  `sha256sum -c` reported all entries OK.
+- Technical topics covered by this batch: all ten rows are the same rubric-style prompt ("multi-GPU job hangs
+  during collective initialization, give a diagnosis plan with a falsifiable hypothesis and a controlled
+  experiment", scenario variants 228-237) with an identical rubric-style source_assistant. Because the source
+  answer is a grading rubric rather than an engineer's answer, every row was marked `rewrite`. To avoid a
+  template batch, each variant was assigned a *different* root-cause mechanism with its own discriminating
+  experiment: (228) c10d/TCPStore rendezvous mismatch, (229) mismatched collective order/shape and desync
+  watchdog, (230) wrong NIC selection via NCCL_SOCKET_IFNAME, (231) IB/RoCE fabric down and GID/PKey
+  misconfiguration, (232) CUDA_VISIBLE_DEVICES device-ordinal collision, (233) PCIe ACS/IOMMU blocking P2P,
+  (234) straggler rank never launched or OOM-killed, (235) NCCL/CUDA/image version skew, (236) cgroup CPU
+  starvation of bootstrap threads, (237) stale communicators and orphaned processes from a prior crashed run.
+  Each answer states assumptions, the mechanism, a boundary condition that separates it from the competing
+  hypotheses, required evidence, operational risks, and a rollback gate; the single numeric claim (bootstrap
+  time under CPU oversubscription) is explicitly tagged ESTIMATE with its derivation.
+- These outputs are provisional teacher-B opinions produced blind (teacher-A artifacts were not read at any
+  point). They are NOT expert gold labels, have not been human-verified, and say nothing about any model's
+  domain capability.
+
 ## Run 2026-08-18 batch 0166
 
 - Batch file: results/train-batch-0166.jsonl
