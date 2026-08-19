@@ -1,0 +1,138 @@
+STANCES = [
+    ("Stance 300 - The first question is not how to reduce calls but whether the calculator is load-bearing at all: an ablation that removes the tool entirely bounds the achievable saving before any engineering is spent.",
+     """Before optimizing a behaviour it is worth measuring what the behaviour buys. Run the identical evaluation trace with the calculator deregistered, so the model must answer arithmetic from its own weights, and record final-answer correctness. That single number bounds the whole programme: if correctness is unchanged, every call was redundant and the correct intervention is removal, not reward shaping; if correctness collapses, the tool is load-bearing and only the surplus calls above the necessary set are recoverable.
+The boundary condition is arithmetic difficulty distribution. A trace dominated by two-operand integer arithmetic will show a tool that looks useless, and the conclusion will not transfer to traffic containing long multi-step numeric reasoning. The ablation must therefore be reported per difficulty bucket, with the bucket definition fixed before the run.
+Falsifiable hypothesis H300: H300: on the current trace, deregistering the calculator leaves final-answer correctness materially unchanged on the easy-arithmetic bucket while degrading it on the multi-step bucket, so the recoverable saving is confined to the easy bucket and any global reduction target is mis-specified (ESTIMATE; derivation: single-operation arithmetic within small magnitudes is reliably produced by the model directly, while multi-step numeric chains accumulate error without an exact evaluator; the split therefore follows difficulty rather than being uniform. If removal degrades correctness uniformly across buckets, the tool is load-bearing everywhere and the claim is refuted).
+Controlled experiment: One arm with the calculator registered and one with it deregistered, identical checkpoint, decoding seed, prompt and replay trace, with correctness reported per pre-registered difficulty bucket.
+Rollback gate: the ablation is an offline measurement only; no production deregistration follows from it until the per-bucket correctness deltas and the bucket composition of live traffic are both reported, because a bucket that is rare in the trace may be common in production."""),
+
+    ("Stance 301 - Redundancy must be defined against a counterfactual the model could actually have executed, otherwise the label is unattainable by construction.",
+     """A call is redundant only if the model, in that exact context, could have produced the same value without it. Labelling by whether a human could have answered directly imports a capability the policy does not have, and the resulting target is unreachable: the model is penalized for calls that were, for it, necessary. The measured rate then never falls to its floor and the programme looks like a failure at the point where it has actually succeeded.
+The operational definition therefore requires a capability probe: sample the model directly on the suppressed sub-question, without the tool, and check whether it answers correctly at the pinned decoding configuration. Only calls where the direct answer is reliably correct are labelled redundant. This makes redundancy a joint property of context and checkpoint, which means the label set must be regenerated whenever the checkpoint changes.
+Falsifiable hypothesis H301: H301: a capability-anchored redundancy label yields a materially lower redundant-call count than a human-anchored label on the same trace, and the gap is concentrated in the multi-step arithmetic bucket (ESTIMATE; derivation: humans with a calculator-free intuition still adjudicate multi-step chains as answerable, while the model's direct accuracy on those chains is lower, so the two labelling rules diverge exactly where the model is weak. If the two label sets agree closely, human anchoring is adequate and the claim is refuted).
+Controlled experiment: Label the same stratified sample twice, once by human judgement of answerability and once by direct-sampling capability probe at the pinned configuration, and report per-bucket disagreement.
+Rollback gate: no reduction target is set against a label set produced under a different checkpoint than the one being evaluated; a checkpoint change invalidates the labels and the target is recomputed before any promotion decision."""),
+
+    ("Stance 302 - A no-tool option must be a first-class action with its own evaluation set, not an implicit fallback, or the policy has nothing to be trained toward.",
+     """If the only actions the agent can take are calls, then abstention is expressed only as the absence of a call, which supplies no gradient and no log line. Making 'answer directly' an explicit action gives it a probability that can be observed, an evaluation set that can be scored, and a failure mode that can be bounded: over-abstention. Without the explicit action, an intervention that reduces calls is indistinguishable from one that makes the model quieter and less correct.
+The paired evaluation set is the safeguard. One set contains decision points where the direct answer is correct at the pinned configuration, and abstention is the desired behaviour; the other contains points where the tool is genuinely needed, and calling is desired. Reporting only the first is how a redundancy programme ships an over-abstaining policy.
+Falsifiable hypothesis H302: H302: interventions that reduce the redundant-call rate also raise the rate of omitted necessary calls on the paired must-call set, so the two rates move together and cannot be optimized independently by prompt or reward changes alone (ESTIMATE; derivation: prompt and reward interventions shift a single decision threshold rather than improving the underlying discrimination between necessary and unnecessary calls, so movement in one direction trades against the other; only a change that improves discrimination breaks the coupling. If the must-call rate holds flat while redundancy falls, discrimination genuinely improved and the claim is refuted).
+Controlled experiment: Score every arm on both the abstain-correct set and the must-call set, reporting the pair jointly and refusing to report either alone.
+Rollback gate: any arm whose omitted-necessary-call rate rises above the pre-registered baseline is rejected regardless of its redundancy improvement, because a missed necessary call produces a wrong answer while a redundant call only costs latency."""),
+
+    ("Stance 303 - Caching converts the problem from a policy question into a serving question, and that reframing is usually the cheapest correct fix.",
+     """If the redundant call is free, its cost disappears without touching the checkpoint. An exact-match memo keyed on the full normalized operand set, scoped to a single trajectory, turns the second identical calculator call into a lookup that returns in microseconds instead of a network round trip. The model still emits the call, the trajectory still contains the turn, but the tool latency term collapses.
+The residual cost is exactly what caching cannot remove and is worth stating plainly: the extra model turn to consume the cached result still costs prompt reprocessing, output tokens and KV cache occupancy. So caching addresses the tool-side cost and leaves the model-side cost intact, which means it is a partial fix that should be measured as such rather than declared a solution.
+Falsifiable hypothesis H303: H303: a trajectory-scoped exact-match cache removes the tool latency component of redundant calls but leaves total trajectory latency materially unchanged, because the model turn rather than the tool round trip dominates (ESTIMATE; derivation: a local calculator round trip is short relative to a full model turn that must reprocess the prompt prefix and generate a response, so removing the former leaves the latter as the binding term. If total latency falls proportionally with tool latency, the tool round trip was dominant and the claim is refuted for that deployment).
+Controlled experiment: One arm with the cache enabled and one without, identical everything else, reporting tool latency, model turn latency and end-to-end trajectory latency separately so the decomposition is visible.
+Rollback gate: the cache is disabled if any cache key is found to omit an operand or a unit, and it is never extended beyond a single trajectory without an explicit staleness analysis, because cross-trajectory reuse reintroduces correctness risk for anything less than perfectly pure tools."""),
+
+    ("Stance 304 - Prompt-level fixes must be regression-tested like code, because the system prompt is a shared mutable artifact edited by teams who never see this metric.",
+     """The cheapest intervention is also the most fragile. A sentence that removes an unconditional verification instruction can be silently reverted by another team adding a safety clause months later, and nothing in the release process will notice. Treating the prompt as a versioned artifact with a content hash, and adding the abstain-correct and must-call sets as blocking pre-merge checks on any prompt change, is what makes a prompt fix durable rather than temporary.
+The boundary is that prompt-level evaluation is cheap enough to run on every change only if the evaluation sets are small, and small sets have wide noise bands. The gate must therefore be set against the measured noise band of the set, not against an arbitrary threshold, or it will either block on noise or pass real regressions.
+Falsifiable hypothesis H304: H304: without a blocking pre-merge check, prompt edits made for unrelated reasons reintroduce the redundant-call behaviour within a small number of releases, and the reverting edit is identifiable in the versioned prompt history (ESTIMATE; derivation: the improvement is carried by specific prompt text that no release process protects, and prompt files accumulate edits from multiple teams, so the probability of an overwriting edit accumulates with release count. If the behaviour holds stable across many prompt edits, the property is robust and the claim is refuted).
+Controlled experiment: Replay the metric suite against each historical prompt version in sequence and attribute any rate change to the specific diff that preceded it.
+Rollback gate: a prompt change that moves either paired-set metric beyond the measured noise band is blocked at merge, and the prompt hash is recorded in every run artifact so historical attribution remains possible."""),
+
+    ("Stance 305 - Preference training is the last resort, not the first, because it is the only intervention that cannot be reverted by a config change.",
+     """Steps one through three of the ladder are deploy-time changes: a prompt edit, a schema edit, a cache flag. Each reverts in a single deploy with a known blast radius. Preference or reward training produces a new checkpoint whose behaviour changed in ways the redundancy metric does not measure, and reverting means redeploying the old weights and losing every other improvement bundled into that training run.
+This asymmetry should govern sequencing. Preference training is justified only after the configuration ladder has been exhausted and the residual redundancy is both measured and economically material. When it is undertaken, the preference pairs must hold the final answer fixed and differ only in call count, so the signal cannot be satisfied by changing the answer, and the resulting checkpoint must pass the full evaluation gate rather than only the redundancy metric.
+Falsifiable hypothesis H305: H305: preference pairs that do not hold the final answer fixed produce a checkpoint that reduces call count partly by degrading answer quality, because the shorter trajectory is preferred for reasons unrelated to redundancy (ESTIMATE; derivation: a preference signal over whole trajectories rewards every difference between the two, so any correlated difference such as answer brevity is learned alongside the intended one; holding the answer fixed removes that channel. If quality holds while call count falls under unconstrained pairs, the confound is absent and the claim is refuted).
+Controlled experiment: Two training arms from the same base and the same prompts, differing only in whether preference pairs are constrained to identical final answers, evaluated on correctness, redundancy and recovery.
+Rollback gate: no trained checkpoint is promoted on the redundancy metric alone; it must clear correctness, recovery and the must-call set at parity or better, and the previous checkpoint stays deployable for the full observation window."""),
+
+    ("Stance 306 - Recovery rate is the metric most likely to be destroyed by this work and least likely to be measured, so it deserves its own adversarial set.",
+     """An agent that has learned not to call when it thinks it knows the answer has also learned not to re-check when its first value was wrong. Recovery - the ability to notice a bad intermediate result and correct it - depends on exactly the willingness to spend an extra call that this programme is trying to suppress. A redundancy intervention can therefore improve every headline number while quietly removing the system's ability to self-correct.
+Measuring this requires an adversarial set rather than natural traffic, because natural traces contain too few error-recovery episodes to resolve a rate. Inject wrong intermediate values or tool errors deliberately at known positions and measure the fraction of trajectories that still reach a correct final answer. That number is the guard on the whole programme.
+Falsifiable hypothesis H306: H306: interventions that reduce redundant calls degrade recovery rate on an injected-error set more than they degrade correctness on the clean set, so a clean-set-only evaluation systematically understates the harm (ESTIMATE; derivation: recovery requires an additional verification call that the intervention specifically discourages, whereas clean-set correctness needs no such call, so the same threshold shift affects the two sets unequally. If recovery holds flat while redundancy falls, the intervention discriminates correctly and the claim is refuted).
+Controlled experiment: An injected-error suite with error type and position pre-registered, run against every arm alongside the clean set, reporting recovery rate per error type.
+Rollback gate: any arm whose recovery rate falls below the pre-registered floor is rejected outright, and the floor is set before the arms are run so it cannot be renegotiated after seeing the numbers."""),
+
+    ("Stance 307 - Segment the metric before you aggregate it, because a pooled redundancy rate can move entirely from mix shift with no behavioural change.",
+     """Redundancy rate differs sharply by task category: arithmetic-heavy tasks call constantly, retrieval-heavy tasks rarely. A pooled rate is therefore a weighted average whose weights are the traffic mix, and any shift in that mix moves the pooled number without a single decision changing. Teams that report only the pooled rate will attribute mix shift to their intervention, in both directions, and will be unable to explain why the effect disappears next quarter.
+The fix is pre-registration: define the segments before the run, report per segment, and report the mix alongside so a reader can recompute the pooled number under a different mix. Any pooled figure published without its mix is not interpretable and should not be published.
+Falsifiable hypothesis H307: H307: recomputing the pooled redundancy rate for two different traffic mixes over an unchanged agent produces a difference comparable in magnitude to reported intervention effects, so pooled rates without mix disclosure cannot support a promotion decision (ESTIMATE; derivation: the pooled rate is a mix-weighted mean of per-segment rates that differ substantially, so reweighting alone moves it; the magnitude scales with the spread between segment rates. If per-segment rates are nearly equal, mix shift is inert and the claim is refuted).
+Controlled experiment: Hold the agent fixed and recompute the pooled metric under several documented mixes drawn from different capture windows, reporting the spread as the mix-sensitivity floor.
+Rollback gate: promotion requires improvement within each pre-registered segment, not merely in the pooled figure, so an apparent win produced by reweighting cannot pass."""),
+
+    ("Stance 308 - Every artifact in this chain needs a hash and a provenance record, because the conclusions will be re-examined long after the people who ran them have moved on.",
+     """The methodological content of this programme lives in a set of artifacts: the replay trace, the prompt version, the tool schema, the checkpoint, the decoding configuration, the label set and the evaluation sets. A result is a function of all seven. Recording metrics without recording which versions of the seven produced them makes every historical comparison an argument rather than a computation, and regressions discovered months later become unattributable.
+This is inexpensive and almost always skipped. The run artifact should carry content hashes for the trace and the evaluation sets, the checkpoint identifier, the prompt hash, the schema version, the full decoding configuration, and the label-set identifier with the checkpoint it was generated against. Anything missing from that list is a claim the run cannot support.
+Falsifiable hypothesis H308: H308: results whose run artifacts omit any of the seven identifiers cannot be reproduced within the measured noise band on re-execution, because at least one unrecorded input will have drifted (ESTIMATE; derivation: each unrecorded input is free to change between original and repeat execution, and several of them - prompts, traces, label sets - are edited routinely by unrelated work; reproduction failure probability grows with the number of unrecorded inputs. If re-execution of under-documented runs reproduces cleanly, the recording burden is unnecessary and the claim is refuted).
+Controlled experiment: Attempt re-execution of a sample of historical runs, stratified by how many of the seven identifiers their artifacts recorded, and report reproduction success against that count.
+Rollback gate: a run missing any of the seven identifiers is excluded from promotion decisions rather than interpreted with caveats, since a caveated number still anchors the discussion."""),
+
+    ("Stance 309 - The honest closing position for this batch is that the source pair supplies no answer, and the review must say so rather than score a rubric as content.",
+     """The user turn poses a real agent-engineering problem and explicitly asks for a falsifiable hypothesis and a controlled experiment. The assistant turn responds with a description of what a good answer would contain: state assumptions, give a hypothesis, list measurements, name confounders, define rollback. Every one of those is a requirement, none is fulfilled. Scoring that as an answer produces a number about the rubric's own completeness and nothing about engineering substance.
+The correct disposition is rewrite with the prompt preserved. The low instruction-coverage score reflects the response side only; the prompt is sound and belongs in the corpus. Recording that distinction matters because a reader who sees only the score will otherwise conclude the item should be dropped, and the prompt is the scarce part.
+Falsifiable hypothesis H309: H309: a corpus slice dominated by rubric-shaped responses trains a model that answers engineering questions with requirement lists at a materially higher rate than a control trained on the same prompts with substantive responses (ESTIMATE; derivation: supervised fine-tuning imitates the response distribution shown to it, so meta-descriptive targets supply meta-descriptive behaviour, and the effect should scale with the proportion of such items in the slice. If a held-out generative evaluation shows no difference in meta-response rate, the claim is refuted).
+Controlled experiment: Fine-tune two variants from the same base on the identical prompt set, differing only in whether rubric-shaped responses are replaced with substantive ones, and score a held-out generative evaluation for meta-response rate and content quality.
+Rollback gate: no corpus slice enters training until its proportion of rubric-shaped responses is measured and reported; above the pre-registered threshold the slice is rewritten or excluded rather than down-weighted, because down-weighting leaves the behaviour present at reduced strength."""),
+]
+
+EXTRA_RISKS = [
+    ["Tool-removal ablations run on a trace whose arithmetic difficulty mix differs from production yield a saving bound that does not transfer.",
+     "Concluding removal from an unchanged pooled correctness figure hides collapse confined to a rare but important difficulty bucket."],
+    ["Human-anchored redundancy labels import a capability the policy lacks, setting a target the model cannot reach.",
+     "Capability-anchored labels are checkpoint-specific and silently expire when the checkpoint changes."],
+    ["Without an explicit abstain action there is no log line and no gradient, so reduced calls cannot be distinguished from a quieter, less correct policy.",
+     "Reporting the abstain-correct set without the paired must-call set ships an over-abstaining policy that omits necessary calls."],
+    ["A cache key missing an operand or a unit returns a wrong value with full confidence and no error signal.",
+     "Extending a trajectory-scoped cache across trajectories reintroduces staleness risk for any tool that is not perfectly pure."],
+    ["Prompt fixes are reverted silently by unrelated teams because the system prompt is a shared mutable artifact with no gate on this metric.",
+     "Pre-merge gates set against arbitrary thresholds rather than the measured noise band either block on noise or pass real regressions."],
+    ["Preference training is the only step in the ladder that cannot be reverted by a config change, and reverting it discards unrelated improvements in the same run.",
+     "Unconstrained preference pairs let the signal be satisfied by shortening the answer rather than by removing the redundant call."],
+    ["Suppressing verification calls removes the system's ability to notice and correct a wrong intermediate value.",
+     "Natural traffic contains too few recovery episodes to resolve a recovery rate, so clean-set evaluation understates the harm."],
+    ["Pooled redundancy rates move from traffic-mix shift alone, producing apparent effects with no behavioural change.",
+     "Publishing a pooled figure without its segment mix makes the number uninterpretable and unreproducible."],
+    ["Metrics recorded without the seven governing artifact identifiers make later regressions unattributable.",
+     "Interpreting an under-documented run with caveats still anchors the decision on a number the run cannot support."],
+    ["Scoring a rubric as though it were an answer produces a number about the rubric, not about engineering content.",
+     "A low score read without its cause invites dropping the item, discarding the sound prompt along with the empty response."],
+]
+
+RISKS_COMMON = [
+    "Source assistant turn is a grading rubric, not an answer; training on it teaches meta-commentary about answers instead of the underlying reasoning.",
+    "No falsifiable hypothesis, no confounder list and no rollback gate, despite the prompt explicitly demanding them.",
+]
+
+EXTRA_EVIDENCE = [
+    ["Tool-registered versus tool-deregistered correctness, reported per pre-registered arithmetic difficulty bucket.",
+     "Bucket composition of the evaluation trace alongside the bucket composition of live traffic.",
+     "Checkpoint hash, decoding seed and prompt hash confirming only tool registration differed."],
+    ["Per-bucket disagreement between human-anchored and capability-probe redundancy labels on a stratified sample.",
+     "Direct-sampling probe results at the pinned decoding configuration for each suppressed sub-question.",
+     "Label-set identifier recording the checkpoint against which the labels were generated."],
+    ["Joint report of abstain-correct rate and omitted-necessary-call rate for every arm.",
+     "Construction record for both paired evaluation sets, including how correctness at the pinned configuration was established.",
+     "Pre-registered baseline for the omitted-necessary-call rate, fixed before the arms were run."],
+    ["Decomposed latency report separating tool round-trip, model turn and end-to-end trajectory latency per arm.",
+     "Cache key schema audit demonstrating every operand and unit is included in the key.",
+     "Cache scope declaration and hit-rate statistics per trajectory."],
+    ["Versioned prompt history with content hashes and the metric suite replayed against each version.",
+     "Measured noise band of the pre-merge evaluation sets, used to set the blocking threshold.",
+     "CI configuration showing the paired sets block prompt merges."],
+    ["Training arm comparison with and without the identical-final-answer constraint on preference pairs.",
+     "Full evaluation gate results for the trained checkpoint: correctness, recovery, must-call set and redundancy.",
+     "Deployment record confirming the prior checkpoint remained deployable through the observation window."],
+    ["Injected-error suite results with error type and injection position pre-registered, reporting recovery rate per error type.",
+     "Recovery-rate floor recorded before the arms were executed.",
+     "Comparison of clean-set correctness delta against injected-set recovery delta for each arm."],
+    ["Per-segment redundancy rates with the pre-registered segment definitions.",
+     "Traffic mix accompanying every pooled figure, sufficient to recompute the pool under a different mix.",
+     "Mix-sensitivity floor from recomputing the pooled metric under several documented mixes over an unchanged agent."],
+    ["Run artifacts carrying trace hash, prompt hash, schema version, checkpoint id, decoding configuration, evaluation-set hashes and label-set id.",
+     "Reproduction success rate of historical runs stratified by how many identifiers their artifacts recorded.",
+     "Exclusion list of runs missing any identifier, with the decisions they were withheld from."],
+    ["Measured proportion of rubric-shaped assistant turns in the corpus slice.",
+     "Held-out generative evaluation scoring meta-response rate for both fine-tuned variants.",
+     "Pre-registered threshold above which a slice is rewritten or excluded rather than down-weighted."],
+]
+
+QD = [
+    (3, 2, 3), (3, 2, 3), (3, 2, 4), (3, 2, 4), (3, 2, 3),
+    (3, 2, 4), (3, 2, 4), (3, 2, 3), (3, 2, 3), (3, 2, 3),
+]
+CONF = [0.78, 0.77, 0.80, 0.79, 0.78, 0.80, 0.81, 0.79, 0.78, 0.80]
