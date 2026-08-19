@@ -1,0 +1,221 @@
+import json
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+EXP = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+OUT = f"{EXP}/results/train-batch-0242.jsonl"
+START, END = 2410, 2420
+
+corpus = [json.loads(l) for l in open(CORPUS) if l.strip()]
+src = corpus[START:END]
+
+STANCES = [
+ ("STANCE 1 - Frame the defect as a calibration problem: the model calls because its own answer confidence is uncalibrated, not because it loves tools.",
+  """Mechanism. In a tool-augmented loop the decision to call is, functionally, an abstention decision taken under uncertainty. If the policy's internal confidence on trivially-solvable arithmetic is poorly calibrated, the expected-utility comparison between "answer now" and "call the calculator" is dominated by an inflated risk estimate, and calling always wins. This predicts that redundancy concentrates exactly where confidence is miscalibrated, not uniformly across the item distribution.
+
+Falsifiable hypothesis. H1: unnecessary-call rate (UCR) correlates with a per-item calibration error measured by the gap between the no-tool answer's token-level confidence and its empirical accuracy, with Spearman rho >= 0.4 across strata. Falsified if rho < 0.2, which would mean redundancy is distribution-wide habit rather than uncertainty-driven, and calibration work would not help.
+
+Metrics. Per-item: no-tool answer accuracy, mean logprob of the emitted answer, expected calibration error (ECE) over 10 bins, and the call/no-call outcome. Aggregate: UCR, ECE, and the rho above. Guardrail: accuracy on items that genuinely need a tool, since better calibration should raise calling there, not lower it.
+
+Controlled experiment. Freeze the checkpoint. For each eval item, force two rollouts: one with tools disabled and one with tools available. The tool-disabled rollout gives the accuracy and confidence needed for the calibration estimate; the tool-available rollout gives the call decision. Same seeds, same decode settings, paired by item id.
+
+Confounders. Token-level logprob is a weak confidence proxy and degrades on long answers; forcing tool-disabled rollouts changes the prompt and therefore the distribution; and stratum labels for "trivially solvable" may themselves be miscalibrated.
+
+Evidence and rollback. Report ECE, rho, and the per-stratum call table as MEASURED from the paired rollouts, with the eval-set id. The rho >= 0.4 acceptance and rho < 0.2 falsification bands are ESTIMATE, chosen before the run as the correlation strength that would justify investing in a calibration objective rather than read off prior data. Do not proceed to any calibration training if the tool-disabled rollout accuracy is itself below the no-tool subset target, because then the model is not "already knowing" the answer and the whole premise fails."""),
+
+ ("STANCE 2 - The dominant cost is not the tool call, it is the extra decode turn; measure token economics before behavior economics.",
+  """Mechanism. A calculator round-trip is typically sub-millisecond of compute on the tool side, but the agent must decode the call, ingest the observation, and decode again. Under continuous batching the observation extends the context, so the next prefill is over a longer sequence. Cost therefore scales with context length at the point of the redundant call, meaning a redundant call late in a long trajectory is far more expensive than an early one. Any UCR metric that counts calls uniformly mismeasures the cost.
+
+Falsifiable hypothesis. H1: cost-weighted redundancy (sum over redundant calls of prefill tokens re-processed plus decode tokens emitted) is concentrated, with the top 20% of redundant calls accounting for >=60% of the wasted GPU-seconds. Falsified if the distribution is near-uniform, in which case a flat UCR target is adequate and no weighting is needed.
+
+Metrics. Wasted prefill tokens, wasted decode tokens, GPU-seconds per redundant call by trajectory position, total GPU-seconds per completed task, and the Gini or top-quintile share of the cost distribution. Alongside these, plain UCR, so the weighted and unweighted views can be compared directly.
+
+Controlled experiment. Instrument the serving path to emit per-call token accounting keyed by trajectory id and step index. No model change. Replay one captured production window and compute both the flat and cost-weighted views on identical data, so any divergence is attributable to the weighting alone.
+
+Confounders. Prefix caching, if enabled, makes re-prefill much cheaper and can collapse the weighting effect; batching means GPU-seconds attributed to one request depend on co-resident traffic; and token accounting that ignores speculative decoding will misattribute cost.
+
+Evidence and rollback. Every token and GPU-second figure must be MEASURED from the instrumented replay, with prefix-caching state recorded explicitly, because the conclusion inverts depending on it. The 20/60 concentration threshold is an ESTIMATE, set as the point at which targeting a subset of call sites would be more efficient than a global behavior change. Roll back the instrumentation if it adds more than 1% to p99 latency (ESTIMATE budget)."""),
+
+ ("STANCE 3 - Intervene at the scaffold, not the weights: make 'answer now' an explicit, scored action.",
+  """Mechanism. In many agent scaffolds the only structurally available actions are tool calls; finishing is expressed as free-form text that the parser happens to accept. That asymmetry means the model is choosing between a well-formed action and an under-specified one, and well-formed wins. Promoting termination to a first-class action with the same schema as a tool call removes the asymmetry without touching parameters.
+
+Falsifiable hypothesis. H1: exposing an explicit finish(answer=...) action alongside calculator(...) reduces UCR by >=10 absolute points on the trivial stratum with no change in final accuracy. Falsified if the reduction is under 3 points, which would indicate the asymmetry is not the operative cause and the preference lies in the weights.
+
+Metrics. UCR by stratum, final exact-match accuracy, parse-failure rate on the new action, mean steps per trajectory, and the share of trajectories terminating via the explicit action versus free text. Track parse failures closely: a new action that the model formats badly can trade redundancy for outright task failure.
+
+Controlled experiment. Same checkpoint, two scaffolds, identical eval set and seeds, paired by item. Include a third arm with the explicit action described but never demonstrated in the system prompt, to separate schema availability from few-shot demonstration.
+
+Confounders. The new system prompt is longer, which alone changes behavior; few-shot examples in the third arm leaking answer patterns; and tokenizer-level differences in how the two action names are represented.
+
+Evidence and rollback. Report paired per-item deltas MEASURED on one frozen eval set, plus the parse-failure rate, which is the safety-relevant number. The 10-point target and 3-point falsification floor are ESTIMATE, pre-registered as the effect size that would make a scaffold change worth the migration cost. Roll back if parse-failure rate exceeds 0.5 absolute points above baseline, since a failed termination is worse than a redundant call."""),
+
+ ("STANCE 4 - Contrarian: optimize nothing until you show redundancy hurts a user-visible outcome.",
+  """Mechanism. Redundant calls are cheap on a calculator and invisible to a user who only sees the final answer. The business case for intervening rests on one of three channels: latency the user perceives, spend the operator pays, or trust lost when a visible trace looks incompetent. If none of these clears its own threshold, the metric is an aesthetic preference and optimizing it consumes engineering capacity with no return.
+
+Falsifiable hypothesis. H1: eliminating all redundant calculator calls changes p95 user-visible latency by <200ms and GPU spend by <2%. If both hold, redundancy is not worth a training intervention and the correct action is to document it and move on. Falsified if either threshold is exceeded.
+
+Metrics. p50/p95/p99 end-to-end latency with and without redundant calls (obtainable by offline reconstruction from logged trajectories), GPU-seconds per task, and, for the trust channel, a rated review of a sample of traces by people who would actually read them. Do not substitute an internal aesthetic judgment for that rating.
+
+Controlled experiment. Offline counterfactual first: strip redundant steps from logged trajectories and recompute the latency and cost that would have resulted, which requires no deployment. Only if a threshold is crossed does an online arm become justified.
+
+Confounders. Offline reconstruction cannot capture queueing effects, so it understates the latency benefit at high load; trace raters may be primed to dislike redundancy once told what to look for; and spend deltas are noisy against a shared fleet.
+
+Evidence and rollback. The latency and spend deltas must be MEASURED from logged trajectories with the reconstruction method written down; the 200ms and 2% thresholds are ESTIMATE, chosen as the smallest values an operator would plausibly act on, not derived from this system. The rollback here is on the project, not the code: if the offline counterfactual shows both channels below threshold, close the work item and record the negative result rather than escalating to training."""),
+
+ ("STANCE 5 - Reward-model design: score the trajectory, not the answer, and make the scoring rule public before the run.",
+  """Mechanism. Any signal that shapes tool use must assign credit to intermediate steps. A process reward that penalizes a call whose observation does not change the model's subsequent answer distribution targets exactly the defect, because a redundant call by definition leaves the continuation unchanged. This is measurable: compare the model's answer distribution before and after ingesting the observation.
+
+Falsifiable hypothesis. H1: for calls flagged redundant by the verbatim proxy, the KL divergence between the pre-observation and post-observation answer distributions is <=0.05 nats in >=80% of cases, making the divergence a usable automatic label. Falsified if the divergence is diffuse, which would mean the automatic label is noisy and human labeling cannot be avoided.
+
+Metrics. Per-call answer-distribution KL, agreement between the KL-based label and the verbatim-repeat proxy, resulting UCR under a process-reward arm, hard-stratum accuracy, under-calling rate, and reward-margin distribution. Report the label agreement first, because the reward is only as good as its label.
+
+Controlled experiment. Two stages. Stage one is label validation on a frozen checkpoint with no training: compute KL for every call and compare to both the verbatim proxy and human adjudication on a sample. Stage two trains only if stage one clears the agreement bar. Same eval set throughout.
+
+Confounders. Computing a post-observation distribution requires a forced-teacher rollout that may not match free-running behavior; temperature affects KL magnitude; and answer distributions over long free-text answers are not directly comparable to short numeric ones.
+
+Evidence and rollback. Publish the scoring rule and the KL threshold before stage two, so the result cannot be reinterpreted afterwards. The 0.05-nat threshold and 80% coverage bar are ESTIMATE, chosen as the level at which the automatic label would be cheap enough to replace human labeling. All UCR and accuracy figures must be MEASURED and reported paired. Roll back if under-calling rises more than 3 absolute points or if the KL label's agreement with human adjudication falls below 0.7 kappa."""),
+
+ ("STANCE 6 - Multi-node and multi-tenant reality: the intervention's blast radius crosses the serving fleet, so gate it like a config change.",
+  """Mechanism. Agent behavior changes propagate through whatever component holds them. A prompt change lives in the orchestrator and rolls out per deployment; a weights change requires requalification and a full model swap across every replica, which on a tensor-parallel deployment means draining and reloading each group. The operational cost of the fix is therefore dominated by where it lives, not by how large the behavioral delta is.
+
+Falsifiable hypothesis. H1: a weights-based fix costs at least an order of magnitude more operator time to deploy and revert than an orchestrator-side fix of equivalent effect, once requalification and staged reload are counted. Falsified if the deployment pipeline already supports single-command checkpoint swap with automatic requalification, in which case the cost asymmetry does not apply here.
+
+Metrics. Time-to-deploy, time-to-revert, number of replicas requiring reload, requalification suite runtime, and error budget consumed during the swap. Behavioral metrics (UCR, accuracy) remain necessary but are not the gating quantity in this framing.
+
+Controlled experiment. Run a game day: deploy a no-op weights swap and a no-op orchestrator config change on the staging fleet, and measure both directions of each. This costs no research time and produces the deployment-cost numbers that the ordering argument needs.
+
+Confounders. Staging fleet smaller than production, so reload time does not extrapolate linearly; warm model caches making the second swap artificially fast; and requalification suites that are shorter in staging.
+
+Evidence and rollback. Deployment and revert times must be MEASURED on the game day with replica counts recorded, and explicitly labeled as staging figures if they were not taken in production. The order-of-magnitude claim is an ESTIMATE until that game day runs. Rollback for the game day itself is the standard drain-and-restore procedure, and it must be exercised, not assumed; a revert path that has never been run is not a revert path."""),
+
+ ("STANCE 7 - The eval set is the real deliverable: without item-level provenance, none of these results are reproducible.",
+  """Mechanism. Every claim in this problem is a rate on a set of items. If the set is regenerated, filtered, or extended between arms, the rates are not comparable, and a reported improvement can be entirely an artifact of set composition. The failure is silent because nobody records which items were in which run.
+
+Falsifiable hypothesis. H1: re-running the same checkpoint against the same nominal eval set on two different days reproduces UCR within 2 absolute points. Falsified if it does not, which would prove the harness or the set is unstable and that all prior deltas on this workstream are uninterpretable.
+
+Metrics. Reproducibility band on UCR and on final accuracy across repeated runs; item-count and item-hash stability across runs; per-item outcome churn rate, which catches the case where aggregate rates match but individual items flip; and seed sensitivity.
+
+Controlled experiment. Freeze the eval set to a content-addressed artifact with a recorded hash. Run the same checkpoint three times with the same seed and three times with different seeds. The same-seed spread bounds infrastructure nondeterminism; the different-seed spread bounds sampling noise. Report both separately.
+
+Confounders. Nondeterministic kernels and batching order producing run-to-run variation independent of seed; tool backend returning different values across days; and silent library upgrades between runs.
+
+Evidence and rollback. Record the eval-set hash, checkpoint hash, library versions, and per-item outcomes for every run; all reproducibility numbers are MEASURED. The 2-absolute-point band is an ESTIMATE, chosen as roughly half the smallest effect this workstream intends to act on. Gate: block every downstream claim until same-seed spread is below the band. If it is not, the correct action is to fix the harness, and no statement about the model's tool-use behavior should be made in the interim."""),
+
+ ("STANCE 8 - Safety framing: the failure mode to fear is the fix, not the defect.",
+  """Mechanism. Redundant calculator calls waste resources but do not produce wrong answers. Every proposed intervention, by contrast, can produce wrong answers, because each one shifts the model toward answering without verification. The asymmetry matters: the defect's worst case is cost, the fix's worst case is silent numerical error in a system whose users trust it precisely because a tool was involved.
+
+Falsifiable hypothesis. H1: for every intervention arm, the rate of numerically wrong final answers on the tool-required stratum stays within 1 absolute point of baseline. Any arm that violates this is rejected regardless of its UCR gain. Falsified per-arm by MEASURED accuracy on that stratum.
+
+Metrics. Wrong-answer rate on the tool-required stratum as the primary safety metric, under-calling rate, magnitude distribution of numerical errors (a rare large error is worse than frequent small ones), and the fraction of wrong answers that were stated with high confidence. Confidently-wrong is the metric that maps to user harm.
+
+Controlled experiment. Every arm evaluated on a fixed tool-required stratum with a deterministic ground-truth checker, so wrongness is decided mechanically rather than by a judge model. Sized so a 1-point change is detectable: roughly 2000 items gives about +/-1 absolute point at 95% confidence for a rate near 0.05 (ESTIMATE, from sqrt(0.05*0.95/2000) ~= 0.0049 SE doubled).
+
+Confounders. Ground-truth checker bugs on edge cases such as rounding and units; stratum contamination with items that are actually trivial; and judge-free checking hiding formatting-only failures that are not real errors.
+
+Evidence and rollback. The safety gate must be evaluated and reported before any UCR result is discussed, so the ordering of the report itself resists motivated reasoning. All rates MEASURED with the checker version recorded. Roll back any arm that exceeds the 1-point ceiling or that increases confidently-wrong answers at all, even if aggregate accuracy improves. This gate is not negotiable against efficiency gains, because the two are not commensurable."""),
+
+ ("STANCE 9 - Segment before you aggregate: 'the agent' is many behaviors and the aggregate hides all of them.",
+  """Mechanism. A single UCR over all traffic mixes distinct populations: short factual tasks where one redundant call doubles the step count, long multi-tool workflows where the calculator is a minor participant, and retry-heavy trajectories where redundancy is a symptom of an upstream tool failure. Interventions that help one segment can harm another, and the aggregate will report the average of an improvement and a regression as "no effect".
+
+Falsifiable hypothesis. H1: UCR varies by more than 20 absolute points across the three segments above. Falsified if the spread is under 5 points, in which case aggregation is safe and segmentation adds only cost.
+
+Metrics. UCR, accuracy, trajectory length, and tool-failure rate reported per segment, plus the segment mix itself, since a shifting mix can move the aggregate with no per-segment change. Include the mix in every report; an aggregate without its mix is not interpretable.
+
+Controlled experiment. Retrospective segmentation of logged trajectories using rules defined before looking at outcomes, to avoid carving segments that flatter a hypothesis. Then evaluate any intervention arm per segment with pre-registered segment definitions.
+
+Confounders. Segment definitions that correlate with difficulty, so a segment effect is really a difficulty effect; small segments with wide intervals; and trajectories that span segments.
+
+Evidence and rollback. Pre-register segment rules in writing before computing outcomes, and report per-segment MEASURED rates with counts. The 20-point spread threshold is an ESTIMATE, chosen as the heterogeneity level above which a single number would actively mislead a decision-maker. Roll back any intervention that regresses any single segment by more than 1 absolute point in accuracy, even when the aggregate improves, and state that rule before the arms are run."""),
+
+ ("STANCE 10 - Synthesis: separate the claim about the system from any claim about the model, and keep both provisional.",
+  """Mechanism. This problem invites a category error. Reducing redundant calls is a system-behavior outcome achievable by routing, scaffolding, or policy change; it is not evidence that the model understands when a tool is needed. Conflating the two lets an orchestrator patch be reported as a capability improvement, which then justifies claims the model cannot support.
+
+Falsifiable hypothesis. H1: the UCR reduction achieved by orchestrator-side changes does not transfer when the same checkpoint is evaluated under a neutral scaffold. If it does not transfer, the improvement is a system property and must be reported as such. Falsified if the reduction persists under the neutral scaffold, which would be genuine evidence of a policy change.
+
+Metrics. UCR under the production scaffold and under a fixed neutral scaffold, for every arm; the transfer gap between them; final accuracy under both; and, for training arms, held-out general capability to detect collateral damage.
+
+Controlled experiment. Define the neutral scaffold once, freeze it, and evaluate every arm under both scaffolds. This doubles evaluation cost and is the price of being able to say which layer changed. Order the work by reversibility: routing guard, then harness and segmentation, then scaffold change, then any training run, with the safety gate on the tool-required stratum applied at every step.
+
+Confounders. The neutral scaffold being unintentionally similar to production, which inflates apparent transfer; and cross-arm contamination if the neutral scaffold is tuned after seeing results.
+
+Evidence and rollback. Report the transfer gap MEASURED for every arm, and label every conclusion as a system claim or a model claim explicitly. All thresholds cited across this plan are ESTIMATE unless accompanied by the run that produced them. Rollback ladder: guard by flag flip, scaffold by config revert, weights by checkpoint pin, each exercised in a game day before it is relied on. Nothing here establishes domain capability; it is a provisional engineering plan whose every quantitative claim awaits a MEASURED replacement."""),
+]
+
+DECISIONS = ["rewrite"] * 10
+CONF = [0.61, 0.63, 0.60, 0.58, 0.59, 0.62, 0.64, 0.63, 0.60, 0.62]
+QD = [(2, 2, 2)] * 10
+
+RISKS = [
+ ["Rubric-style source_assistant enumerates measurements but never names a mechanism, so it cannot be graded right or wrong.",
+  "No stated relationship between confidence calibration and calling behavior, leaving the intervention target undefined."],
+ ["Source counts calls uniformly, which mismeasures cost when redundancy concentrates late in long trajectories.",
+  "Prefix-caching state is never mentioned, yet it can invert the cost conclusion entirely."],
+ ["Source assumes the defect lives in the model without checking whether the scaffold makes termination structurally disfavored.",
+  "A newly exposed finish action can trade redundancy for outright parse failure, a strictly worse outcome."],
+ ["Source implies the defect is worth fixing without establishing any user-visible or spend impact threshold.",
+  "Optimizing an aesthetic metric consumes engineering capacity with no stated return."],
+ ["Reward or preference signals mentioned by the source have no label definition, so the reward is unspecified and gameable.",
+  "Automatic redundancy labels derived from forced-teacher rollouts may not match free-running behavior."],
+ ["Source ignores deployment blast radius; a weights fix and an orchestrator fix are treated as interchangeable.",
+  "A revert path that has never been exercised is assumed to work."],
+ ["Source reports rates without any eval-set provenance, so results are not reproducible across runs.",
+  "Aggregate rate stability can hide large per-item outcome churn."],
+ ["Every proposed fix can produce wrong answers, whereas the defect itself only wastes resources; the source does not state this asymmetry.",
+  "Confidently-wrong numerical answers are the actual user harm and are never surfaced as a metric."],
+ ["A single aggregate UCR averages improvements and regressions across heterogeneous traffic segments into an apparent null.",
+  "Segment mix shifts can move the aggregate with no underlying behavior change."],
+ ["System-level routing or scaffold fixes can be misreported as model capability improvements.",
+  "Thresholds quoted without the run that produced them get treated as measured facts downstream."],
+]
+
+EVID = [
+ ["Paired tool-disabled and tool-available rollouts per item, with accuracy, mean logprob, ECE and call outcome.",
+  "Spearman correlation between per-item calibration error and unnecessary-call rate, with the eval-set id."],
+ ["Per-call token accounting keyed by trajectory id and step index from an instrumented replay window.",
+  "GPU-seconds per redundant call by trajectory position, with prefix-caching state recorded explicitly."],
+ ["Paired per-item UCR and accuracy deltas for the two scaffolds plus the described-but-undemonstrated arm.",
+  "Parse-failure rate for the explicit finish action relative to baseline."],
+ ["Offline counterfactual latency and GPU-spend deltas reconstructed from logged trajectories, with the method written down.",
+  "Independent trace ratings from people who actually read traces, collected without priming."],
+ ["Per-call answer-distribution KL before and after observation ingestion, plus agreement with the verbatim proxy.",
+  "Human adjudication kappa against the KL-derived label on a stratified sample."],
+ ["Game-day measurements of time-to-deploy and time-to-revert for weights swap versus orchestrator config change.",
+  "Replica count, requalification suite runtime, and error budget consumed during each swap."],
+ ["Eval-set hash, checkpoint hash, library versions and per-item outcomes for three same-seed and three different-seed runs.",
+  "Same-seed and different-seed UCR spreads reported separately, plus per-item outcome churn rate."],
+ ["Wrong-answer rate and error-magnitude distribution on the tool-required stratum from a deterministic ground-truth checker.",
+  "Confidently-wrong answer counts per arm, with the checker version recorded."],
+ ["Per-segment UCR, accuracy, trajectory length and tool-failure rate with counts, using pre-registered segment rules.",
+  "Segment mix reported alongside every aggregate figure."],
+ ["UCR and accuracy for every arm under both the production scaffold and a frozen neutral scaffold, with the transfer gap.",
+  "Held-out general-capability scores for any training arm, plus a game-day record of each rollback path."],
+]
+
+rows = []
+for i, s in enumerate(src):
+    m = {x["role"]: x["content"] for x in s["messages"]}
+    head, body = STANCES[i]
+    tc, ic, os_ = QD[i]
+    rows.append({
+        "source_id": s["id"],
+        "teacher_lane": "teacher-B",
+        "teacher_model": "claude-opus-5-current",
+        "calibration_status": "provisional",
+        "decision": DECISIONS[i],
+        "source_user": m["user"],
+        "source_assistant": m["assistant"],
+        "corrected_answer": head + "\n\n" + body,
+        "quality_dimensions": {
+            "technical_correctness": tc,
+            "instruction_coverage": ic,
+            "operational_safety": os_,
+        },
+        "risks": RISKS[i],
+        "evidence_required": EVID[i],
+        "confidence": CONF[i],
+    })
+
+with open(OUT, "w") as f:
+    for r in rows:
+        f.write(json.dumps(r, ensure_ascii=False) + "\n")
+print("WROTE", OUT, len(rows))
