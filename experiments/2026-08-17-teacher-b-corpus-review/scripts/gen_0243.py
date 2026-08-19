@@ -154,7 +154,7 @@ Falsifiable hypothesis H9. Under the proposed reward, a hand-written always-abst
 Metrics. reward of hand-written degenerate policies (always-abstain, always-call, call-once-then-answer) versus baseline; correlation between reward and human-judged trajectory quality on a held-out sample; reward variance across seeds.
 Controlled experiment. Purely offline scoring of scripted policies. No GPU training required. This is the cheapest possible falsification and must precede any run.
 Boundary conditions. Reward correlation with human judgment must be measured on trajectories not used to fit the reward. A reward validated only on its own training distribution proves nothing.
-Numbers. No reward coefficients are proposed here as measured values. Any coefficient chosen later must be reported with the degenerate-policy scores that justified it.
+Numbers. No MEASURED value appears in this stance. The count of three scripted degenerate policies is a design choice, not a measurement, and any penalty coefficient chosen later is an ESTIMATE until it is reported alongside the MEASURED degenerate-policy scores that justified it; the derivation required is that each scripted policy's score be shown strictly below the baseline's score on the same frozen eval set.
 Rollback. Do not start training until all three scripted degenerate policies score below baseline. If training starts and the policy's call rate collapses toward zero, halt at the first checkpoint and re-probe the reward rather than tuning the coefficient in flight.
 Scope. Objective-design gate, provisional. Passing it authorizes a training attempt; it does not predict or demonstrate a capability gain.""",
  ["Penalty coefficient mis-set produces a policy that abstains on items requiring the tool",
