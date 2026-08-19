@@ -143,7 +143,7 @@ Rollback gate. Do not promote any tuned checkpoint that loses more than 1 absolu
 
 Mechanism. Each candidate fix has a different blast radius and a different revert cost: observation serializer (revert = flag), memoization (revert = flag), orchestrator quota (revert = config), system-prompt change (revert = deploy), preference tuning (revert = checkpoint switch plus re-validation). Reversibility should determine order.
 
-Staged plan with gates.
+Controlled experiment, staged as gated rungs.
 R1 Instrument: land the redundancy metric and the counterfactual replay harness. Gate: label false-positive rate measured and below 10%.
 R2 Serializer and memoization: typed observations plus a purity-scoped cache. Gate: measured cost reduction with accuracy paired-difference CI containing zero.
 R3 Orchestrator quota: bound calls per task. Gate: quota-truncation rate under 2% and no tenant regression.
@@ -211,7 +211,9 @@ Rollback gate. If the gate's false-failure rate exceeds 5%, widen the band or fi
 
 [
 "STANCE 60 - Synthesis: state the assumptions that the whole program rests on, and name the observation that would invalidate each one.",
-"""Assumptions and their killers.
+"""Mechanism. The program's conclusions rest on five assumptions about the agent, the substrate and the metric; each is load-bearing, and each fails in a specific, observable way rather than gracefully.
+
+Assumptions and their killers.
 A1 The prior result is actually in context at the decision point. Killer: window-occupancy traces showing it was evicted, in which case the behavior is correct and the problem is context management.
 A2 Suppressing the call leaves the answer unchanged. Killer: a counterfactual replay false-positive rate above 10%, in which case the label is wrong and every downstream metric inherits the error.
 A3 The behavior is stable enough to measure. Killer: two identical baseline runs differing by more than the claimed effect size, in which case nothing below the noise band is reportable.
@@ -220,9 +222,11 @@ A5 The fix does not induce undercalling. Killer: a hard-slice accuracy drop abov
 
 Consolidated hypothesis H10. The cheapest reversible interventions -- typed observations, purity-scoped memoization, and an orchestrator call quota -- together reduce the per-decision redundancy rate by at least 30% relative while holding hard-slice accuracy within 1 absolute point, making weight-level tuning unnecessary this cycle.
 
-Experiment. Sequential, gated, paired-by-task, single-variable-per-arm, with the baseline re-run at the start and end of the sequence and required to agree within the noise band. Every arm's config is hashed and the hashes are committed alongside the results.
+Controlled experiment. Sequential, gated, paired-by-task, single-variable-per-arm, with the baseline re-run at the start and end of the sequence and required to agree within the noise band. Every arm's config is hashed and the hashes are committed alongside the results.
 
 Measurements. Per-decision unnecessary-call rate, final accuracy overall and per slice, tool success rate, trajectory length, p50/p95 latency, tokens per task, and recovery rate after injected tool errors.
+
+Confounders. Rungs interact, so each arm is compared against the immediately preceding configuration rather than the original baseline; substrate drift is absorbed by the re-measured noise band; adjudicator label error in the counterfactual replay propagates into every downstream rate; and easy-slice gains can mask hard-slice regressions inside any aggregate.
 
 Numbers. Every figure quoted across this program so far -- the 20% redundancy rate, the 1.5k-token prompt, the ~310 tokens/task overhead, the 4.5M-token gate cost -- is an ESTIMATE derived from assumed inputs stated at the point of use. None is MEASURED. No capacity, cost or savings claim may be made externally until each is replaced by a logged measurement with its collection method recorded.
 
