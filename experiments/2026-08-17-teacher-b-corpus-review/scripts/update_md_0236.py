@@ -1,0 +1,29 @@
+EXP = "/home/johnson/workspace/LLM_PostProcess/experiments/2026-08-17-teacher-b-corpus-review"
+MD = f"{EXP}/EXPERIMENT.md"
+
+entry = """## Round 0236 - train-batch-0236.jsonl
+
+- Batch file: results/train-batch-0236.jsonl
+- Corpus interval (positional): train.jsonl rows [2350, 2360)
+- Source IDs: corpus-02591 .. corpus-02598, corpus-02600, corpus-02601 (10 items, corpus order preserved; note the corpus itself skips corpus-02599, so the ID run is non-consecutive while the positional slice is contiguous)
+- Progress: train 2360/2500 (remaining 140); validation 0/0 by user instruction, no validation batch files exist or were created
+- Decisions: keep 0, rewrite 10, reject 0
+- Initial schema check: PASS on first run (scripts/verify_0236.py, derived from verify_0235.py by sed with the positional window moved to [2350,2360) and the aggregate count moved to 2360). No byte-equality, field-set or uniqueness failure occurred; the generator selected message content by role from the start, avoiding the positional-indexing defect that had to be repaired in round 0235.
+- Repair actions: none required this round. Original corpus untouched; no previously committed batch was modified; no teacher-A path was read, opened or grepped.
+- Final schema check: VERIFY_PASS batch=10 aggregate=2360 prefix=ok ids_unique=ok - JSONL line-parseable and newline-terminated, 10 rows, exactly the 12 required fields, teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional, decision in {keep,rewrite,reject}, source_user/source_assistant byte-equal to corpus by role, corrected_answer non-empty with unique stance headers within the batch, quality_dimensions three ints in [1,5] with bool excluded, risks/evidence_required non-empty string arrays, confidence float in [0,1], global source_id uniqueness, aggregate 2360 rows a strict prefix of train.jsonl, no validation-batch files.
+- Manifest: MANIFEST.sha256 regenerated over all files in this experiment directory except MANIFEST.sha256 itself; sha256sum -c reported all OK.
+
+Technical topics covered by this batch. All ten source items instantiate the same degenerate template - an agent-reliability prompt about an agent that repeatedly calls a calculator when the answer is already known, scenario variants 91 through 98 plus 100 and 101 - each paired with an assistant turn that is a grading rubric rather than an answer, so all ten are rewrites. The ten rewrites take ten distinct, non-overlapping analytical stances, none of which repeats a stance used in rounds 0234 or 0235: (v91) adjudicating the redundancy detector itself - stratified two-rater labelling, Cohen's kappa, and precision/recall of the args-hash detector against human labels before any intervention is funded; (v92) pre-registration and fixed equivalence bands as the procedural defence against post-hoc reclassification of a regression as noise, with a power calculation requirement; (v93) stratified accuracy reporting, because harm from over-suppression concentrates on the arithmetic-heavy minority stratum and is diluted below detectability in the aggregate mean; (v94) TOOL RESULT CACHE injection as the reversible first intervention, with the counter-consideration that the injected block's prefill cost can grow faster than the calls it removes; (v95) per-tool signed purity declarations with fail-closed default-impure semantics, validated by shadow-execute-and-byte-compare before suppression is enabled; (v96) trajectory length treated as a confounder jointly determined with redundancy by task difficulty, never as a promotion criterion; (v97) cost accounting that prices the carried prefill term - (call+result tokens) x subsequent turns - and the way an effective prefix cache invalidates cost claims computed without hit-rate data; (v98) the per-call provenance field set (model/weights hash, system prompt hash, tool schema hash, decoding parameters, serving build id, trace pin hash, turn index) as the precondition for attributing any delta to a single moved variable; (v100) the honest default of acting on the instrument rather than the policy, with a repeated-baseline noise band established before any effect is discussed as real; (v101) rollout, staged exposure, stratified alerting and a rehearsed single-command revert, given that over-suppression degrades correctness rather than availability and will not trip an availability alert.
+
+Every rewrite states its assumptions explicitly, gives the token-level mechanism by which tool invocation is a distributional property of the induced policy rather than a patchable controller defect, lists the boundary conditions that flip the recommendation (repeated is not redundant; unreliable mental arithmetic can justify a call that looks unnecessary; template-concentrated redundancy makes a prompt edit dominate a model-level fix), states a falsifiable hypothesis with its explicit refutation condition, specifies a single-variable controlled experiment on a hash-pinned replay, enumerates the evidence artifacts required to adjudicate it, and defines a rollback gate. No quantitative value in this batch is labelled MEASURED; every non-artifact number is labelled ESTIMATE and carries its derivation, because no run was executed for this review.
+
+Status caveat. These outputs are provisional teacher-B review material produced under blind review - no teacher-A artifact was read, opened or grepped at any point while producing this batch. They are not expert gold, they have not been adjudicated by a human expert, and they are not evidence about any model's domain capability. Agreement analysis against teacher-A is a separate, later step outside the scope of this worker.
+
+"""
+
+md = open(MD).read()
+lines = md.split("\n")
+idx = next((i for i, l in enumerate(lines) if l.startswith("## ")), len(lines))
+new = "\n".join(lines[:idx]) + "\n" + entry + "\n".join(lines[idx:])
+open(MD, "w").write(new)
+print("INSERTED at line", idx)
