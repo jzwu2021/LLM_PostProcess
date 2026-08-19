@@ -1,0 +1,202 @@
+import json, os
+
+ROOT = "/home/johnson/workspace/LLM_PostProcess"
+CORPUS = f"{ROOT}/research/ai-infra-expert/corpus/train.jsonl"
+EXP = f"{ROOT}/experiments/2026-08-17-teacher-b-corpus-review"
+OUT = f"{EXP}/results/train-batch-0229.jsonl"
+START, END = 2280, 2290
+
+corpus = [json.loads(l) for l in open(CORPUS) if l.strip()]
+rows_src = corpus[START:END]
+
+COMMON = """Common frame (applies to every stance below).
+Assumptions (must be restated by the answering engineer, not inherited silently):
+A1. The agent is an LLM-driven tool-calling loop serving interactive traffic; a calculator tool is one of several registered tools and returns deterministic results.
+A2. The failure under discussion is a redundant call: the model emits a tool call whose result it could have produced directly, or which it already obtained earlier in the same trajectory.
+A3. Ground truth for "the answer was already known" is not directly observable at serving time; it must be approximated by an offline judge or by cache-hit analysis, and that approximation is itself a measurement instrument that needs validation.
+A4. Exactly one variable moves per experimental arm: prompt, tool schema, decoding policy and model checkpoint are not changed simultaneously.
+Mechanism, stated plainly:
+- A tool call is a control-flow decision the model makes from its context. Redundant calls arise from three distinct causes that require different interventions: (i) the policy has learned that calling is always safe, because training data rewarded calling and never penalized the extra call; (ii) the model cannot reliably tell that it already has the value, which is a context-attention failure, not a policy failure; (iii) the tool description or system prompt instructs unconditional verification, in which case the model is correct and the specification is wrong.
+- Every redundant call costs latency (one extra tool round trip plus one extra model turn to consume the result), tokens, and trajectory length, and it raises the probability of a downstream error because each additional turn is another chance to derail.
+Measurement layer, minimum viable set:
+- Unnecessary-call rate: redundant calls divided by total calls, where redundancy is adjudicated offline. Report it per tool and per task category, never as a single global mean.
+- Tool success rate: fraction of calls that return without error, tracked separately from usefulness. A high success rate with a high redundancy rate is the exact pathology here.
+- Final-answer correctness: the only metric that authorizes a change. Call-count reductions that cost correctness are regressions.
+- Trajectory length: turns and tool calls per completed task, p50 and p95.
+- Tool latency: per-call p50/p95, needed to convert call-count deltas into user-visible latency deltas.
+- Recovery rate: fraction of trajectories that still succeed after a tool error or a wrong intermediate value. Suppressing calls can quietly destroy this.
+Intervention ladder, cheapest and most reversible first: (1) fix the tool description and system prompt so unconditional calling is not instructed; (2) add a stop/no-tool option and evaluate it explicitly; (3) add a result cache so the redundant call is free rather than forbidden; (4) collect preference pairs over trajectories and train a preference or reward signal that penalizes the extra call while holding correctness fixed. Steps 1-3 are configuration and are revertible in one deploy; step 4 changes the checkpoint and requires the full evaluation gate.
+Evidence policy: every number below that was not produced by a run on this hardware is labelled ESTIMATE and carries its derivation. Only values read out of named benchmark artifacts may be labelled MEASURED. This review reports no MEASURED values, because no benchmark was executed for it.
+"""
+
+CRITIQUE = """Critique of the source item: the prompt is a legitimate agent-behaviour question and does ask for metrics plus an intervention, with an explicit falsifiable hypothesis and a controlled experiment, but the corpus pair is degenerate - the assistant turn contains only a rubric describing what an answer should contain, not an answer. There is therefore no substantive content to keep, and the item is rewritten into a complete response that supplies the mechanism behind redundant tool calls, the boundary conditions that change the correct intervention, an explicit falsifiable hypothesis, a single-variable controlled experiment, the evidence artifacts required to adjudicate it, and a rollback gate. Every quantitative claim is labelled ESTIMATE and carries its derivation; no value here is MEASURED, because no benchmark run was performed for this review. This output is provisional teacher-B review material, not expert gold, and it is not evidence about any model's domain capability."""
+
+STANCES = [
+    ("Stance 290 - Redundancy caused by context-attention failure is a different defect from redundancy caused by policy, and only a context ablation can tell them apart.",
+     """If the model cannot locate a value that is already several thousand tokens back in its context, it is not choosing to over-call; it is failing to retrieve. Reward shaping applied to that failure teaches the policy to suppress a call it still needs, because the underlying retrieval defect is untouched. The two causes demand opposite fixes: attention failure is addressed by shortening or restructuring context, by summarizing prior tool results into a compact scratchpad, or by pinning results near the end of the prompt; policy bias is addressed by training signal.
+The discriminating measurement is a context ablation. Present the identical decision point with the prior result placed immediately adjacent to the query, and separately with it buried at its natural distance, holding everything else fixed. A large gap between the two conditions localizes the defect to retrieval.
+Falsifiable hypothesis H290: H290: the redundant-call rate is materially higher when the prior result sits far from the decision point than when it is adjacent, indicating a retrieval rather than a policy defect (ESTIMATE; derivation: attention over long contexts degrades with distance and with the number of intervening tool results, so a distance-sensitive rate implicates retrieval; a policy bias would produce a rate insensitive to placement. If both placements yield the same rate, retrieval is exonerated and the claim is refuted).
+Controlled experiment: Construct paired prompts from the same trajectories that differ only in the position of the prior tool result, with identical checkpoint, decoding seed and tool schema, and report the call rate for each position bucket.
+Rollback gate: if the ablation implicates retrieval, no preference-training change ships at all until a context-restructuring fix has been evaluated first, because training against a retrieval defect will encode a threshold shift that misfires when the context is later shortened."""),
+
+    ("Stance 291 - The tool schema itself is an intervention surface: making the tool require an explicit justification argument changes the call decision without touching the policy.",
+     """A tool signature is part of the prompt. If the calculator accepts only operands, calling is frictionless and the model has no place to record why the call was needed. Adding a required field that names the reason - a short string stating what is unknown - forces the decision to be articulated before it is executed, and it produces a labelled corpus of stated reasons as a free by-product, which is far cheaper than an offline judge.
+The boundary is that self-reported justification is not ground truth. A model can produce a fluent reason for a call it did not need, so the field is a diagnostic and a mild friction, not an oracle. Its measurable claim is about rate change and about the interpretability of the resulting logs, not about correctness of the stated reason.
+Falsifiable hypothesis H291: H291: requiring a justification argument reduces the unnecessary-call rate through added decision friction, and the distribution of stated reasons identifies which of the three redundancy causes dominates (ESTIMATE; derivation: additional required output tokens before a call raise its marginal cost within the decoding process and force the reason into the visible trace; if the rate is unchanged and the reasons are uniformly generic, the field is pure overhead and the claim is refuted).
+Controlled experiment: Two arms differing only in the tool schema, same checkpoint and seed, run over an identical replayed trace. Report unnecessary-call rate, correctness, and a manual categorization of a stratified sample of stated reasons.
+Rollback gate: revert the schema change if correctness or recovery rate regresses on any segment, or if schema validation errors appear in the tool layer, since a malformed required field converts a redundant call into a hard failure."""),
+
+    ("Stance 292 - Sampling temperature and decoding configuration can account for a large part of the observed variance, so decoding must be pinned before any behavioural claim is made.",
+     """Tool-calling is a discrete decision made by sampling. At non-zero temperature, the same context can yield a call in one rollout and a direct answer in the next, and a measured redundancy rate carries that sampling noise inside it. Teams routinely compare an arm run at one temperature against a baseline captured at another, and attribute the delta to their intervention.
+The consequence is procedural rather than clever: pin temperature, top-p, seed and any repetition penalty, record them in the run artifact, and report the run-to-run variance of the metric under an unchanged configuration before comparing any two arms. That variance is the noise floor, and no delta smaller than it is a result.
+Falsifiable hypothesis H292: H292: repeated runs of the identical configuration produce a spread in unnecessary-call rate large enough that typical reported intervention effects fall inside it, so unreplicated single-run comparisons cannot support a promotion decision (ESTIMATE; derivation: each call decision is a stochastic draw and rates aggregate a finite number of such draws, so variance shrinks only with sample size; small evaluation sets therefore carry a wide band. If repeated identical runs agree tightly, the claim is refuted and single runs are adequate).
+Controlled experiment: Run the unchanged baseline configuration at least three times with different seeds to establish the noise band, then require any arm's delta to exceed that band before it is reported at all.
+Rollback gate: no promotion on a delta inside the measured noise band, and any comparison whose decoding parameters are not recorded in the artifact is discarded rather than interpreted."""),
+
+    ("Stance 293 - Token cost and tool backend load are the operational metrics that justify the work economically, and they must be attributed per redundant call rather than assumed.",
+     """A redundancy programme competes for engineering time with everything else, so its case rests on a cost attribution that survives scrutiny. The cost of one redundant call is not one tool invocation; it is the prompt tokens re-processed on the extra model turn, the output tokens of the call and of the consuming turn, the tool backend request, and the incremental KV cache occupancy that reduces achievable serving concurrency.
+The last term is the one usually omitted and often the largest at scale: longer trajectories hold KV cache for longer, which lowers the number of concurrent sequences a fixed GPU memory budget can hold and therefore reduces throughput even when the tool itself is free. Any claimed saving that ignores cache occupancy understates the benefit and is easy for a reviewer to dismiss.
+Falsifiable hypothesis H293: H293: the dominant cost of redundant calls at scale is reduced serving concurrency from prolonged KV cache occupancy, not the tool backend load, so eliminating redundancy improves achievable throughput more than it reduces tool cost (ESTIMATE; derivation: KV cache footprint grows with sequence length and is the binding constraint on batch size in memory-bound serving, whereas a local calculator backend is cheap; the ordering flips for tools that are themselves expensive or rate-limited. If tool backend cost dominates in the measured breakdown, the claim is refuted for that deployment).
+Controlled experiment: Instrument a serving replica to record tokens processed, KV cache bytes held and achieved concurrency per trajectory, and compare arms at fixed offered load rather than at fixed request count, so throughput effects are visible.
+Rollback gate: an intervention that does not improve throughput at fixed load or reduce cost per completed task is not promoted, because it has spent policy risk without an economic return."""),
+
+    ("Stance 294 - Human adjudication is required to anchor the whole measurement chain, and its cost dictates how large a claim the programme can support.",
+     """Every automated redundancy label descends from some human judgement about what counted as necessary. If that anchor is never collected, the chain terminates in an assumption. A small, carefully constructed human-labelled set - a few hundred decision points stratified across categories, each adjudicated by two raters with disagreements resolved - is what converts the judge from an assertion into an instrument with a known error rate.
+Inter-rater agreement is itself a finding. If two competent engineers disagree on whether a call was necessary, the concept is under-specified and no automated judge can be more consistent than the definition it inherits. In that case the correct action is to tighten the definition, not to buy a better judge.
+Falsifiable hypothesis H294: H294: inter-rater agreement on redundancy labels is materially below the level required for the automated judge to be validated against them, meaning the operative definition, not the judge, is the limiting factor (ESTIMATE; derivation: necessity is a counterfactual judgement about what the model could have done, which raters resolve using different implicit thresholds unless the rubric fixes them; a tight rubric should raise agreement. If agreement is already high on the first pass, the definition is adequate and the claim is refuted).
+Controlled experiment: Two independent raters label the same stratified sample under a written rubric, agreement is computed per category, and the rubric is revised once before a second labelling round to test whether agreement improves.
+Rollback gate: no automated judge is used for a promotion decision until its agreement with the human-anchored set is reported per category; where agreement is low, that category is declared unmeasured rather than assigned a number."""),
+
+    ("Stance 295 - Multi-tool interaction changes the problem: suppressing calculator redundancy can displace the behaviour onto another tool rather than eliminate it.",
+     """An agent with several registered tools has substitutes. Raise the effective cost of the calculator and the policy may route the same uncertainty into a code-execution tool or a retrieval call, which is often slower and riskier. The redundancy metric for the calculator improves, the intervention is declared a success, and total trajectory cost is unchanged or worse.
+This makes the unit of measurement the whole tool portfolio, not the tool being fixed. The correct headline is total calls and total tool wall time per completed task, with per-tool breakdown underneath, so displacement is visible instead of being reported as a win.
+Falsifiable hypothesis H295: H295: an intervention targeting one tool displaces call volume onto substitute tools rather than reducing total tool usage, so per-tool metrics overstate the benefit (ESTIMATE; derivation: the policy is choosing among actions under a shared objective, so raising the cost of one action redistributes probability mass to the nearest alternatives; only an intervention that changes the underlying need for external computation reduces the total. If total calls fall proportionally with calculator calls and no other tool rises, the claim is refuted).
+Controlled experiment: Report per-tool call counts and total tool wall time per completed task for every arm on an identical trace containing tasks solvable through more than one tool, so substitution has an opportunity to appear.
+Rollback gate: revert if total tool wall time per completed task fails to improve, regardless of the per-tool redundancy improvement, and treat any rise in code-execution calls as a safety-relevant regression requiring separate review."""),
+
+    ("Stance 296 - The evaluation trace must be frozen and versioned, because a moving trace makes every cross-arm comparison uninterpretable.",
+     """If arms are evaluated on live traffic captured at different times, the traffic mix, the task difficulty distribution and even the tool backend behaviour differ between them. A redundancy delta then confounds the intervention with whatever changed in the world, and the confound is usually invisible because nobody records the mix.
+Freezing a replay trace with a content hash, recording its composition by category, and rerunning every arm against that exact artifact is the cheapest defence available. It costs storage and gives back the ability to reproduce any historical result, which is what allows a regression discovered months later to be attributed rather than argued about.
+Falsifiable hypothesis H296: H296: unfrozen live-traffic comparisons show apparent redundancy deltas of the same magnitude as real interventions purely from traffic-mix drift between capture windows (ESTIMATE; derivation: redundancy rate varies by task category, so a shift in category proportions moves the pooled rate with no behavioural change at all; the effect size scales with the variance across categories. If replaying two disjoint live windows through an unchanged agent yields matching rates, drift is negligible and the claim is refuted).
+Controlled experiment: Replay two separate live-capture windows through an identical unchanged agent and report the difference; that difference is the drift floor against which any intervention must be compared.
+Rollback gate: no result computed on an unhashed or unversioned trace enters a promotion decision; the trace hash is recorded in the run artifact alongside the metrics, and a missing hash invalidates the run."""),
+
+    ("Stance 297 - Determinism of the tool matters: a calculator is deterministic, so its results are cacheable and replayable, and that property should be exploited rather than ignored.",
+     """The reason a calculator is the right first target is that identical inputs give identical outputs. That makes exact memoization safe, makes replay-based counterfactuals valid, and makes a stale-cache incident impossible as long as the key includes every operand. None of those hold for a retrieval tool over a mutable index or for a code-execution tool with side effects.
+The generalization risk is precisely here: teams solve redundancy for the deterministic tool, then port the same cache and the same replay methodology to a non-deterministic one and inherit correctness bugs. The methodology should be documented with its determinism precondition stated as a gate, not as a footnote.
+Falsifiable hypothesis H297: H297: the cache and replay methodology validated on a deterministic tool produces incorrect redundancy labels when applied unchanged to a tool whose outputs vary with time or external state (ESTIMATE; derivation: replay substitutes a previously observed result for a suppressed call, which is only faithful when the result is a pure function of its inputs; for time-varying tools the substituted value may never have been returnable at that moment. If labels agree between replay and live re-execution for the non-deterministic tool, the claim is refuted).
+Controlled experiment: Apply the identical replay labelling to one deterministic and one non-deterministic tool and compare replay labels against live re-execution labels for both, reporting disagreement per tool.
+Rollback gate: the cache is enabled only for tools declared deterministic in the registry, and any tool lacking that declaration is excluded by default rather than opted out manually."""),
+
+    ("Stance 298 - Monitoring must run continuously after promotion, because the redundancy rate drifts with model updates, prompt edits and traffic composition.",
+     """A one-shot experiment establishes a state at a moment. Everything that produced that state changes: base checkpoints are updated, system prompts accumulate edits from unrelated teams, and traffic composition shifts with product changes. Without a standing dashboard on unnecessary-call rate, calls per completed task and recovery rate, segmented as pre-registered, the improvement decays silently and is rediscovered as a cost incident.
+The monitoring must include the guard metrics, not only the target metric. A dashboard showing only redundancy going down is exactly the instrument that hides an accuracy or recovery regression, which is the failure mode this whole programme is trying to avoid.
+Falsifiable hypothesis H298: H298: without standing monitoring, the unnecessary-call rate returns toward its pre-intervention level within a small number of unrelated prompt or checkpoint changes, because nothing in the release process protects the property (ESTIMATE; derivation: the improvement was produced by specific prompt or policy state and no release gate tests for it, so any change touching that state can undo it; a regression test in CI would prevent this. If the rate holds stable across several unrelated releases, the claim is refuted).
+Controlled experiment: Track the metric suite across a sequence of releases that did not target redundancy, and correlate any regression with the specific change that preceded it using the versioned prompt and checkpoint artifacts.
+Rollback gate: add the no-tool evaluation set and the recovery set as blocking pre-release checks, so a regression blocks the release rather than being detected afterwards on a dashboard."""),
+
+    ("Stance 299 - The honest summary is that the source item cannot be graded as an answer at all, and reporting that clearly is more useful than manufacturing a score.",
+     """Across this whole batch the assistant turn is a rubric: it states what a good answer would contain and contains none of it. Scoring it as though it were an answer produces a number that describes the rubric's completeness, not any engineering content, and a training set built on such pairs teaches a model to emit grading criteria when asked for solutions.
+The operationally correct handling is a rewrite decision with the reason recorded, plus an explicit note that the quality dimensions score the source turn as an answer and are therefore low by construction rather than because the underlying prompt is bad. The prompt itself is sound and worth keeping; only the response side needs replacement.
+Falsifiable hypothesis H299: H299: training on rubric-shaped assistant turns increases the rate at which the fine-tuned model responds to engineering questions with lists of what an answer should contain rather than with the answer, relative to a control trained on the same prompts with substantive responses (ESTIMATE; derivation: supervised fine-tuning imitates the response distribution it is shown, so a corpus slice whose responses are meta-descriptions supplies exactly that behaviour as the target; the effect should scale with the proportion of such items. If a held-out generative evaluation shows no difference in meta-response rate, the claim is refuted).
+Controlled experiment: Fine-tune two variants from the same base on the identical prompt set, differing only in whether the rubric-shaped responses are replaced with substantive ones, and score a held-out generative evaluation for meta-response rate and for content quality.
+Rollback gate: no corpus slice ships to training until the proportion of rubric-shaped responses is measured and reported; if it exceeds a pre-registered threshold the slice is rewritten or excluded rather than down-weighted, since down-weighting leaves the behaviour present at reduced strength."""),
+]
+
+RISKS_COMMON = [
+    "Source assistant turn is a grading rubric, not an answer; training on it teaches meta-commentary about answers instead of the underlying reasoning.",
+    "No falsifiable hypothesis, no confounder list and no rollback gate, despite the prompt explicitly demanding them.",
+]
+
+EXTRA_RISKS = [
+    ["Training signal applied to a retrieval defect encodes a threshold shift that misfires once context length changes.",
+     "Context ablations built from the agent's own successful trajectories under-represent the long-context cases where retrieval fails."],
+    ["Self-reported call justifications are fluent but unverified, and treating them as labels launders assumption into evidence.",
+     "A required schema field that fails validation converts a redundant call into a hard tool error."],
+    ["Comparing arms captured under different decoding configurations attributes sampling noise to the intervention.",
+     "Small evaluation sets produce noise bands wider than typical reported effects, so single runs cannot support promotion."],
+    ["Cost cases that omit KV cache occupancy understate the benefit and get dismissed by reviewers.",
+     "Comparing arms at fixed request count rather than fixed offered load hides throughput effects entirely."],
+    ["Automated redundancy judges inherit an under-specified human definition and cannot be more consistent than it.",
+     "Single-rater labelling hides disagreement and presents a contested judgement as ground truth."],
+    ["Suppressing one tool displaces the behaviour onto slower or riskier substitutes while per-tool metrics show a win.",
+     "Increased code-execution calls carry safety exposure that a calculator redundancy metric never surfaces."],
+    ["Unfrozen live-traffic comparisons confound the intervention with traffic-mix drift between capture windows.",
+     "Results computed on unversioned traces cannot be reproduced or attributed when a regression appears later."],
+    ["Cache and replay methodology validated on a deterministic tool produces wrong labels when ported to a stateful one.",
+     "Determinism preconditions documented as footnotes rather than registry gates get silently violated."],
+    ["A one-shot experiment result decays as unrelated prompt and checkpoint changes accumulate with no release gate.",
+     "Dashboards showing only the target metric hide the accuracy and recovery regressions they were meant to catch."],
+    ["Scoring a rubric as if it were an answer produces a number about the rubric, not about engineering content.",
+     "Down-weighting rather than rewriting rubric-shaped items leaves the meta-response behaviour present at reduced strength."],
+]
+
+EXTRA_EVIDENCE = [
+    ["Paired-prompt ablation results reporting call rate by position of the prior tool result.",
+     "Checkpoint hash and decoding seed confirming only result placement differed between conditions.",
+     "Context length distribution of the evaluated decision points."],
+    ["Versioned tool schema diff between arms with the required justification field defined.",
+     "Manual categorization of a stratified sample of stated call justifications.",
+     "Tool-layer schema validation error counts per arm."],
+    ["At least three repeated baseline runs with differing seeds establishing the noise band.",
+     "Recorded temperature, top-p, seed and repetition penalty for every arm.",
+     "Reported delta with the noise band stated alongside it."],
+    ["Per-trajectory tokens processed, KV cache bytes held and achieved concurrency from a serving replica.",
+     "Arm comparison performed at fixed offered load with throughput per completed task reported.",
+     "Cost-per-completed-task breakdown separating tool backend cost from serving cost."],
+    ["Two-rater human labels on a stratified sample with per-category agreement statistics.",
+     "The written labelling rubric, versioned, plus the revised rubric and second-round agreement.",
+     "Explicit unmeasured marking for categories where agreement is too low to validate a judge."],
+    ["Per-tool call counts and total tool wall time per completed task for every arm.",
+     "Trace composition showing which tasks are solvable via more than one tool.",
+     "Separate safety review record for any increase in code-execution tool calls."],
+    ["Content hash and category composition of the frozen replay trace, recorded in the run artifact.",
+     "Drift-floor measurement from replaying two disjoint live windows through an unchanged agent.",
+     "Run artifacts linking every reported metric to a specific trace hash."],
+    ["Replay-versus-live-re-execution label disagreement rate for one deterministic and one non-deterministic tool.",
+     "Tool registry entries declaring determinism, with the cache allowlist derived from them.",
+     "Audit of any cache key lacking a full operand set."],
+    ["Time series of unnecessary-call rate, calls per completed task and recovery rate across releases.",
+     "Correlation of any regression with the specific versioned prompt or checkpoint change preceding it.",
+     "CI configuration showing the no-tool and recovery evaluation sets are blocking pre-release checks."],
+    ["Measured proportion of rubric-shaped assistant turns in the corpus slice.",
+     "Held-out generative evaluation scoring meta-response rate for both fine-tuned variants.",
+     "Pre-registered threshold above which a slice is rewritten or excluded rather than down-weighted."],
+]
+
+QD = [
+    (3, 2, 3), (3, 2, 3), (3, 2, 3), (3, 2, 4), (3, 2, 3),
+    (3, 2, 4), (3, 2, 3), (3, 2, 4), (3, 2, 3), (3, 2, 3),
+]
+CONF = [0.77, 0.76, 0.79, 0.78, 0.77, 0.79, 0.80, 0.78, 0.79, 0.80]
+
+out = []
+for i, src in enumerate(rows_src):
+    m = {x["role"]: x["content"] for x in src["messages"]}
+    head, body = STANCES[i]
+    ca = f"Analytical stance under test: {head}\n\n{COMMON}\n{body}\n\n{CRITIQUE}"
+    qd = QD[i]
+    out.append({
+        "source_id": src["id"],
+        "teacher_lane": "teacher-B",
+        "teacher_model": "claude-opus-5-current",
+        "calibration_status": "provisional",
+        "decision": "rewrite",
+        "source_user": m["user"],
+        "source_assistant": m["assistant"],
+        "corrected_answer": ca,
+        "quality_dimensions": {
+            "technical_correctness": qd[0],
+            "instruction_coverage": qd[1],
+            "operational_safety": qd[2],
+        },
+        "risks": EXTRA_RISKS[i] + RISKS_COMMON,
+        "evidence_required": EXTRA_EVIDENCE[i],
+        "confidence": CONF[i],
+    })
+
+os.makedirs(os.path.dirname(OUT), exist_ok=True)
+with open(OUT, "w") as f:
+    for r in out:
+        f.write(json.dumps(r, ensure_ascii=False) + "\n")
+print("WROTE", OUT, len(out))

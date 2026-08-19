@@ -1,5 +1,32 @@
 # Experiment: teacher-B corpus review (blind, independent second opinion)
 
+## Run 0230 (train-batch-0229.jsonl)
+
+- Batch file: results/train-batch-0229.jsonl
+- Corpus range: train.jsonl positional slice [2280:2290]
+- Source IDs: corpus-02511 through corpus-02520 (10 items in corpus order; taken by positional slice, not by ID arithmetic, and corpus order is preserved exactly).
+- Progress: 2290/2500 train (91.6%); remaining 210. Validation target is 0 by user instruction; no validation-batch file exists or was created.
+- Decisions: keep=0, rewrite=10, reject=0
+- Initial schema check: PASS on first run of scripts/tb_verify_batch_0229.py (JSONL line-parse, count=10, all 12 required fields, teacher_lane/teacher_model/calibration_status/decision values, byte-exact source_user and source_assistant against corpus, non-empty corrected_answer distinct from source_assistant, ESTIMATE label present, stance marker present, quality_dimensions integer 1-5, non-empty risks and evidence_required, confidence in [0,1], global source_id uniqueness, aggregated sequence is a strict prefix of train.jsonl, zero validation-batch files).
+- Repairs: none. The generator ran once and produced the batch; the verifier, derived from the previous batch's verifier by sed substitution of the batch number, passed on its first execution. No batch file was rewritten, no prior batch was touched, and neither the original corpus nor any teacher-A artifact was read or modified.
+- Final schema check: VERIFY_PASS, TOTAL 2290.
+- Manifest: MANIFEST.sha256 regenerated over every file in the experiment directory except MANIFEST.sha256 itself; `sha256sum -c` reports all entries OK.
+
+Technical topics covered by this batch. All ten items are further variants of the same prompt family - an agent that repeatedly calls a calculator when the answer is already known, requiring metrics plus an intervention, with an explicit falsifiable hypothesis and a controlled experiment. Each corpus item's assistant turn is a grading rubric rather than an answer, so every item is a rewrite. The shared frame is unchanged: three distinct causes of redundant tool calls (instruction-driven, policy-driven, attention-driven), a minimum metric set (unnecessary-call rate, tool success, final correctness, trajectory length, tool latency, recovery), and an intervention ladder ordered by reversibility. The ten rewrites are differentiated by ten new analytical stances:
+
+- Stance 290: attention-driven redundancy is a retrieval defect, not a policy defect; a context-position ablation is the only measurement that separates them, and training against a retrieval defect encodes a brittle threshold shift.
+- Stance 291: the tool schema is an intervention surface; a required justification argument adds decision friction and yields an interpretable reason corpus, but self-reported reasons are a diagnostic, never an oracle.
+- Stance 292: decoding configuration must be pinned and the run-to-run noise band measured first, because typical reported redundancy deltas fall inside the sampling noise of unreplicated runs.
+- Stance 293: the economic case rests on KV cache occupancy reducing achievable serving concurrency, which usually dominates tool backend cost; arms must be compared at fixed offered load, not fixed request count.
+- Stance 294: human adjudication anchors the whole measurement chain, and low inter-rater agreement means the definition, not the judge, is the limiting factor.
+- Stance 295: multi-tool portfolios permit displacement - suppressing calculator calls can reroute the same uncertainty into code execution or retrieval, so total tool wall time per completed task is the headline metric.
+- Stance 296: evaluation traces must be content-hashed and frozen; replaying two disjoint live windows through an unchanged agent establishes the traffic-drift floor any intervention must beat.
+- Stance 297: determinism is the precondition that makes caching and replay-based counterfactuals valid; porting the same methodology to a stateful tool inherits correctness bugs and must be gated in the tool registry.
+- Stance 298: a one-shot result decays under unrelated prompt and checkpoint changes, so the no-tool and recovery evaluation sets belong in CI as blocking pre-release checks, not on a dashboard.
+- Stance 299: the honest summary is that the source turn cannot be graded as an answer at all; the low quality scores are a property of the rubric-shaped response, not of the prompt, and rubric-shaped items must be rewritten rather than down-weighted.
+
+Every quantitative claim in this batch is labelled ESTIMATE with its derivation. No value is labelled MEASURED, because no benchmark was executed for this review. These outputs are provisional teacher-B review material produced blind to the teacher-A lane. They are not expert gold, they have not been adjudicated against teacher-A, and they are not evidence about any model's domain capability. Agreement analysis against teacher-A is a separate, later step and was not performed here.
+
 ## Run 0229 (train-batch-0228.jsonl)
 
 - Batch file: results/train-batch-0228.jsonl
