@@ -1,0 +1,15 @@
+{
+  "base_records": 2400,
+  "repair_records": 80,
+  "mixed_records": 2480,
+  "mixing_policy": "insert one repair record after each consecutive block of 30 base records",
+  "repair_target_counts": {
+    "agent_inference": 20,
+    "benchmark_harness": 20,
+    "distributed_startup": 20,
+    "system_design_controls": 20
+  },
+  "review_status": "needs_domain_expert_review",
+  "repair_sha256": "d9b4bbd3096e197b714d87fe7aebde8049fc8340db1ee2a151c9b1cc45ea9136",
+  "mixed_sha256": "8887fe41def7d53814e1fb04c36e688e8629ae733a8d63d07ff92a16288f9d85"
+}

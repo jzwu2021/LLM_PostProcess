@@ -1,0 +1,87 @@
+{
+  "protocol": {
+    "benchmark_subset_cases": 100,
+    "sampling_rule": "10 categories x 10 cases each; deterministic positions [1,6,11,16,21,26,31,36,41,46] within each category block",
+    "model_under_test": "/media/home/johnson/llm/models/exports/exp-001-20260827/step75-hf",
+    "baseline_generations": "/media/home/johnson/workspace/LLM_PostProcess/experiments/2026-08-13-domain-base-baseline/results/generations.jsonl",
+    "generation_protocol": {
+      "temperature": 0,
+      "max_tokens": 768,
+      "endpoint": "http://127.0.0.1:8002/v1/chat/completions"
+    }
+  },
+  "base_summary": {
+    "cases": 100,
+    "generation_ok": 100,
+    "nonempty": 100,
+    "finish_reasons": {
+      "length": 99,
+      "stop": 1
+    },
+    "code_fence_responses": 13,
+    "mean_response_chars": 3049.9,
+    "median_response_chars": 3067.5,
+    "mean_latency_ms": 5343.3,
+    "keypoint_cases": 81,
+    "mean_keypoint_coverage": 0.3339,
+    "median_keypoint_coverage": 0.2778,
+    "numeric_cases": 10,
+    "numeric_all_expected_matched": 1,
+    "numeric_mean_match_fraction": 0.8125,
+    "by_category_keypoint_coverage": {
+      "Architecture Comparison": 0.2744,
+      "Code": 0.2105,
+      "Concept Understanding": 0.6652,
+      "Knowledge": 0.5006,
+      "Long-form Technical Analysis": 0.284,
+      "Performance Analysis": 0.3642,
+      "Reasoning": 0.1626,
+      "System Design": 0.2027,
+      "Troubleshooting": 0.2296
+    }
+  },
+  "step75_summary": {
+    "cases": 100,
+    "generation_ok": 100,
+    "nonempty": 100,
+    "finish_reasons": {
+      "length": 100
+    },
+    "code_fence_responses": 0,
+    "mean_response_chars": 3008.3,
+    "median_response_chars": 3054.0,
+    "mean_latency_ms": 5243.4,
+    "keypoint_cases": 81,
+    "mean_keypoint_coverage": 0.316,
+    "median_keypoint_coverage": 0.3077,
+    "numeric_cases": 10,
+    "numeric_all_expected_matched": 1,
+    "numeric_mean_match_fraction": 0.8,
+    "by_category_keypoint_coverage": {
+      "Architecture Comparison": 0.1934,
+      "Code": 0.2632,
+      "Concept Understanding": 0.5095,
+      "Knowledge": 0.3976,
+      "Long-form Technical Analysis": 0.312,
+      "Performance Analysis": 0.3433,
+      "Reasoning": 0.2432,
+      "System Design": 0.2584,
+      "Troubleshooting": 0.2762
+    }
+  },
+  "delta": {
+    "mean_keypoint_coverage": -0.0179,
+    "numeric_all_expected_matched": 0,
+    "numeric_mean_match_fraction": -0.0125,
+    "mean_response_chars": -41.6,
+    "mean_latency_ms": -99.9
+  },
+  "limitations": [
+    "Benchmark v0.1 is a curated synthetic scaffold awaiting domain-expert audit.",
+    "Reference answers are outlines, not audited exhaustive key-point annotations.",
+    "Numeric matching is a heuristic over extracted numbers and is not a validated pass rate.",
+    "Generated code was not executed because no per-case sandbox fixtures are versioned.",
+    "Open-ended answers require blinded human rubric scoring and inter-rater agreement.",
+    "The 476 length-capped attempt-4 answers remain a generation limitation."
+  ]
+}

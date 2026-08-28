@@ -1,0 +1,2812 @@
+{
+  "evaluator": "first-stage-diagnostic-v0.1",
+  "authoritative_domain_score": null,
+  "interpretation": "Diagnostics only; no domain capability accuracy is claimed.",
+  "benchmark_cases": 100,
+  "generation_cases": 100,
+  "missing_generation_cases": 0,
+  "generation_ok": 100,
+  "nonempty_responses": 100,
+  "finish_reasons": {
+    "length": 100
+  },
+  "code_fence_responses": 0,
+  "review_requirements": {
+    "blind_rubric_cases": 62,
+    "sandbox_fixture_cases": 10,
+    "numeric_cases": 10,
+    "keypoint_diagnostic_cases": 81
+  },
+  "by_category": {
+    "Architecture Comparison": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "Calculation": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "Code": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "Concept Understanding": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "Knowledge": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "Long-form Technical Analysis": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "Performance Analysis": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "Reasoning": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "System Design": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    },
+    "Troubleshooting": {
+      "cases": 10,
+      "generation_ok": 10,
+      "nonempty": 10,
+      "finish_reasons": {
+        "length": 10
+      },
+      "code_fence_responses": 0
+    }
+  },
+  "limitations": [
+    "Benchmark v0.1 is a curated synthetic scaffold awaiting domain-expert audit.",
+    "Reference answers are outlines, not audited exhaustive key-point annotations.",
+    "Numeric matching is a heuristic over extracted numbers and is not a validated pass rate.",
+    "Generated code was not executed because no per-case sandbox fixtures are versioned.",
+    "Open-ended answers require blinded human rubric scoring and inter-rater agreement.",
+    "The 476 length-capped attempt-4 answers remain a generation limitation."
+  ],
+  "cases": [
+    {
+      "id": "aiinfra-0301",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3066,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 27,
+        "matched_content_words": [
+          "assumptions",
+          "communication",
+          "pipeline",
+          "tensor",
+          "then",
+          "workload"
+        ],
+        "coverage": 0.2222222222222222
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0306",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3383,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 24,
+        "matched_content_words": [
+          "assumptions",
+          "choice",
+          "communication",
+          "memory",
+          "parallelism",
+          "rdma",
+          "using",
+          "validation",
+          "workload"
+        ],
+        "coverage": 0.375
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0311",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3595,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 28,
+        "matched_content_words": [
+          "answer",
+          "assumptions",
+          "cache",
+          "then",
+          "workload"
+        ],
+        "coverage": 0.17857142857142858
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0316",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3262,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 26,
+        "matched_content_words": [
+          "expert",
+          "routing",
+          "then",
+          "workload"
+        ],
+        "coverage": 0.15384615384615385
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0321",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3325,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 27,
+        "matched_content_words": [
+          "canary",
+          "latency",
+          "shadow",
+          "then",
+          "workload"
+        ],
+        "coverage": 0.18518518518518517
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0326",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3491,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 26,
+        "matched_content_words": [
+          "answer",
+          "assumptions",
+          "batching",
+          "caching",
+          "using",
+          "workload"
+        ],
+        "coverage": 0.23076923076923078
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0331",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3318,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 23,
+        "matched_content_words": [
+          "assumptions",
+          "queueing",
+          "request",
+          "workload"
+        ],
+        "coverage": 0.17391304347826086
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0336",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3333,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 24,
+        "matched_content_words": [
+          "answer",
+          "then",
+          "workload"
+        ],
+        "coverage": 0.125
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0341",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3586,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 23,
+        "matched_content_words": [
+          "answer",
+          "assumptions",
+          "then",
+          "workload"
+        ],
+        "coverage": 0.17391304347826086
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0346",
+      "category": "Architecture Comparison",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3454,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 26,
+        "matched_content_words": [
+          "assumptions",
+          "prompts",
+          "workload"
+        ],
+        "coverage": 0.11538461538461539
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0101",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2019,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          2.0,
+          24.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          201326592.0,
+          0.1875
+        ],
+        "observed_numbers": [
+          1.0,
+          24.0,
+          2048.0,
+          8.0,
+          128.0,
+          6.0,
+          16.0,
+          2.0,
+          2.0,
+          2.0,
+          6.0,
+          2.0,
+          16.0,
+          2.0,
+          3.0,
+          24.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          6.0,
+          24.0,
+          2.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          24.0,
+          2.0,
+          2.0,
+          2048.0,
+          8.0,
+          128.0,
+          24.0,
+          4.0,
+          96.0,
+          96.0,
+          2048.0,
+          196608.0,
+          8.0,
+          128.0,
+          1024.0,
+          196608.0,
+          1024.0,
+          196608.0,
+          1024.0,
+          201324512.0,
+          201324512.0,
+          1048576.0,
+          192.0,
+          201324512.0,
+          1000000.0,
+          201.0,
+          4.0,
+          8.0
+        ],
+        "matched_expected_count": 7,
+        "expected_count": 8,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0106",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2635,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          10.0,
+          1.0,
+          10.0,
+          10000.0
+        ],
+        "observed_numbers": [
+          1.0,
+          10.0,
+          1.0,
+          2.0,
+          10.0,
+          1.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          3.0,
+          10.0,
+          1.0,
+          10.0,
+          4.0,
+          1.0,
+          10.0,
+          9.0,
+          1.0,
+          2.0,
+          30.0,
+          10.0,
+          1.0,
+          10.0,
+          3.0,
+          1.0,
+          3.0,
+          5.0
+        ],
+        "matched_expected_count": 3,
+        "expected_count": 4,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0111",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 1989,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          2.0,
+          32.0,
+          2048.0,
+          10.0,
+          128.0,
+          2.0,
+          335544320.0,
+          0.3125
+        ],
+        "observed_numbers": [
+          1.0,
+          32.0,
+          2048.0,
+          10.0,
+          128.0,
+          6.0,
+          16.0,
+          2.0,
+          2.0,
+          2.0,
+          6.0,
+          2.0,
+          2.0,
+          3.0,
+          32.0,
+          2048.0,
+          10.0,
+          128.0,
+          2.0,
+          6.0,
+          2.0,
+          2048.0,
+          10.0,
+          128.0,
+          32.0,
+          2.0,
+          2.0,
+          2.0,
+          4.0,
+          6.0,
+          4.0,
+          10.0,
+          40.0,
+          40.0,
+          128.0,
+          5120.0,
+          5120.0,
+          32.0,
+          163840.0,
+          163840.0,
+          2048.0,
+          2.0,
+          10.0,
+          128.0,
+          2560.0,
+          2560.0,
+          2048.0,
+          5242880.0,
+          32.0,
+          5242880.0,
+          32.0,
+          167772160.0,
+          167772160.0,
+          1024.0,
+          163840.0,
+          163.0,
+          84.0
+        ],
+        "matched_expected_count": 6,
+        "expected_count": 8,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0116",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2915,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          14.0,
+          1.0,
+          14.0,
+          14000.0
+        ],
+        "observed_numbers": [
+          1.0,
+          14.0,
+          1.0,
+          2.0,
+          14.0,
+          1.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          1.0,
+          1024.0,
+          3.0,
+          1.0,
+          10.0,
+          9.0,
+          3.0,
+          14.0,
+          1.0,
+          14.0,
+          1.0,
+          14.0,
+          4.0
+        ],
+        "matched_expected_count": 3,
+        "expected_count": 4,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0121",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 1934,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          2.0,
+          40.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          335544320.0,
+          0.3125
+        ],
+        "observed_numbers": [
+          1.0,
+          40.0,
+          2048.0,
+          8.0,
+          128.0,
+          6.0,
+          16.0,
+          2.0,
+          2.0,
+          2.0,
+          6.0,
+          2.0,
+          2.0,
+          3.0,
+          40.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          6.0,
+          2.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          40.0,
+          2.0,
+          40.0,
+          80.0,
+          2.0,
+          80.0,
+          2048.0,
+          163840.0,
+          163840.0,
+          8.0,
+          1310720.0,
+          1310720.0,
+          128.0,
+          167772160.0,
+          167772160.0,
+          2.0,
+          335544320.0,
+          335544320.0,
+          1024.0,
+          327680.0,
+          327680.0,
+          1024.0,
+          320.0,
+          320.0,
+          1024.0,
+          0.3125,
+          2.0,
+          2.0,
+          2048.0
+        ],
+        "matched_expected_count": 8,
+        "expected_count": 8,
+        "all_expected_matched": true
+      }
+    },
+    {
+      "id": "aiinfra-0126",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2779,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          18.0,
+          1.0,
+          18.0,
+          18000.0
+        ],
+        "observed_numbers": [
+          1.0,
+          18.0,
+          1.0,
+          2.0,
+          3.0,
+          18.0,
+          1.0,
+          10.0,
+          9.0,
+          1.0,
+          2.0,
+          30.0,
+          1.0,
+          10.0,
+          9.0,
+          2.0,
+          2.0,
+          30.0,
+          1.0,
+          1.0,
+          18.0,
+          1.0,
+          1.0,
+          1.0,
+          8.0,
+          4.0,
+          18.0,
+          1.0,
+          18.0,
+          5.0
+        ],
+        "matched_expected_count": 3,
+        "expected_count": 4,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0131",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2248,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          2.0,
+          48.0,
+          2048.0,
+          10.0,
+          128.0,
+          2.0,
+          503316480.0,
+          0.46875
+        ],
+        "observed_numbers": [
+          1.0,
+          48.0,
+          2048.0,
+          10.0,
+          128.0,
+          6.0,
+          16.0,
+          2.0,
+          2.0,
+          2.0,
+          6.0,
+          2.0,
+          2.0,
+          3.0,
+          48.0,
+          2048.0,
+          10.0,
+          128.0,
+          2.0,
+          6.0,
+          2.0,
+          2048.0,
+          10.0,
+          128.0,
+          2.0,
+          48.0,
+          2.0,
+          2048.0,
+          4096.0,
+          4096.0,
+          10.0,
+          40960.0,
+          40960.0,
+          128.0,
+          5242880.0,
+          5242880.0,
+          2.0,
+          10485760.0,
+          10485760.0,
+          48.0,
+          503316480.0,
+          10.0,
+          10.0,
+          10.0
+        ],
+        "matched_expected_count": 7,
+        "expected_count": 8,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0136",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2583,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          22.0,
+          1.0,
+          22.0,
+          22000.0
+        ],
+        "observed_numbers": [
+          1.0,
+          22.0,
+          1.0,
+          2.0,
+          22.0,
+          1.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          10.0,
+          9.0,
+          1.0,
+          10.0,
+          9.0,
+          1.0,
+          1.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          1.0,
+          10.0,
+          9.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0,
+          3.0,
+          22.0,
+          1.0,
+          22.0,
+          1.0,
+          4.0,
+          22.0,
+          5.0
+        ],
+        "matched_expected_count": 3,
+        "expected_count": 4,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0141",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2007,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          2.0,
+          56.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          469762048.0,
+          0.4375
+        ],
+        "observed_numbers": [
+          1.0,
+          56.0,
+          2048.0,
+          8.0,
+          128.0,
+          6.0,
+          16.0,
+          2.0,
+          2.0,
+          2.0,
+          6.0,
+          2.0,
+          2.0,
+          3.0,
+          56.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          6.0,
+          56.0,
+          2.0,
+          2048.0,
+          8.0,
+          128.0,
+          2.0,
+          56.0,
+          2.0,
+          2.0,
+          2048.0,
+          8.0,
+          128.0,
+          56.0,
+          4.0,
+          224.0,
+          2048.0,
+          8.0,
+          16384.0,
+          16384.0,
+          128.0,
+          2097152.0,
+          2.0,
+          14.0,
+          2.0,
+          7.0,
+          2.0,
+          21.0,
+          224.0,
+          2097152.0,
+          2048.0,
+          8.0,
+          128.0,
+          2048.0,
+          8.0,
+          16384.0,
+          16384.0,
+          128.0,
+          2097152.0,
+          2.0,
+          2097152.0,
+          4194.0
+        ],
+        "matched_expected_count": 6,
+        "expected_count": 8,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0146",
+      "category": "Calculation",
+      "verifier": "numeric_tolerance",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2770,
+      "response_has_code_fence": false,
+      "numeric": {
+        "status": "heuristic_only",
+        "expected_numbers": [
+          26.0,
+          1.0,
+          26.0,
+          26000.0
+        ],
+        "observed_numbers": [
+          1.0,
+          26.0,
+          1.0,
+          2.0,
+          3.0,
+          26.0,
+          1.0,
+          10.0,
+          9.0,
+          1.0,
+          2.0,
+          30.0,
+          1.0,
+          10.0,
+          9.0,
+          2.0,
+          2.0,
+          30.0,
+          4.0,
+          26.0,
+          1.0,
+          26.0,
+          5.0,
+          26.0,
+          10.0,
+          9.0,
+          2.0,
+          30.0
+        ],
+        "matched_expected_count": 3,
+        "expected_count": 4,
+        "all_expected_matched": false
+      }
+    },
+    {
+      "id": "aiinfra-0451",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3099,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0456",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2859,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0461",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2769,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0466",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3286,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0471",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3002,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0476",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2907,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0481",
+      "category": "Code",
+      "verifier": "unit_test_plus_rubric",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3160,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 19,
+        "matched_content_words": [
+          "classifier",
+          "documented",
+          "generated_tokens",
+          "prompt_tokens",
+          "thresholds"
+        ],
+        "coverage": 0.2631578947368421
+      },
+      "human_review": "needs_blind_rubric",
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0486",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2858,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0491",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3043,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0496",
+      "category": "Code",
+      "verifier": "unit_test",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3072,
+      "response_has_code_fence": false,
+      "code_execution": "needs_sandbox_fixture"
+    },
+    {
+      "id": "aiinfra-0051",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2913,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 16,
+        "matched_content_words": [
+          "compute-bound",
+          "decode",
+          "latency",
+          "memory",
+          "prefill",
+          "prompt",
+          "sequential",
+          "token",
+          "tokens"
+        ],
+        "coverage": 0.5625
+      }
+    },
+    {
+      "id": "aiinfra-0056",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2909,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 14,
+        "matched_content_words": [
+          "between",
+          "computation",
+          "layer",
+          "layers",
+          "parallelism",
+          "pipeline",
+          "splits",
+          "stages",
+          "tensor",
+          "within"
+        ],
+        "coverage": 0.7142857142857143
+      }
+    },
+    {
+      "id": "aiinfra-0061",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3171,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 15,
+        "matched_content_words": [
+          "batch",
+          "batching",
+          "continuous",
+          "dynamically",
+          "fixed",
+          "requests",
+          "static",
+          "waits"
+        ],
+        "coverage": 0.5333333333333333
+      }
+    },
+    {
+      "id": "aiinfra-0066",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3286,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 13,
+        "matched_content_words": [
+          "across",
+          "data",
+          "different",
+          "expert",
+          "experts",
+          "model",
+          "parallelism",
+          "tokens"
+        ],
+        "coverage": 0.6153846153846154
+      }
+    },
+    {
+      "id": "aiinfra-0071",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2872,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 12,
+        "matched_content_words": [
+          "accuracy",
+          "hardware",
+          "precision",
+          "pruning",
+          "quantization"
+        ],
+        "coverage": 0.4166666666666667
+      }
+    },
+    {
+      "id": "aiinfra-0076",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2897,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 14,
+        "matched_content_words": [
+          "high",
+          "speedup",
+          "target",
+          "tokens"
+        ],
+        "coverage": 0.2857142857142857
+      }
+    },
+    {
+      "id": "aiinfra-0081",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2981,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 14,
+        "matched_content_words": [
+          "gpus",
+          "isolation",
+          "memory",
+          "partitions",
+          "sharing",
+          "time"
+        ],
+        "coverage": 0.42857142857142855
+      }
+    },
+    {
+      "id": "aiinfra-0086",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3125,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 15,
+        "matched_content_words": [
+          "capture",
+          "cuda",
+          "eager",
+          "execution",
+          "graph",
+          "graphs",
+          "launch",
+          "overhead",
+          "reusable"
+        ],
+        "coverage": 0.6
+      }
+    },
+    {
+      "id": "aiinfra-0091",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2473,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 13,
+        "matched_content_words": [
+          "attention",
+          "bandwidth",
+          "groups",
+          "heads",
+          "memory",
+          "multi-head",
+          "query"
+        ],
+        "coverage": 0.5384615384615384
+      }
+    },
+    {
+      "id": "aiinfra-0096",
+      "category": "Concept Understanding",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2796,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 15,
+        "matched_content_words": [
+          "complexity",
+          "compute",
+          "cost",
+          "experts",
+          "subset",
+          "token"
+        ],
+        "coverage": 0.4
+      }
+    },
+    {
+      "id": "aiinfra-0001",
+      "category": "Knowledge",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2866,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 12,
+        "matched_content_words": [
+          "bandwidth",
+          "cache",
+          "larger",
+          "memory",
+          "registers",
+          "shared",
+          "slower"
+        ],
+        "coverage": 0.5833333333333334
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0006",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2924,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 12,
+        "matched_content_words": [
+          "accelerator",
+          "bandwidth",
+          "higher",
+          "latency",
+          "lower",
+          "memory",
+          "workloads"
+        ],
+        "coverage": 0.5833333333333334
+      }
+    },
+    {
+      "id": "aiinfra-0011",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3027,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 13,
+        "matched_content_words": [
+          "communication",
+          "interconnect",
+          "link",
+          "nvlink",
+          "pcie"
+        ],
+        "coverage": 0.38461538461538464
+      }
+    },
+    {
+      "id": "aiinfra-0016",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3183,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 16,
+        "matched_content_words": [
+          "gpus",
+          "high-bandwidth",
+          "many",
+          "nvswitch",
+          "topology"
+        ],
+        "coverage": 0.3125
+      }
+    },
+    {
+      "id": "aiinfra-0021",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3173,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 15,
+        "matched_content_words": [
+          "between",
+          "data",
+          "handling",
+          "involvement",
+          "memory",
+          "rdma"
+        ],
+        "coverage": 0.4
+      }
+    },
+    {
+      "id": "aiinfra-0026",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2848,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 15,
+        "matched_content_words": [
+          "ethernet",
+          "infiniband",
+          "over",
+          "rdma",
+          "roce"
+        ],
+        "coverage": 0.3333333333333333
+      }
+    },
+    {
+      "id": "aiinfra-0031",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3283,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 14,
+        "matched_content_words": [
+          "copies",
+          "kernels",
+          "overlap",
+          "stream",
+          "streams",
+          "within"
+        ],
+        "coverage": 0.42857142857142855
+      }
+    },
+    {
+      "id": "aiinfra-0036",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3198,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 15,
+        "matched_content_words": [
+          "collectives",
+          "nccl",
+          "performance",
+          "process",
+          "size"
+        ],
+        "coverage": 0.3333333333333333
+      }
+    },
+    {
+      "id": "aiinfra-0041",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3263,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 14,
+        "matched_content_words": [
+          "attention",
+          "tokens"
+        ],
+        "coverage": 0.14285714285714285
+      }
+    },
+    {
+      "id": "aiinfra-0046",
+      "category": "Knowledge",
+      "verifier": "contains_key_points",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3069,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 19,
+        "matched_content_words": [
+          "autoregressive",
+          "cache",
+          "during",
+          "grows",
+          "length",
+          "memory",
+          "model",
+          "need",
+          "sequence"
+        ],
+        "coverage": 0.47368421052631576
+      }
+    },
+    {
+      "id": "aiinfra-0401",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2448,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 21,
+        "matched_content_words": [
+          "assumptions",
+          "facts",
+          "pipeline",
+          "tensor"
+        ],
+        "coverage": 0.19047619047619047
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0406",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3197,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 18,
+        "matched_content_words": [
+          "assumptions",
+          "congestion",
+          "facts",
+          "parallelism",
+          "rdma",
+          "tests",
+          "validation"
+        ],
+        "coverage": 0.3888888888888889
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0411",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3052,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 22,
+        "matched_content_words": [
+          "assumptions",
+          "cache",
+          "facts",
+          "length"
+        ],
+        "coverage": 0.18181818181818182
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0416",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3172,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 21,
+        "matched_content_words": [
+          "all-to-all",
+          "assumptions",
+          "communication",
+          "expert",
+          "facts",
+          "load",
+          "routing"
+        ],
+        "coverage": 0.3333333333333333
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0421",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3087,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 21,
+        "matched_content_words": [
+          "assumptions",
+          "canary",
+          "error",
+          "facts",
+          "latency",
+          "rollback",
+          "shadow",
+          "traffic"
+        ],
+        "coverage": 0.38095238095238093
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0426",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3024,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 20,
+        "matched_content_words": [
+          "assumptions",
+          "batching",
+          "caching",
+          "facts"
+        ],
+        "coverage": 0.2
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0431",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3257,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 18,
+        "matched_content_words": [
+          "assumptions",
+          "cost",
+          "facts",
+          "headroom",
+          "memory",
+          "model",
+          "request",
+          "structured"
+        ],
+        "coverage": 0.4444444444444444
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0436",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3269,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 18,
+        "matched_content_words": [
+          "assumptions",
+          "environment",
+          "facts",
+          "nccl",
+          "rank",
+          "structured",
+          "topology"
+        ],
+        "coverage": 0.3888888888888889
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0441",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2958,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 18,
+        "matched_content_words": [
+          "accuracy",
+          "assumptions",
+          "facts",
+          "memory",
+          "throughput"
+        ],
+        "coverage": 0.2777777777777778
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0446",
+      "category": "Long-form Technical Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3085,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 21,
+        "matched_content_words": [
+          "assumptions",
+          "deterministic",
+          "facts",
+          "fixed",
+          "immutable",
+          "latency",
+          "memory"
+        ],
+        "coverage": 0.3333333333333333
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0201",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2654,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 20,
+        "matched_content_words": [
+          "batching",
+          "bottlenecks",
+          "measurements",
+          "tensor"
+        ],
+        "coverage": 0.2
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0206",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3005,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 17,
+        "matched_content_words": [
+          "bottlenecks",
+          "measurements",
+          "must",
+          "parallelism",
+          "rdma",
+          "validation"
+        ],
+        "coverage": 0.35294117647058826
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0211",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3175,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 21,
+        "matched_content_words": [
+          "bottlenecks",
+          "cache",
+          "length",
+          "measurements",
+          "must"
+        ],
+        "coverage": 0.23809523809523808
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0216",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3127,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 20,
+        "matched_content_words": [
+          "all-to-all",
+          "bottlenecks",
+          "communication",
+          "expert",
+          "imbalance",
+          "load",
+          "measurements",
+          "must",
+          "routing"
+        ],
+        "coverage": 0.45
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0221",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3056,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 20,
+        "matched_content_words": [
+          "bottlenecks",
+          "canary",
+          "latency",
+          "measurements",
+          "must",
+          "rollback",
+          "shadow",
+          "traffic",
+          "version"
+        ],
+        "coverage": 0.45
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0226",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3215,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 19,
+        "matched_content_words": [
+          "batching",
+          "bottlenecks",
+          "caching",
+          "measurements",
+          "must",
+          "speculative"
+        ],
+        "coverage": 0.3157894736842105
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0231",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3025,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 17,
+        "matched_content_words": [
+          "bottlenecks",
+          "cost",
+          "measurements",
+          "memory",
+          "model",
+          "must",
+          "request",
+          "tokens"
+        ],
+        "coverage": 0.47058823529411764
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0236",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3169,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 17,
+        "matched_content_words": [
+          "bottlenecks",
+          "measurements",
+          "must",
+          "nccl",
+          "rank",
+          "topology"
+        ],
+        "coverage": 0.35294117647058826
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0241",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2979,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 17,
+        "matched_content_words": [
+          "accuracy",
+          "bottlenecks",
+          "kernel",
+          "measurements",
+          "memory",
+          "throughput"
+        ],
+        "coverage": 0.35294117647058826
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0246",
+      "category": "Performance Analysis",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3154,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 20,
+        "matched_content_words": [
+          "bottlenecks",
+          "latency",
+          "measurements",
+          "memory",
+          "must"
+        ],
+        "coverage": 0.25
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0351",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2968,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 23,
+        "matched_content_words": [
+          "answer",
+          "communication",
+          "parallelism",
+          "pipeline",
+          "tensor"
+        ],
+        "coverage": 0.21739130434782608
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0356",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3071,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 20,
+        "matched_content_words": [
+          "answer",
+          "communication",
+          "parallelism",
+          "rdma",
+          "validation"
+        ],
+        "coverage": 0.25
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0361",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3349,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 24,
+        "matched_content_words": [
+          "answer",
+          "cache",
+          "communication",
+          "parallelism",
+          "should"
+        ],
+        "coverage": 0.20833333333333334
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0366",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3254,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 22,
+        "matched_content_words": [
+          "all-to-all",
+          "answer",
+          "communication",
+          "expert",
+          "factor",
+          "parallelism",
+          "routing"
+        ],
+        "coverage": 0.3181818181818182
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0371",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3335,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 24,
+        "matched_content_words": [
+          "answer",
+          "batching",
+          "canary",
+          "communication",
+          "latency",
+          "parallelism",
+          "shadow",
+          "traffic"
+        ],
+        "coverage": 0.3333333333333333
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0376",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3245,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 22,
+        "matched_content_words": [
+          "answer",
+          "communication",
+          "parallelism",
+          "should"
+        ],
+        "coverage": 0.18181818181818182
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0381",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3338,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 21,
+        "matched_content_words": [
+          "answer",
+          "model",
+          "parallelism",
+          "placement",
+          "request",
+          "should"
+        ],
+        "coverage": 0.2857142857142857
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0386",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3225,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 21,
+        "matched_content_words": [
+          "answer",
+          "communication",
+          "nccl",
+          "topology"
+        ],
+        "coverage": 0.19047619047619047
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0391",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3371,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 21,
+        "matched_content_words": [
+          "answer",
+          "communication",
+          "parallelism",
+          "should",
+          "strategy"
+        ],
+        "coverage": 0.23809523809523808
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0396",
+      "category": "Reasoning",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3405,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 24,
+        "matched_content_words": [
+          "answer",
+          "discuss",
+          "latency",
+          "parallelism",
+          "should"
+        ],
+        "coverage": 0.20833333333333334
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0151",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2535,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 16,
+        "matched_content_words": [
+          "failure",
+          "handling",
+          "observability",
+          "tensor"
+        ],
+        "coverage": 0.25
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0156",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2949,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 13,
+        "matched_content_words": [
+          "answer",
+          "parallelism",
+          "rdma",
+          "validation"
+        ],
+        "coverage": 0.3076923076923077
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0161",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2992,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 17,
+        "matched_content_words": [
+          "cache"
+        ],
+        "coverage": 0.058823529411764705
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0166",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2913,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 16,
+        "matched_content_words": [
+          "expert",
+          "load",
+          "routing"
+        ],
+        "coverage": 0.1875
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0171",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2929,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 16,
+        "matched_content_words": [
+          "canary",
+          "error",
+          "latency",
+          "rollback",
+          "shadow",
+          "traffic",
+          "version"
+        ],
+        "coverage": 0.4375
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0176",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3081,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 15,
+        "matched_content_words": [
+          "batching",
+          "caching",
+          "execution",
+          "loop",
+          "must",
+          "speculative"
+        ],
+        "coverage": 0.4
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0181",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2990,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 13,
+        "matched_content_words": [
+          "cost",
+          "model",
+          "redundancy",
+          "request"
+        ],
+        "coverage": 0.3076923076923077
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0186",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3158,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 13,
+        "matched_content_words": [
+          "capture",
+          "must"
+        ],
+        "coverage": 0.15384615384615385
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0191",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3004,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 13,
+        "matched_content_words": [
+          "accuracy",
+          "memory",
+          "throughput"
+        ],
+        "coverage": 0.23076923076923078
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0196",
+      "category": "System Design",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3089,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 16,
+        "matched_content_words": [
+          "isolation",
+          "latency",
+          "memory",
+          "must"
+        ],
+        "coverage": 0.25
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0251",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2717,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 23,
+        "matched_content_words": [
+          "answer",
+          "batching",
+          "communication",
+          "configuration",
+          "memory"
+        ],
+        "coverage": 0.21739130434782608
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0256",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2892,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 20,
+        "matched_content_words": [
+          "causes",
+          "configuration",
+          "congestion",
+          "rdma",
+          "validation"
+        ],
+        "coverage": 0.25
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0261",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2904,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 24,
+        "matched_content_words": [
+          "answer",
+          "cache",
+          "compute",
+          "memory",
+          "prefill",
+          "scheduling"
+        ],
+        "coverage": 0.25
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0266",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3082,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 22,
+        "matched_content_words": [
+          "all-to-all",
+          "answer",
+          "causes",
+          "communication",
+          "compute",
+          "expert",
+          "load",
+          "memory",
+          "routing"
+        ],
+        "coverage": 0.4090909090909091
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0271",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2947,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 23,
+        "matched_content_words": [
+          "answer",
+          "canary",
+          "compute",
+          "error",
+          "latency",
+          "memory",
+          "shadow",
+          "traffic"
+        ],
+        "coverage": 0.34782608695652173
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0276",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2888,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 22,
+        "matched_content_words": [
+          "answer",
+          "compute",
+          "memory"
+        ],
+        "coverage": 0.13636363636363635
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0281",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3141,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 19,
+        "matched_content_words": [
+          "answer",
+          "causes",
+          "memory",
+          "request",
+          "scheduling"
+        ],
+        "coverage": 0.2631578947368421
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0286",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2895,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 20,
+        "matched_content_words": [
+          "answer",
+          "causes",
+          "communication",
+          "compute",
+          "configuration",
+          "environment",
+          "memory",
+          "nccl",
+          "scheduling"
+        ],
+        "coverage": 0.45
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0291",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 2995,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 19,
+        "matched_content_words": [
+          "causes",
+          "configuration",
+          "kernel",
+          "memory"
+        ],
+        "coverage": 0.21052631578947367
+      },
+      "human_review": "needs_blind_rubric"
+    },
+    {
+      "id": "aiinfra-0296",
+      "category": "Troubleshooting",
+      "verifier": "rubric_1_4",
+      "generation_ok": true,
+      "finish_reason": "length",
+      "nonempty_response": true,
+      "response_chars": 3059,
+      "response_has_code_fence": false,
+      "key_points": {
+        "status": "heuristic_only",
+        "reference_content_word_count": 22,
+        "matched_content_words": [
+          "answer",
+          "compute",
+          "latency",
+          "memory",
+          "prompts"
+        ],
+        "coverage": 0.22727272727272727
+      },
+      "human_review": "needs_blind_rubric"
+    }
+  ]
+}

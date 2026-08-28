@@ -1,0 +1,25 @@
+# Environment snapshot: exp-001-20260827 preflight
+2026-08-27T10:16:13+00:00
+
+repo_head=8f94fdb080e04ac1c1979dfc4683d650b4acc0de
+repo_branch=main
+python=/media/home/johnson/miniforge3/bin/python3.12
+Python 3.12.9
+torch=2.13.0+cu129
+transformers=5.15.0
+datasets=5.0.1
+trl=1.9.2
+peft=0.20.0
+accelerate=1.14.0
+bitsandbytes=0.50.0
+safetensors=0.8.0
+cuda_available=True
+cuda_device_count=8
+0, NVIDIA A30, 24576 MiB, 0 MiB
+1, NVIDIA A30, 24576 MiB, 0 MiB
+2, NVIDIA A30, 24576 MiB, 0 MiB
+3, NVIDIA A30, 24576 MiB, 0 MiB
+4, NVIDIA A30, 24576 MiB, 0 MiB
+5, NVIDIA A30, 24576 MiB, 0 MiB
+6, NVIDIA A30, 24576 MiB, 0 MiB
+7, NVIDIA A30, 24576 MiB, 0 MiB

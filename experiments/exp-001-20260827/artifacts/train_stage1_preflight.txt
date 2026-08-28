@@ -1,0 +1,17 @@
+# exp-001-20260827 stage1 preflight
+2026-08-27T13:23:25+00:00
+
+[gpu]
+0, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+1, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+2, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+3, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+4, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+5, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+6, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+7, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+
+[compute]
+
+[command]
+/media/home/johnson/llm/qwen35-env/bin/torchrun --standalone --nnodes=1 --nproc_per_node=8 /media/home/johnson/llm/scripts/qwen35-9b/fine-tune-9b.py --model /media/home/johnson/llm/models/Qwen3.5-9B --dataset /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_train.jsonl --eval-dataset /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_heldout.jsonl --eval-examples 100 --output /media/home/johnson/llm/checkpoints/exp-001-20260827/stage1-train --max-steps 75 --save-steps 25 --seq-len 768 --grad-accum 4 --lr 5e-6 

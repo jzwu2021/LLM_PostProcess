@@ -1,0 +1,16 @@
+# exp-001-20260827 regression-repair-v0.1 preflight
+2026-08-28T10:45:45+00:00
+[dataset]
+8887fe41def7d53814e1fb04c36e688e8629ae733a8d63d07ff92a16288f9d85  /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_plus_repair_v0.1_train.jsonl
+6c0d75eb9545e725cd44416076b2e9fa38f8cabf19cb30cff6959c74e701f813  /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_heldout.jsonl
+[gpu]
+0, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+1, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+2, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+3, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+4, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+5, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+6, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+7, NVIDIA A30, 24576 MiB, 0 MiB, 0 %
+[command]
+/media/home/johnson/llm/qwen35-env/bin/torchrun --standalone --nnodes=1 --nproc_per_node=8 /media/home/johnson/llm/scripts/qwen35-9b/fine-tune-9b.py --model /media/home/johnson/llm/models/Qwen3.5-9B --dataset /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_plus_repair_v0.1_train.jsonl --eval-dataset /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_heldout.jsonl --eval-examples 100 --output /media/home/johnson/llm/checkpoints/exp-001-20260827/regression-repair-v0.1 --max-steps 75 --save-steps 25 --seq-len 768 --grad-accum 4 --lr 2e-6 

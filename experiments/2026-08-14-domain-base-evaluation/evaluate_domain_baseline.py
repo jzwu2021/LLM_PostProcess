@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""First-stage, non-authoritative evaluator for the frozen domain baseline.
+"""Layered, non-authoritative evaluator for the frozen domain benchmark.
 
-This deliberately emits diagnostics rather than claiming domain accuracy. The
-benchmark v0.1 has reference outlines, but no audited key-point annotations,
-code fixtures, or blinded human scores.
+Automated checks are only authoritative for generation validity. Numeric
+matching and lexical overlap remain diagnostics until the benchmark has audited
+answers, unit contracts, code fixtures, and blinded rubric scores.
 """
 import argparse
 import json
@@ -91,11 +91,26 @@ def evaluate_case(benchmark, generation):
         "response_has_code_fence": "```" in answer,
     }
     if verifier == "numeric_tolerance":
+        result["evaluation_tier"] = "calculation"
         result["numeric"] = numeric_diagnostic(benchmark.get("reference_answer", ""), answer)
     elif verifier in {"contains_key_points", "rubric_1_4", "unit_test_plus_rubric"}:
+        result["evaluation_tier"] = (
+            "code_execution_and_blind_rubric"
+            if verifier == "unit_test_plus_rubric"
+            else "open_ended_blind_rubric"
+        )
         result["key_points"] = keypoint_diagnostic(benchmark.get("reference_answer", ""), answer)
+    else:
+        result["evaluation_tier"] = "code_execution"
     if verifier in {"rubric_1_4", "unit_test_plus_rubric"}:
         result["human_review"] = "needs_blind_rubric"
+        result["rubric_dimensions"] = [
+            "technical_correctness",
+            "completeness",
+            "operational_actionability",
+            "constraints_and_risks",
+            "unsupported_claims",
+        ]
     if verifier in {"unit_test", "unit_test_plus_rubric"}:
         result["code_execution"] = "needs_sandbox_fixture"
     return result
@@ -123,10 +138,20 @@ def main():
     for case in cases:
         by_category[case["category"]].append(case)
 
+    truncated_cases = [c["id"] for c in cases if c["finish_reason"] == "length"]
     report = {
-        "evaluator": "first-stage-diagnostic-v0.1",
+        "evaluator": "layered-domain-evaluator-v0.2",
         "authoritative_domain_score": None,
-        "interpretation": "Diagnostics only; no domain capability accuracy is claimed.",
+        "interpretation": "No domain capability score is claimed until blind rubric and sandbox evidence are available.",
+        "generation_validity": {
+            "status": "pass" if not truncated_cases and not missing and all(c["generation_ok"] and c["nonempty_response"] for c in cases) else "fail",
+            "requirements": {
+                "all_cases_generated": True,
+                "all_responses_nonempty": True,
+                "no_length_capped_responses": True,
+            },
+            "length_capped_case_ids": truncated_cases,
+        },
         "benchmark_cases": len(benchmark),
         "generation_cases": len(generations),
         "missing_generation_cases": len(missing),
@@ -138,16 +163,16 @@ def main():
             "blind_rubric_cases": sum(c.get("human_review") == "needs_blind_rubric" for c in cases),
             "sandbox_fixture_cases": sum("code_execution" in c for c in cases),
             "numeric_cases": sum("numeric" in c for c in cases),
-            "keypoint_diagnostic_cases": sum("key_points" in c for c in cases),
+            "lexical_diagnostic_cases": sum("key_points" in c for c in cases),
         },
         "by_category": {},
         "limitations": [
             "Benchmark v0.1 is a curated synthetic scaffold awaiting domain-expert audit.",
             "Reference answers are outlines, not audited exhaustive key-point annotations.",
-            "Numeric matching is a heuristic over extracted numbers and is not a validated pass rate.",
+            "Numeric matching lacks audited unit/formula contracts and is not a validated pass rate.",
             "Generated code was not executed because no per-case sandbox fixtures are versioned.",
             "Open-ended answers require blinded human rubric scoring and inter-rater agreement.",
-            "The 476 length-capped attempt-4 answers remain a generation limitation.",
+            "Lexical reference overlap is a diagnostic only and is sensitive to answer length and phrasing.",
         ],
         "cases": cases,
     }

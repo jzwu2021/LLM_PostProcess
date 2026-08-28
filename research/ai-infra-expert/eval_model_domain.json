@@ -1,19 +1,20 @@
 {
   "name": "model-domain-capability-evaluation",
-  "version": "v0.1",
+  "version": "v0.2",
   "purpose": "Measure whether Qwen3.5-9B learned AI/LLM Infrastructure knowledge and problem-solving ability.",
   "does_not_measure": ["GPU throughput", "service concurrency", "deployment cost"],
   "benchmark": "../benchmark.jsonl",
   "protocol": {
     "model_comparison": "Base, CPT, SFT, CPT+SFT, preference and RL variants use the identical benchmark revision.",
     "generation": "Record raw prompt, raw response, model revision, tokenizer revision, decoding parameters, stop reason, prompt tokens, completion tokens, and total tokens.",
-    "fairness": "Use the same system prompt and maximum output budget; do not reveal reference answers; keep a private holdout isolated from training.",
+    "fairness": "Use the same system prompt, context window, maximum output budget and thinking mode; do not reveal reference answers; keep a private holdout isolated from training.",
+    "generation_validity": "Report finish reasons and exclude any comparison with length-capped outputs from capability scoring. A valid scored run requires all requested generations to succeed and be non-empty.",
     "repeats": "Use at least 3 seeds or 3 deterministic decoding configurations for open-ended tasks; report mean and dispersion.",
     "contamination": "Never train on benchmark.jsonl or derivatives; maintain hashes and a data-lineage manifest."
   },
   "slices": [
-    {"name":"Knowledge", "metric":"key_point_accuracy", "weight":1.0},
-    {"name":"Concept Understanding", "metric":"key_point_accuracy", "weight":1.0},
+    {"name":"Knowledge", "metric":"blinded_rubric_1_to_4", "weight":1.0},
+    {"name":"Concept Understanding", "metric":"blinded_rubric_1_to_4", "weight":1.0},
     {"name":"Calculation", "metric":"numeric_exact_or_tolerance", "weight":1.2},
     {"name":"System Design", "metric":"rubric_1_to_4", "weight":1.2},
     {"name":"Performance Analysis", "metric":"rubric_1_to_4", "weight":1.2},
@@ -23,6 +24,12 @@
     {"name":"Reasoning", "metric":"rubric_1_to_4", "weight":1.0},
     {"name":"Long-form Technical Analysis", "metric":"rubric_1_to_4", "weight":1.0}
   ],
+  "layered_evaluation": {
+    "calculation": "Use versioned unit/formula contracts and tolerance-based automatic pass/fail; manually audit ambiguous unit conversions.",
+    "code": "Run versioned sandbox fixtures. A code claim requires executable test results, not fenced-code presence.",
+    "open_ended": "Use blinded two-rater scoring with correctness, completeness, operational actionability, constraints/risks and unsupported-claim dimensions; report inter-rater agreement and adjudication.",
+    "lexical_overlap": "Report only as a secondary diagnostic. It is not a capability score and must not determine promotion decisions."
+  },
   "rubric": {
     "1": "Incorrect or unsafe; misses the central mechanism.",
     "2": "Partially correct; identifies terms but has material omissions or causal errors.",
@@ -30,7 +37,7 @@
     "4": "Expert-level; correct, precise, structured, falsifiable, and operationally actionable without hallucinated facts."
   },
   "primary_metrics": [
-    "weighted_domain_score",
+    "weighted_domain_score_after_adjudication",
     "per_category_score",
     "numeric_pass_rate",
     "code_test_pass_rate",
@@ -41,5 +48,5 @@
     "reasoning_tokens_if_parser_available"
   ],
   "secondary_metrics": ["error_type_distribution", "confidence_interval", "inter-rater_agreement"],
-  "capability_claim_rule": "Do not claim domain expertise from aggregate accuracy alone; require gains across at least four slices, including one calculation/code slice and one design/troubleshooting slice, with no material general-capability regression."
+  "capability_claim_rule": "Do not claim domain expertise from aggregate accuracy alone; require valid generation, blinded/adjudicated open-ended scores, executable code evidence, and gains across at least four slices including one calculation/code slice and one design/troubleshooting slice, with no material general-capability regression."
 }

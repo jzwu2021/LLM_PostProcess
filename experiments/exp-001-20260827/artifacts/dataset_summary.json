@@ -1,0 +1,29 @@
+{
+  "experiment_id": "exp-001-20260827",
+  "source_corpus": "/media/home/johnson/workspace/LLM_PostProcess/research/ai-infra-expert/corpus/train.jsonl",
+  "teacher_b_results_dir": "/media/home/johnson/workspace/LLM_PostProcess/experiments/2026-08-17-teacher-b-corpus-review/results",
+  "total_records": 2500,
+  "train_records": 2400,
+  "heldout_records": 100,
+  "split_method": "sha256(source_id) smallest 100 heldout",
+  "train_sha256": "d6a6727a63921aa78f8efc1f0fd1a1cd4ea1d8eb37cdd44f91afcca2d96f02ca",
+  "heldout_sha256": "6c0d75eb9545e725cd44416076b2e9fa38f8cabf19cb30cff6959c74e701f813",
+  "decision_counts": {
+    "rewrite": 2438,
+    "keep": 62
+  },
+  "sample_train_ids": [
+    "corpus-00001",
+    "corpus-00003",
+    "corpus-00004",
+    "corpus-00005",
+    "corpus-00006"
+  ],
+  "sample_heldout_ids": [
+    "corpus-00029",
+    "corpus-00044",
+    "corpus-00045",
+    "corpus-00057",
+    "corpus-00093"
+  ]
+}

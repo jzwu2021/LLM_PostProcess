@@ -1,0 +1,355 @@
+{
+  "protocol": {
+    "benchmark_subset_cases": 100,
+    "sampling_rule": "10 categories x 10 cases each; deterministic positions [1,6,11,16,21,26,31,36,41,46] within each category block",
+    "model_under_test": "/media/home/johnson/llm/models/exports/exp-001-20260827/step75-hf",
+    "baseline_generations": "/media/home/johnson/workspace/LLM_PostProcess/experiments/2026-08-13-domain-base-baseline/results/generations.jsonl",
+    "generation_protocol": {
+      "temperature": 0,
+      "max_tokens": 768,
+      "endpoint": "http://127.0.0.1:8002/v1/chat/completions",
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
+    }
+  },
+  "base_summary": {
+    "cases": 100,
+    "generation_ok": 100,
+    "nonempty": 100,
+    "finish_reasons": {
+      "length": 99,
+      "stop": 1
+    },
+    "code_fence_responses": 13,
+    "mean_response_chars": 3049.9,
+    "median_response_chars": 3067.5,
+    "mean_latency_ms": 5343.3,
+    "keypoint_cases": 81,
+    "mean_keypoint_coverage": 0.3339,
+    "median_keypoint_coverage": 0.2778,
+    "numeric_cases": 10,
+    "numeric_all_expected_matched": 1,
+    "numeric_mean_match_fraction": 0.8125,
+    "by_category_keypoint_coverage": {
+      "Architecture Comparison": 0.2744,
+      "Code": 0.2105,
+      "Concept Understanding": 0.6652,
+      "Knowledge": 0.5006,
+      "Long-form Technical Analysis": 0.284,
+      "Performance Analysis": 0.3642,
+      "Reasoning": 0.1626,
+      "System Design": 0.2027,
+      "Troubleshooting": 0.2296
+    }
+  },
+  "prior_step75_summary": {
+    "cases": 100,
+    "generation_ok": 100,
+    "nonempty": 100,
+    "finish_reasons": {
+      "length": 100
+    },
+    "code_fence_responses": 0,
+    "mean_response_chars": 3008.3,
+    "median_response_chars": 3054.0,
+    "mean_latency_ms": 5243.4,
+    "keypoint_cases": 81,
+    "mean_keypoint_coverage": 0.316,
+    "median_keypoint_coverage": 0.3077,
+    "numeric_cases": 10,
+    "numeric_all_expected_matched": 1,
+    "numeric_mean_match_fraction": 0.8,
+    "by_category_keypoint_coverage": {
+      "Architecture Comparison": 0.1934,
+      "Code": 0.2632,
+      "Concept Understanding": 0.5095,
+      "Knowledge": 0.3976,
+      "Long-form Technical Analysis": 0.312,
+      "Performance Analysis": 0.3433,
+      "Reasoning": 0.2432,
+      "System Design": 0.2584,
+      "Troubleshooting": 0.2762
+    }
+  },
+  "step75_nothinking_summary": {
+    "cases": 100,
+    "generation_ok": 100,
+    "nonempty": 100,
+    "finish_reasons": {
+      "length": 97,
+      "stop": 3
+    },
+    "code_fence_responses": 14,
+    "mean_response_chars": 3053.7,
+    "median_response_chars": 3103.0,
+    "mean_latency_ms": 5234.3,
+    "keypoint_cases": 81,
+    "mean_keypoint_coverage": 0.3357,
+    "median_keypoint_coverage": 0.2857,
+    "numeric_cases": 10,
+    "numeric_all_expected_matched": 1,
+    "numeric_mean_match_fraction": 0.8125,
+    "by_category_keypoint_coverage": {
+      "Architecture Comparison": 0.2556,
+      "Code": 0.3158,
+      "Concept Understanding": 0.6439,
+      "Knowledge": 0.5098,
+      "Long-form Technical Analysis": 0.3028,
+      "Performance Analysis": 0.3496,
+      "Reasoning": 0.1674,
+      "System Design": 0.2295,
+      "Troubleshooting": 0.2291
+    }
+  },
+  "delta_vs_base": {
+    "mean_keypoint_coverage": 0.0018,
+    "numeric_all_expected_matched": 0,
+    "numeric_mean_match_fraction": 0.0,
+    "mean_response_chars": 3.8,
+    "mean_latency_ms": -109.0,
+    "code_fence_responses": 1
+  },
+  "delta_vs_prior_step75": {
+    "mean_keypoint_coverage": 0.0197,
+    "numeric_all_expected_matched": 0,
+    "numeric_mean_match_fraction": 0.0125,
+    "mean_response_chars": 45.4,
+    "mean_latency_ms": -9.1,
+    "code_fence_responses": 14
+  },
+  "ranking_vs_base": {
+    "top_regressions": [
+      {
+        "id": "aiinfra-0076",
+        "category": "Concept Understanding",
+        "topic": "speculative decoding",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.142857,
+        "base_keypoint_coverage": 0.5,
+        "step75_keypoint_coverage": 0.35714285714285715,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0401",
+        "category": "Long-form Technical Analysis",
+        "topic": "serve a 70B model on 8 GPUs",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.142857,
+        "base_keypoint_coverage": 0.2857142857142857,
+        "step75_keypoint_coverage": 0.14285714285714285,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0331",
+        "category": "Architecture Comparison",
+        "topic": "plan GPU capacity",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.130435,
+        "base_keypoint_coverage": 0.2608695652173913,
+        "step75_keypoint_coverage": 0.13043478260869565,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0206",
+        "category": "Performance Analysis",
+        "topic": "design multi-node inference over RoCE",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.117647,
+        "base_keypoint_coverage": 0.4117647058823529,
+        "step75_keypoint_coverage": 0.29411764705882354,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0216",
+        "category": "Performance Analysis",
+        "topic": "design an MoE inference cluster",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.1,
+        "base_keypoint_coverage": 0.55,
+        "step75_keypoint_coverage": 0.45,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0286",
+        "category": "Troubleshooting",
+        "topic": "debug distributed training startup",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.1,
+        "base_keypoint_coverage": 0.35,
+        "step75_keypoint_coverage": 0.25,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0341",
+        "category": "Architecture Comparison",
+        "topic": "compare quantization deployment choices",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.086957,
+        "base_keypoint_coverage": 0.34782608695652173,
+        "step75_keypoint_coverage": 0.2608695652173913,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0306",
+        "category": "Architecture Comparison",
+        "topic": "design multi-node inference over RoCE",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.083333,
+        "base_keypoint_coverage": 0.4166666666666667,
+        "step75_keypoint_coverage": 0.3333333333333333,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0361",
+        "category": "Reasoning",
+        "topic": "design long-context serving",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.083333,
+        "base_keypoint_coverage": 0.25,
+        "step75_keypoint_coverage": 0.16666666666666666,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0301",
+        "category": "Architecture Comparison",
+        "topic": "serve a 70B model on 8 GPUs",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": -0.074074,
+        "base_keypoint_coverage": 0.3333333333333333,
+        "step75_keypoint_coverage": 0.25925925925925924,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      }
+    ],
+    "top_improvements": [
+      {
+        "id": "aiinfra-0431",
+        "category": "Long-form Technical Analysis",
+        "topic": "plan GPU capacity",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": 0.222222,
+        "base_keypoint_coverage": 0.2777777777777778,
+        "step75_keypoint_coverage": 0.5,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0236",
+        "category": "Performance Analysis",
+        "topic": "debug distributed training startup",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": 0.176471,
+        "base_keypoint_coverage": 0.29411764705882354,
+        "step75_keypoint_coverage": 0.47058823529411764,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0326",
+        "category": "Architecture Comparison",
+        "topic": "optimize an agent inference service",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": 0.115385,
+        "base_keypoint_coverage": 0.2692307692307692,
+        "step75_keypoint_coverage": 0.38461538461538464,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0406",
+        "category": "Long-form Technical Analysis",
+        "topic": "design multi-node inference over RoCE",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": 0.111111,
+        "base_keypoint_coverage": 0.2222222222222222,
+        "step75_keypoint_coverage": 0.3333333333333333,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0481",
+        "category": "Code",
+        "topic": "classify prefill/decode workload",
+        "difficulty": "easy",
+        "delta_keypoint_coverage": 0.105263,
+        "base_keypoint_coverage": 0.21052631578947367,
+        "step75_keypoint_coverage": 0.3157894736842105,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0386",
+        "category": "Reasoning",
+        "topic": "debug distributed training startup",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": 0.095238,
+        "base_keypoint_coverage": 0.09523809523809523,
+        "step75_keypoint_coverage": 0.19047619047619047,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0266",
+        "category": "Troubleshooting",
+        "topic": "design an MoE inference cluster",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": 0.090909,
+        "base_keypoint_coverage": 0.2727272727272727,
+        "step75_keypoint_coverage": 0.36363636363636365,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0276",
+        "category": "Troubleshooting",
+        "topic": "optimize an agent inference service",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": 0.090909,
+        "base_keypoint_coverage": 0.13636363636363635,
+        "step75_keypoint_coverage": 0.22727272727272727,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0001",
+        "category": "Knowledge",
+        "topic": "GPU memory hierarchy",
+        "difficulty": "easy",
+        "delta_keypoint_coverage": 0.083333,
+        "base_keypoint_coverage": 0.5,
+        "step75_keypoint_coverage": 0.5833333333333334,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      },
+      {
+        "id": "aiinfra-0371",
+        "category": "Reasoning",
+        "topic": "design a safe model rollout",
+        "difficulty": "medium",
+        "delta_keypoint_coverage": 0.083333,
+        "base_keypoint_coverage": 0.08333333333333333,
+        "step75_keypoint_coverage": 0.16666666666666666,
+        "base_finish_reason": "length",
+        "step75_finish_reason": "length"
+      }
+    ]
+  },
+  "limitations": [
+    "Benchmark v0.1 is a curated synthetic scaffold awaiting domain-expert audit.",
+    "Reference answers are outlines, not audited exhaustive key-point annotations.",
+    "Numeric matching is a heuristic over extracted numbers and is not a validated pass rate.",
+    "Generated code was not executed because no per-case sandbox fixtures are versioned.",
+    "Open-ended answers require blinded human rubric scoring and inter-rater agreement.",
+    "The 476 length-capped attempt-4 answers remain a generation limitation."
+  ]
+}
