@@ -43,6 +43,22 @@ holdout is required before making any capability or generalization claim.
 3. Step-75 must pass an FSDP reload audit before any export or evaluation.
 4. A clean private holdout is required for all capability conclusions.
 
+## Result (2026-08-28)
+
+- Process exit code: `0`.
+- Training completed all 75 steps and saved FSDP checkpoints at steps 25, 50,
+  and 75. Each checkpoint contains `.metadata` plus eight `distcp` shards.
+- Final training marker: `step=75 masked_loss=2.516114`.
+- Heldout monitoring result: `MASKED_EVAL_PASS examples=100 loss=2.379644`.
+- FSDP reload audit on step-75 completed with exit code `0` and emitted an
+  `AFTER` parameter sample, confirming the final checkpoint can be read.
+- GPU post-run check found no remaining compute processes.
+
+Interpretation: this establishes successful execution and a readable repair-mix
+artifact only. The repair corpus is still `needs_domain_expert_review`, and the
+benchmark that informed its topic selection remains contaminated for this model.
+No capability or generalization claim is made.
+
 ## Actual stage-1 result (2026-08-28)
 
 - Training completed with process exit code `0`.
