@@ -1,0 +1,37 @@
+{
+  "experiment_id": "exp-002-20260828",
+  "base_records": 2400,
+  "repair_records": 80,
+  "mixed_records": 2480,
+  "heldout_records": 100,
+  "unique_mixed_ids": 2480,
+  "base_repair_overlap": 0,
+  "mixed_heldout_overlap": 0,
+  "repair_records_consumed_at_75_steps": 77,
+  "first_12_mixed_ids": [
+    "corpus-00001",
+    "corpus-00003",
+    "corpus-00004",
+    "corpus-00005",
+    "corpus-00006",
+    "corpus-00007",
+    "corpus-00008",
+    "corpus-00009",
+    "corpus-00010",
+    "corpus-00012",
+    "corpus-00013",
+    "corpus-00014"
+  ],
+  "source_files": {
+    "base_train": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_train.jsonl",
+    "repair": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/regression_repair_v0.1.jsonl",
+    "mixed_train": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-002-20260828/data/teacher_b_plus_repair_v0.1_train.jsonl",
+    "heldout": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_heldout.jsonl"
+  },
+  "sha256": {
+    "base_train": "d6a6727a63921aa78f8efc1f0fd1a1cd4ea1d8eb37cdd44f91afcca2d96f02ca",
+    "repair": "d9b4bbd3096e197b714d87fe7aebde8049fc8340db1ee2a151c9b1cc45ea9136",
+    "mixed_train": "8887fe41def7d53814e1fb04c36e688e8629ae733a8d63d07ff92a16288f9d85",
+    "heldout": "6c0d75eb9545e725cd44416076b2e9fa38f8cabf19cb30cff6959c74e701f813"
+  }
+}

@@ -42,3 +42,15 @@ holdout is required before making any capability or generalization claim.
    masked loss.
 3. Step-75 must pass an FSDP reload audit before any export or evaluation.
 4. A clean private holdout is required for all capability conclusions.
+
+## Actual stage-1 result (2026-08-28)
+
+- Training completed with process exit code `0`.
+- Final log markers observed: `MASKED_SFT_START`, `step=1`, `step=10`, `step=20`, `step=30`, `step=40`, `step=50`, `step=60`, `step=70`, `step=75`, `CHECKPOINT_SAVED step=25`, `CHECKPOINT_SAVED step=50`, `CHECKPOINT_SAVED step=75`, `MASKED_EVAL_PASS`, `MASKED_SFT_DONE`.
+- Final heldout monitoring result observed: `MASKED_EVAL_PASS examples=100 loss=2.379644`.
+- Final checkpoint evidence observed on disk: `step-25/`, `step-50/`, and `step-75/` each contain 8 shard files; `step-75/.metadata` exists.
+- Post-run GPU check: all 8 GPUs returned to `0 MiB` with no remaining compute processes.
+- Checkpoint reload audit: `torchrun --standalone --nnodes=1 --nproc_per_node=8 /media/home/johnson/llm/scripts/qwen35-9b/check-fsdp-load.py --model /media/home/johnson/llm/models/Qwen3.5-9B --checkpoint /media/home/johnson/llm/checkpoints/exp-002-20260828/repair-mix-v0.1/step-75` completed with exit code `0` and emitted `AFTER [...]`.
+- Runtime note: the training log contains `5` allocator OOM warnings on some ranks, but no `ERROR REPORT` marker; the run continued and finished normally.
+- Scope note: because the added repair records were authored after inspecting benchmark regression topics and remain `needs_domain_expert_review`, this run is evidence for pipeline execution and targeted-data integration only, not a clean capability-generalization claim.
+- Submission boundary: this experiment is recorded under `experiments/exp-002-20260828/` and should be committed separately from `exp-001-20260827`.
