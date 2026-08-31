@@ -2,9 +2,31 @@
 
 ## Stage resumed beyond the 2500 stopping point (2026-08-31)
 
-The 2500-row figure recorded in the round 0250 note below was a stopping point set on 2026-08-18, not the completion of the corpus. Review resumed on 2026-08-31 with rounds 0251 through 0254, extending the reviewed prefix from 2500 to 2540 of the 5399 train rows. Everything below that note remains accurate as a record of the earlier stage; the "FINAL ROUND" label on round 0250 refers to that stage only.
+The 2500-row figure recorded in the round 0250 note below was a stopping point set on 2026-08-18, not the completion of the corpus. Review resumed on 2026-08-31 with rounds 0251 through 0258, extending the reviewed prefix from 2500 to 2580 of the 5399 train rows. Everything below that note remains accurate as a record of the earlier stage; the "FINAL ROUND" label on round 0250 refers to that stage only.
 
-Rows [2500, 5399) that remain unreviewed must still be treated as unreviewed, and the reviewed set is a strict prefix in corpus order rather than a sample. Validation remains at 0 items and no validation-batch file exists.
+Rows [2580, 5399) that remain unreviewed must still be treated as unreviewed, and the reviewed set is a strict prefix in corpus order rather than a sample. Validation remains at 0 items and no validation-batch file exists.
+
+## Rounds 0255-0258 - resumed review of train.jsonl rows [2540, 2580)
+
+- Batch files: results/train-batch-0255.jsonl through results/train-batch-0258.jsonl
+- Corpus intervals (positional): [2540,2550), [2550,2560), [2560,2570), [2570,2580)
+- Source IDs: corpus-02803 .. corpus-02848, taken by positional slicing and never by ID arithmetic, so the gaps at corpus-02804, corpus-02806, corpus-02821, corpus-02830, corpus-02836 and corpus-02838 are absorbed transparently
+- Progress: train 2580/5399 (remaining 2819); validation 0/0, no validation batch files exist or were created
+- Decisions: keep 0, rewrite 40, reject 0
+- Generators: scripts/tb_gen_batch_0255.py through scripts/tb_gen_batch_0258.py, each selecting message content by role rather than by list position
+- Verifiers: scripts/verify_0255.py through verify_0258.py, each derived from verify_0251.py by sed with the three hardcoded offsets changed together
+- Initial schema check: PASS on first run for all four batches
+- Repair actions: none required in these rounds. The original corpus was not modified, no previously committed batch was edited, and no teacher-A path was read, opened, grepped or listed at any point.
+- Final schema check: VERIFY_PASS batch=10 aggregate=2580 prefix=ok ids_unique=ok stances=ok, with the same full field, byte-equality, ordering, uniqueness, prefix and content-contract assertions listed for rounds 0251-0254.
+- Independent ad-hoc verification: ADHOC_PASS over all 40 new rows, additionally confirming that the stance numbers form exactly the set 121 through 160, that every answer addresses the sparse-MoE source rather than carrying the earlier calculator framing, and a minimum answer length. The temporary script was removed after use.
+
+Technical topics covered by these rounds. All 40 source items are the sparse-MoE template - a service with uneven expert load and tail latency, scenario variants 3 through 48 - paired with an assistant turn that is a grading rubric rather than an answer, so every one is a rewrite. The rubric asks for routing distribution, expert capacity overflow, all-to-all time, token dropping and padding, placement, batch composition and a comparison of routing and capacity policies; each rewrite takes one of those and states the mechanism the rubric leaves implicit.
+
+The 40 rewrites take 40 distinct stances, numbered 121 through 160, none reusing a stance header from any previously committed round. Round 0255 covers routing entropy versus input concentration, the boundary between frozen router weights and serving configuration, per-slot rather than per-token accounting under top-k, expert-choice versus token-choice routing, dead experts over long windows, traffic-mix scoping, expert-parallel degree, the split between rank wait and transfer time, communication overlap, and hierarchical intra-node placement. Round 0256 covers memory as the binding constraint on capacity factor, the useful-token fraction against padding, expert GEMM shape sensitivity, dropless routing as a latency trade, prefill versus decode routing statistics, the scheduler as the cause of batch composition, mapping step-time tails to request tails, speculative decoding, chunked prefill, and the correction that KV cache does not scale with expert count. Round 0257 covers tail quantiles with uncertainty, end-to-end latency decomposition, replica-level versus expert-level imbalance, the dense matched-active-parameter baseline, numerics sensitivity of routing, offline counterfactual policy evaluation, effective sample size under autocorrelation, capacity-overflow alerting as a silent-failure control, hardware straggler exclusion, and fabric incast. Round 0258 covers reshard and restart in the rollback path, expert-parallel resize invalidating placement, per-expert quantisation error interacting with load, multi-tenant co-scheduling, the throughput versus tail objective choice, re-deriving configuration per checkpoint, context-position stratification, sizing capacity against the smallest microbatch, pre-registering the deciding metric, and cross-layer compounding of token drops.
+
+Every numeric figure is explicitly labelled ESTIMATE or MEASURED with its derivation shown. No MEASURED value is claimed for any run, because no run was executed for this review; thresholds and acceptance bands are ESTIMATE serving as pre-registration values.
+
+Status caveat. These outputs are provisional teacher-B review material produced under blind review. They are not expert gold, they have not been adjudicated by a human expert, and they are not evidence about any model's domain capability or about any runtime or system capability. Agreement analysis against teacher-A remains a separate, later step and has not been performed here.
 
 ## Rounds 0251-0254 - resumed review of train.jsonl rows [2500, 2540)
 
