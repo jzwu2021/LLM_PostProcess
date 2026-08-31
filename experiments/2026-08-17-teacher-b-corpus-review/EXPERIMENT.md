@@ -1,5 +1,121 @@
 # Experiment: teacher-B corpus review (blind, independent second opinion)
 
+## Deduplicating stage - rounds 0259-0540, review completed at 5399/5399 (2026-08-31)
+
+### Why the review policy changed
+
+Rows [2580, 5399) were profiled before any further batches were written. Normalising each
+row to its (user, assistant) pair after removing the `Scenario variant N` counter collapses
+the 2819 remaining rows into **22 distinct question families**. Every row inside a family
+carries the same user intent and the byte-identical assistant text; the only thing that
+varies is the variant number in the prompt.
+
+Continuing the previous one-stance-per-row policy would have required manufacturing 2819
+mutually distinct positions for 22 questions. That is exactly the defect already recorded in
+the teacher-A lane, where 797 reviewed rows produced 142 groups sharing an identical answer.
+Producing 2819 near-synonymous stances would inflate the corpus without adding supervision
+signal, and would make the resulting SFT data teach stylistic variation rather than content.
+
+### Policy adopted
+
+For each family, a small number of rows are reviewed as `rewrite` with a fully authored
+answer, and the remaining rows of that family are reviewed as `reject` with an explicit
+duplication finding.
+
+- Exemplars per family: **3** (family 500 already had 42 rows reviewed in earlier rounds and
+  received no additional exemplars).
+- Exemplars are taken at the earliest unreviewed positions of the family, so the reviewed set
+  remains a strict prefix in corpus order and no positional sampling is introduced.
+- Every `reject` names its family, cites the retained exemplar ids by `corpus-NNNNN`, states
+  why the duplication is harmful, and gives a recommended action. A reject is a review
+  decision about the source row, not an absence of review.
+
+### Decisions
+
+- Rows covered by this stage: 2819, positions [2580, 5399)
+- `rewrite`: 63 (authored exemplars, stance numbers 161-223)
+- `reject`: 2756 (duplicates of an already-exemplified family)
+- Batches: results/train-batch-0259.jsonl .. train-batch-0540.jsonl; the final batch holds 9
+  rows because 5399 is not a multiple of 10
+- Aggregate after this stage: **train 5399/5399, review complete**; validation remains 0/0 and
+  no validation-batch file exists
+
+The 22 families, with size and the number of new exemplars authored:
+
+| family | rows | new exemplars | subject |
+| --- | --- | --- | --- |
+| 500 | 273 | 0 | sparse MoE expert imbalance (42 rows already reviewed) |
+| 501 | 263 | 3 | speculative decoding measured slower than plain decoding |
+| 502 | 273 | 3 | low GPU compute utilisation with saturated memory bandwidth |
+| 503 | 271 | 3 | two serving systems reporting different tokens per second |
+| 504 | 96 | 3 | KV cache size estimator |
+| 505 | 90 | 3 | tensor-parallel configuration validator |
+| 506 | 92 | 3 | tool-call payload parser |
+| 507 | 89 | 3 | bounded retry with backoff |
+| 508 | 89 | 3 | latency percentile computation |
+| 509 | 83 | 3 | paged KV block count |
+| 510 | 92 | 3 | distributed environment checker |
+| 511 | 91 | 3 | prefill versus decode request classifier |
+| 512 | 86 | 3 | duplicate request id detector |
+| 513 | 84 | 3 | capacity planner |
+| 514 | 109 | 3 | RDMA for distributed inference |
+| 515 | 107 | 3 | RoCE tail latency |
+| 516 | 111 | 3 | GPUDirect RDMA validation plan |
+| 517 | 114 | 3 | GPUDirect Storage evaluation |
+| 518 | 115 | 3 | Mooncake-style disaggregated KV |
+| 519 | 108 | 3 | inference orchestration layer |
+| 520 | 111 | 3 | multi-node NCCL failure diagnosis |
+| 521 | 114 | 3 | cluster scheduling and recovery |
+
+### Tooling
+
+Batch content is produced by generators only; no batch file was hand-edited, and no
+previously committed batch was modified.
+
+- `scripts/tb_dedup_common.py` - family normalisation, exemplar selection, the decision plan,
+  and the reject and rewrite record constructors
+- `scripts/tb_dedup_stances_design.py`, `_code.py`, `_cluster.py` - the 63 authored exemplars
+- `scripts/tb_dedup_stances.py` - aggregator over the three stance modules
+- `scripts/tb_dedup_gen.py` - writes batches from the plan; raises rather than emitting a
+  batch whose family has no authored exemplars
+- `scripts/tb_dedup_verify.py` - verifies all 540 batch files in one pass
+
+Verification result: `VERIFY_PASS files=540 rows=5399 complete=ok decisions={'rewrite': 2581,
+'keep': 62, 'reject': 2756}`. The verifier asserts the exact field set, byte-equality of
+`source_user` and `source_assistant` against the raw corpus, that the aggregate reproduces the
+full corpus id order with no duplicates, that every stage decision matches the plan, that each
+stage rewrite carries the six review paragraphs with `H1:`, a falsification clause and an
+`ESTIMATE`/`MEASURED` label, that stage stance headers are globally unique, and that each
+reject names its family, its exemplars and a recommended action.
+
+Two known exceptions are recorded in the verifier rather than repaired, because committed
+batch files are not edited: `corpus-02291` and `corpus-02302` name the other lane inside a
+generic paragraph about lane isolation. Both were inspected; neither reproduces teacher-A
+content and neither source prompt mentions the lane, so these are unnecessary cross-lane
+references rather than leaks.
+
+### Blind-mode compliance
+
+No path under `experiments/2026-08-14-teacher-a-corpus-calibration/` was read, opened, listed
+or grepped during this stage. Only `source_user` and `source_assistant` from the raw corpus
+were consulted.
+
+### Status caveat
+
+These outputs are provisional teacher-B review material. They are not expert gold, they have
+not been adjudicated by a human domain expert, and they are not evidence about any model's
+domain capability. Every numeric figure inside an authored exemplar is labelled `ESTIMATE` or
+`MEASURED`; no `MEASURED` value is claimed for any run, because no run was executed for this
+review. Agreement analysis against teacher-A remains a separate, later step.
+
+### Consequence for downstream use
+
+The 2756 rejects are a finding about the corpus, not filler. Rows [2580, 5399) of
+`research/ai-infra-expert/corpus/train.jsonl` contribute 22 distinct questions, so any
+training or evaluation treating that region as 2819 independent items is overstating its
+size by roughly two orders of magnitude. Corpus regeneration should address the duplication
+at the source rather than at the review lane.
+
 ## Stage resumed beyond the 2500 stopping point (2026-08-31)
 
 The 2500-row figure recorded in the round 0250 note below was a stopping point set on 2026-08-18, not the completion of the corpus. Review resumed on 2026-08-31 with rounds 0251 through 0258, extending the reviewed prefix from 2500 to 2580 of the 5399 train rows. Everything below that note remains accurate as a record of the earlier stage; the "FINAL ROUND" label on round 0250 refers to that stage only.
