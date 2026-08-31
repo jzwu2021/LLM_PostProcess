@@ -1,4 +1,34 @@
 # Experiment: teacher-B corpus review (blind, independent second opinion)
+
+## Stage resumed beyond the 2500 stopping point (2026-08-31)
+
+The 2500-row figure recorded in the round 0250 note below was a stopping point set on 2026-08-18, not the completion of the corpus. Review resumed on 2026-08-31 with rounds 0251 through 0254, extending the reviewed prefix from 2500 to 2540 of the 5399 train rows. Everything below that note remains accurate as a record of the earlier stage; the "FINAL ROUND" label on round 0250 refers to that stage only.
+
+Rows [2500, 5399) that remain unreviewed must still be treated as unreviewed, and the reviewed set is a strict prefix in corpus order rather than a sample. Validation remains at 0 items and no validation-batch file exists.
+
+## Rounds 0251-0254 - resumed review of train.jsonl rows [2500, 2540)
+
+- Batch files: results/train-batch-0251.jsonl through results/train-batch-0254.jsonl
+- Corpus intervals (positional): [2500,2510), [2510,2520), [2520,2530), [2530,2540)
+- Source IDs: corpus-02760 .. corpus-02802, taken by positional slicing of train.jsonl and never by ID arithmetic, so the gaps at corpus-02766, corpus-02792 and corpus-02797 are absorbed transparently
+- Progress: train 2540/5399 (remaining 2859); validation 0/0, no validation batch files exist or were created
+- Decisions: keep 0, rewrite 40, reject 0
+- Generators: scripts/tb_gen_batch_0251.py through scripts/tb_gen_batch_0254.py, each selecting message content by role rather than by list position
+- Verifiers: scripts/verify_0251.py, then verify_0252.py, verify_0253.py and verify_0254.py derived from it by sed with the three hardcoded offsets changed together - batch filename, positional window and aggregate-count assertion
+- Initial schema check: PASS on first run for 0251, 0252 and 0254. FAIL on first run for 0253.
+- Repair actions: the 0253 verifier reported "row 4 missing ESTIMATE/MEASURED label" for stance 105, whose Metrics paragraph quoted per-arm rates without an explicit evidence label. The defect was fixed in the generator only - no batch file was hand-edited - by labelling the per-arm rates MEASURED and the grammar-attributed latency difference ESTIMATE pending the no-op processor arm. The batch was regenerated and re-verified to green. The original corpus was not modified, no previously committed batch was edited, and no teacher-A path was read, opened, grepped or listed at any point in these rounds.
+- Final schema check: VERIFY_PASS batch=10 aggregate=2540 prefix=ok ids_unique=ok stances=ok - JSONL newline-terminated and line-parseable, exactly 10 physical lines per batch, all 12 required fields and no extras, teacher_lane=teacher-B, teacher_model=claude-opus-5-current, calibration_status=provisional, decision in {keep,rewrite,reject}, source_user/source_assistant byte-equal to the corpus values selected by role, corrected_answer non-empty and never equal to source_assistant, quality_dimensions three ints in [1,5] with bool excluded, risks/evidence_required non-empty string arrays, confidence float in [0,1], global source_id uniqueness, aggregate 2540 rows a strict prefix of train.jsonl, and no validation-batch files present.
+- Content contract, enforced by the verifier rather than by inspection: every rewrite carries Mechanism, Falsifiable hypothesis, Metrics, Controlled experiment, Confounders and Rollback criteria paragraphs, a numbered H1 with an explicit "Falsified if" condition, an uppercase ESTIMATE or MEASURED label, and no teacher-A string.
+- Independent ad-hoc verification: ADHOC_PASS over all 40 new rows, additionally checking a minimum answer length, global stance-header uniqueness across every committed batch, and that each answer addresses its own source template rather than a neighbouring one. The temporary script was removed after use.
+
+Technical topics covered by these rounds. Rows [2500, 2538) continue the degenerate calculator template - an agent that repeatedly calls a calculator when the answer is already known, scenario variants 260 through 300 - paired with an assistant turn that is a grading rubric rather than an answer, so every one is a rewrite. Rows 2538 and 2539 begin a different template, a sparse MoE service with uneven expert load and tail latency, and the last two stances address that source directly rather than carrying the calculator framing across the boundary.
+
+The 40 rewrites take 40 distinct stances, numbered 81 through 120, none of which reuses a stance header from any previously committed round. Round 0251 covers per-tenant noisy-neighbour accounting, train/serve rendering skew, privacy-driven population bias in the analysable set, expected value of information against programme cost, the tool response contract, training-stage attribution across the checkpoint lineage, queueing-model derivation of capacity, context-window budget rather than currency, item-order and adjudicator randomisation, and tool versioning. Round 0252 covers decode-configuration dependence, earliest-causal-turn attribution, the safety filter path, the streaming commit boundary, error-budget accounting, degraded-tool amplification, session-position stratification, telemetry cardinality cost, deadline exhaustion, and monitoring cadence against release cadence. Round 0253 covers post-rollout warm-up exclusion, race-safe deduplication of concurrent calls, numeric tokenisation, cross-region build variance, constrained-decoding grammar asymmetry, prefix-cache economics, alert routing as a testable precondition, version skew during canaries, training-data feedback loops, and report regenerability. Round 0254 covers record-replay of the tool, cost chargeback, pre-period variance reduction, alpha spending under continuous monitoring, pre-declared heterogeneous effects, cross-arm interference through shared resources, instrumentation inertness, minimal deterministic reproduction, and then the two MoE stances on per-microbatch capacity and token dropping and on device-level and link-level imbalance.
+
+Every numeric figure is explicitly labelled ESTIMATE or MEASURED with its derivation shown. No MEASURED value is claimed for any run, because no run was executed for this review; thresholds and acceptance bands are ESTIMATE serving as pre-registration values.
+
+Status caveat. These outputs are provisional teacher-B review material produced under blind review. They are not expert gold, they have not been adjudicated by a human expert, and they are not evidence about any model's domain capability or about any runtime or system capability. Agreement analysis against teacher-A remains a separate, later step and has not been performed here.
+
 ## Round 0250 - train-batch-0250.jsonl (FINAL ROUND, stage target 2500 reached)
 
 - Batch file: results/train-batch-0250.jsonl
