@@ -177,12 +177,32 @@ def validate(m: Mechanism) -> None:
         _check_phrase(f"{m.key}.options[{i}]", o)
 
 
+def _tokens(text: str) -> set:
+    return {w for w in text.lower().replace(".", " ").split() if len(w) > 3}
+
+
+def _check_distinct(m: Mechanism) -> None:
+    """Two mechanisms restating the same idea is the failure v0.3 made; catch it at authoring time."""
+    for f in ("title", "threshold", "chain"):
+        new = _tokens(getattr(m, f))
+        for prior in REGISTRY:
+            old = _tokens(getattr(prior, f))
+            if not new or not old:
+                continue
+            overlap = len(new & old) / len(new | old)
+            if overlap > 0.5:
+                raise ValueError(
+                    f"{m.key}.{f} overlaps {prior.key}.{f} at {overlap:.2f}; "
+                    f"these are the same mechanism stated twice")
+
+
 def register(*mechs: Mechanism) -> None:
     seen = {m.key for m in REGISTRY}
     for m in mechs:
         if m.key in seen:
             raise ValueError(f"duplicate mechanism key {m.key}")
         validate(m)
+        _check_distinct(m)
         REGISTRY.append(m)
         seen.add(m.key)
 

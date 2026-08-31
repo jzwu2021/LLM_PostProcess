@@ -154,20 +154,23 @@ def q_truncation(s: Setting) -> Quant:
 
 
 def q_coldstart(s: Setting) -> Quant:
+    buckets = 8
     return Quant(
-        label="the time a replica consumes before serving its first token",
+        label="the one-time work a process pays before its measurements mean anything",
         steps=[
-            f"Weight load moves {gib(s.weight_bytes)} from storage into {s.gpu_count} devices, "
+            f"Weight load moves {gib(s.weight_bytes)} into {s.gpu_count} devices, "
             f"{gib(s.weight_bytes_per_gpu)} per GPU at TP{s.tp}",
-            f"Graph capture and kernel autotuning run once per configuration and per shape bucket",
-            f"Prefix cache starts empty, so early requests pay full prefill",
-            f"During all of this the replica holds {s.gpu_count} accelerators and serves nothing",
+            "Graph capture and kernel autotuning run once per distinct shape bucket encountered",
+            f"With roughly {buckets} length buckets across a {fmt_int(s.ctx)} context, that is "
+            f"{buckets} separate capture events spread over early traffic",
+            "The prefix cache is empty, so early requests pay full prefill that later ones do not",
         ],
-        value=f"{gib(s.weight_bytes)} of weight transfer plus capture and warm-up before the first token",
+        value=f"{gib(s.weight_bytes)} of load plus roughly {buckets} capture events before steady state",
         interpretation=(
-            f"Recovery is not free on this deployment: a restart takes {s.gpu_count} devices out of "
-            f"service for the whole of that period, which is what makes an aggressive restart policy "
-            f"expensive under a moderate failure rate."),
+            "None of this recurs in steady state, so a measurement taken across it describes the "
+            "start-up transient rather than the service. The interval is a property of the shape "
+            "set encountered, not of elapsed time, which is why a fixed wait is not a reliable "
+            "substitute for checking that the metric has flattened."),
     )
 
 
@@ -421,33 +424,33 @@ register(
         quant=q_truncation,
     ),
     Mechanism(
-        key="cold_start_recovery", topic="serving",
-        title="replica recovery is dominated by weight loading and warm-up, not by process start",
-        concepts=("recovery", "autoscaling", "warmup"),
-        symptom="Scaling out does not relieve a load spike, and restarts during an incident appear to make the service worse before better.",
-        chain="A new replica must transfer the full weight set, capture graphs and warm caches before serving anything, and throughout that period it holds accelerators while contributing no capacity.",
-        metric="Time from scheduling decision to first served token, decomposed into transfer, capture and warm-up.",
-        signature="Replica count rises well before served throughput does, with the lag equal to the measured readiness time rather than to the scheduler's interval.",
+        key="cold_start_measurement_bias", topic="serving",
+        title="measurements taken in the first minutes after a deploy describe warm-up rather than the service",
+        concepts=("benchmarking", "warmup", "graph_capture"),
+        symptom="A freshly deployed build benchmarks poorly and the same build benchmarks well an hour later with no change made in between.",
+        chain="Immediately after start the runtime is still capturing graphs, autotuning kernel choices for each new shape and serving every request against an empty prefix cache, so early measurements include one-time costs that steady-state serving never pays again.",
+        metric="Time per output token as a function of minutes since process start, plotted rather than averaged.",
+        signature="The curve falls steeply for the first shape buckets encountered and then flattens, and the flattening point coincides with capture and autotuning completing.",
         confounders=(
-            "Image pull time on a cold node, which adds to readiness but is unrelated to weight size.",
-            "A warm page cache in testing, which makes measured readiness far shorter than production readiness.",
-            "Quota or admission delays in the cluster scheduler, which delay actuation before any loading begins.",
+            "Page cache warming on the host, which speeds weight access on a second run for a reason unrelated to the runtime.",
+            "Prefix cache filling with real traffic, which improves latency without any runtime state changing.",
+            "Load ramping during the same window, which changes batch composition while the curve is still falling.",
         ),
         fixes=(
-            "Pre-provision for the measured peak rather than scaling reactively into it.",
-            "Pre-stage weights and images on candidate nodes so transfer is not on the critical path.",
-            "Keep a warm standby pool sized from the observed failure rate and readiness time.",
+            "Discard a stated warm-up interval before recording any benchmark, and publish that interval with the result.",
+            "Drive the expected shape buckets deliberately at start so capture and autotuning complete before traffic arrives.",
+            "Persist autotuning results across restarts where the runtime supports it, so the cost is paid once per build rather than per process.",
         ),
-        rollback="Stop reactive scale-out if replica churn rises without a throughput gain, since churn consumes the capacity it is meant to add.",
-        options=("pre-staging weights and images on candidate nodes", "holding a warm standby pool"),
-        tradeoff="whether readiness time is short relative to the load's autocorrelation time",
-        flip="staging stops shortening readiness because capture and warm-up rather than transfer dominate, at which point only an already-warm replica helps",
-        falsifier="readiness measured on a genuinely cold node is short relative to the duration of the load spikes being served",
-        wrong_claim="Autoscaling is configured and healthy, so capacity will follow demand.",
-        wrong_why="Configuration does not establish that actuation is fast enough; if readiness exceeds the spike duration, capacity arrives after the incident and is removed before the next one.",
-        threshold="Treat reactive scaling as ineffective when measured readiness exceeds the duration over which load is autocorrelated.",
-        cost="A replica in recovery holds its full accelerator allocation and serves nothing, so recovery time is paid at full price.",
-        scaling="Cost grows with model size and with failure rate together, so a larger model makes an aggressive restart policy disproportionately expensive.",
+        rollback="Discard and re-run any comparison whose arms had different warm-up treatment; there is no correction that rescues those numbers after the fact.",
+        options=("discarding a stated warm-up interval before recording", "driving the expected shapes deliberately at start"),
+        tradeoff="whether the shape set the service will see is known well enough to be driven in advance",
+        flip="request shapes turn out to be too varied to enumerate, at which point only a warm-up interval and honest reporting remain",
+        falsifier="time per output token is flat from the first request onward",
+        wrong_claim="The new build is slower in our benchmark, so the change regressed performance.",
+        wrong_why="The benchmark captured graph capture, autotuning and an empty prefix cache, which the previous build had already paid for in a long-running process, so the comparison is between a cold process and a warm one rather than between two builds.",
+        threshold="Require every published benchmark to state its warm-up interval and to show the metric had flattened before recording began.",
+        cost="Rejecting a good build or accepting a bad one on warm-up artefacts costs a release cycle and the engineering that follows it.",
+        scaling="Warm-up cost grows with the number of distinct shape buckets, so services with variable prompt lengths take longer to reach steady state.",
         quant=q_coldstart,
     ),
     Mechanism(
