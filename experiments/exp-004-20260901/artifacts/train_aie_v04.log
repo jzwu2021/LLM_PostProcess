@@ -1,12 +1,10 @@
-Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 10386.22it/s]
-Loading weights: 100%|██████████| 427/427 [00:00<00:00, 10585.17it/s]
-Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 10138.17it/s]
-Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 8964.07it/s]
-Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 9615.37it/s]
-Loading weights: 100%|██████████| 427/427 [00:00<00:00, 7149.06it/s]
-Loading weights: 100%|██████████| 427/427 [00:00<00:00, 10548.76it/s]
-Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 8131.52it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 10078.32it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 9780.94it/s]
+Loading weights: 100%|██████████| 427/427 [00:00<00:00, 8846.12it/s]
+Loading weights: 100%|██████████| 427/427 [00:00<00:00, 7852.54it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 9880.44it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 9613.71it/s]
+Loading weights:   0%|          | 0/427 [00:00<?, ?it/s]Loading weights: 100%|██████████| 427/427 [00:00<00:00, 9691.17it/s]
+Loading weights: 100%|██████████| 427/427 [00:00<00:00, 9583.98it/s]
 MASKED_SFT_START world_size=8 examples=2700 max_steps=170 seq_len=768 grad_accum=4 lr=2e-06
-step=1 masked_loss=3.156717 target_tokens_per_rank=766 elapsed=29.7s
-step=10 masked_loss=2.882840 target_tokens_per_rank=903 elapsed=216.7s
-step=20 masked_loss=2.699637 target_tokens_per_rank=890 elapsed=423.5s
+step=1 masked_loss=3.156717 target_tokens_per_rank=766 elapsed=29.6s

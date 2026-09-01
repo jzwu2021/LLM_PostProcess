@@ -92,6 +92,45 @@ corpus, which is why its repair records were never consumed.
 Learning rate is deliberately held at the exp-002 value. Changing the corpus and
 the learning rate together would make any difference unattributable.
 
+## Run history
+
+### Attempt 1 — killed by SIGHUP at step ~33, no checkpoint
+
+Started 11:13:36, died 11:26:19 after roughly 33 of 170 steps. Log preserved as
+`artifacts/attempt1_sighup.out`.
+
+The cause was not a training fault. Loss was falling normally (3.157 → 2.634 at
+step 30) and device memory was stable at 22.3 of 24 GB. The run received
+`signal: 1`:
+
+```
+Received 1 death signal, shutting down workers
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 1292490 got signal: 1
+```
+
+The wrapper script was launched under `nohup`, which sets the wrapper itself to
+ignore SIGHUP, but `torchrun` spawns an elastic agent and eight workers that
+remained in the launching shell's session. When that session was torn down, the
+signal reached the process group and the agent shut the workers down.
+
+Nothing was salvageable: the first checkpoint was due at step 34 and the run died
+just before it, so 13 minutes of eight-GPU time produced no artifact. Workers also
+did not respond to SIGKILL for several minutes, which is the "wedged on GPU"
+teardown path; the devices did release cleanly afterwards.
+
+**Fix:** launch with `setsid` so the whole job runs in its own session with no
+controlling terminal. Verified after relaunch: worker session id 1297443 against
+shell session id 1297331, TTY `?`.
+
+**Lesson to carry:** `nohup` protects the process it wraps, not a process tree
+that creates its own group. For any multi-process launcher the detachment has to
+be at session level. A cheaper mitigation would also have helped: the first
+checkpoint at step 34 was too late to protect a 13-minute investment.
+
+### Attempt 2 — relaunched detached
+
+Started 11:31. Same configuration, same dataset hashes, `setsid`-detached.
+
 ## Results
 
 Pending. To be filled from `artifacts/train_aie_v04.log`.
