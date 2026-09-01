@@ -1,0 +1,35 @@
+{
+  "audit": "exp-003-20260901-contamination-audit",
+  "train_records": 3000,
+  "benchmark_records": 500,
+  "benchmark_distinct_reference_answers": 140,
+  "item_overlap": {
+    "exact_question_matches": 0,
+    "max_question_5gram_jaccard": 0.0,
+    "max_question_term_overlap": 0.167,
+    "verdict": "clean"
+  },
+  "answer_leakage": {
+    "max_answer_5gram_jaccard": 0.0,
+    "verbatim_key_phrases": 0,
+    "key_point_items": 95,
+    "verdict": "clean"
+  },
+  "topic_coverage": {
+    "benchmark_topics": 41,
+    "declared_covered": 38,
+    "uncovered": [
+      "CUDA streams",
+      "speculative decoding",
+      "detect duplicate request IDs"
+    ]
+  },
+  "v03_cross_check": {
+    "shared_questions": 0,
+    "max_jaccard_sampled": 0.0
+  },
+  "residual_exposure": [
+    "aiinfra-0001"
+  ],
+  "status": "provisional"
+}

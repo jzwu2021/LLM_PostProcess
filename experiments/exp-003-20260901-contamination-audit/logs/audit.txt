@@ -1,0 +1,107 @@
+========================================================================
+0. BENCHMARK'S OWN COMPOSITION
+========================================================================
+benchmark records            : 500
+distinct questions           : 500
+distinct reference answers   : 140
+distinct topics              : 41
+reference answers reused     : 90 covering 450 records
+
+========================================================================
+1. ITEM OVERLAP  (training item reproducing a benchmark item)
+========================================================================
+exact question matches       : 0
+questions with jaccard >=0.30: 0 of 3000
+max question jaccard         : 0.000
+max question TERM overlap    : 0.167
+questions with term >=0.40   : 0
+  0.167  train aie4-02239 (decode_bandwidth_bound)
+         bench aiinfra-0361 [design long-context serving]
+  0.167  train aie4-02179 (prefill_decode_interference)
+         bench aiinfra-0361 [design long-context serving]
+  0.143  train aie4-01309 (calibration_mismatch)
+         bench aiinfra-0361 [design long-context serving]
+
+========================================================================
+2. ANSWER LEAKAGE  (training answer carrying benchmark expected content)
+========================================================================
+answers with jaccard >=0.20  : 0 of 3000
+max answer jaccard           : 0.000
+key-point items              : 95
+verbatim key phrases in train: 0
+
+========================================================================
+3. TOPIC COVERAGE  (expected overlap; bounds what the benchmark can measure)
+========================================================================
+benchmark topics                    : 41
+  lexically present in training text: 14
+  NOTE: this is a weak proxy. It requires every content word of the topic
+  phrase to co-occur in one record, so it marks 'design a safe model
+  rollout' absent even though rollout mechanisms are present. Use the
+  declared mapping below for the coverage judgement.
+
+  Declared mapping (author judgement, not a measurement):
+    [covered    ] CUDA Graphs                                lexical=   0  collective_latency_floor, cold_start_measurement_bias
+    [NOT COVERED] CUDA streams                               lexical=   0  -
+    [covered    ] GPU memory hierarchy                       lexical=   0  decode_bandwidth_bound
+    [covered    ] GQA                                        lexical=   0  kv_capacity_ceiling
+    [covered    ] HBM versus DDR                             lexical=   0  decode_bandwidth_bound
+    [covered    ] KV cache                                   lexical= 516  kv_capacity_ceiling, block_fragmentation, max_len_overreservation
+    [covered    ] MIG partitioning                           lexical=   0  multitenant_interference
+    [covered    ] MoE                                        lexical=   0  expert_parallel_alltoall
+    [covered    ] NCCL collectives                           lexical=   0  rendezvous_vs_datapath, collective_tail_statistic, straggler_amplification
+    [covered    ] NVSwitch                                   lexical=   0  tp_allreduce_cost
+    [covered    ] PCIe versus NVLink                         lexical=   0  tp_allreduce_cost, collective_latency_floor
+    [covered    ] RDMA                                       lexical=  60  rdma_property_bundle, gdr_silent_staging
+    [covered    ] RoCE and InfiniBand                        lexical=   6  pfc_configuration_consistency, ecmp_flow_collision
+    [covered    ] Transformer attention                      lexical=   0  kv_capacity_ceiling
+    [covered    ] aggregate latency percentiles              lexical=   3  percentile_aggregation
+    [covered    ] build a benchmark harness                  lexical=   0  missing_baseline_band, generation_cap_truncation, cold_start_measurement_bias
+    [covered    ] calculate paged KV blocks                  lexical=   0  block_fragmentation
+    [covered    ] check NCCL environment completeness        lexical=   0  rendezvous_vs_datapath
+    [covered    ] classify prefill/decode workload           lexical=   0  prefill_decode_interference
+    [covered    ] communication                              lexical=  57  tp_allreduce_cost, collective_incast, collective_tail_statistic
+    [covered    ] compare quantization deployment choices    lexical=   0  weight_quant_regime, dequant_batch_amortisation
+    [covered    ] compute KV-cache bytes                     lexical=  31  kv_capacity_ceiling
+    [covered    ] continuous batching                        lexical=  60  prefill_decode_interference, batched_cost_attribution
+    [covered    ] data parallelism                           lexical=  41  replica_vs_degree
+    [covered    ] debug distributed training startup         lexical=   0  rendezvous_vs_datapath, effective_batch_hidden
+    [covered    ] design a safe model rollout                lexical=   0  rollout_stage_sizing, canary_detection_power, incomplete_rollback
+    [covered    ] design an MoE inference cluster            lexical=   0  expert_parallel_alltoall
+    [covered    ] design long-context serving                lexical=   3  max_len_overreservation, sequence_parallel_prefill
+    [covered    ] design multi-node inference over RoCE      lexical=   0  pfc_configuration_consistency, collective_incast
+    [NOT COVERED] detect duplicate request IDs               lexical=   0  -
+    [covered    ] estimate transfer time                     lexical=  15  cache_transfer_budget
+    [covered    ] implement retry with bounded backoff       lexical=   0  nested_retry_amplification, tool_idempotency
+    [covered    ] optimize an agent inference service        lexical=   0  agent_context_budget, agent_reprefill_amplification, agent_latency_budget
+    [covered    ] parse a structured tool call               lexical=   0  tool_call_trust_boundary, constrained_decoding_scope
+    [covered    ] plan GPU capacity                          lexical=   1  kv_capacity_ceiling, utilisation_target_conflict, shape_fragmentation
+    [covered    ] prefill                                    lexical= 206  prefill_decode_interference, sequence_parallel_prefill
+    [covered    ] quantization                               lexical= 240  weight_quant_regime, kv_quant_quality_cost, activation_outliers
+    [covered    ] serve a 70B model on 8 GPUs                lexical=   0  tp_degree_memory_tradeoff, kv_capacity_ceiling
+    [NOT COVERED] speculative decoding                       lexical=   0  -
+    [covered    ] tensor parallelism                         lexical= 174  tp_allreduce_cost, tp_degree_memory_tradeoff, shard_divisibility
+    [covered    ] validate a tensor-parallel world size      lexical=   0  shard_divisibility
+
+========================================================================
+4. CROSS-CHECK AGAINST THE v0.3 CORPUS
+========================================================================
+v0.3 rows                    : 5399
+v0.4 questions also in v0.3  : 0
+max v0.4-to-v0.3 q jaccard   : 0.000 (sampled)
+
+========================================================================
+VERDICT
+========================================================================
+item overlap    : CLEAN (exact 0, max jaccard 0.000)
+answer leakage  : CLEAN (max jaccard 0.000, verbatim phrases 0)
+topic coverage  : 38/41 benchmark topics have a corresponding training mechanism (declared)
+
+Topic coverage is not contamination, but it does mean this benchmark
+cannot measure generalisation to unseen subject areas. It can only
+measure whether training on these mechanisms transfers to differently
+worded questions about the same mechanisms.
+
+Not measurable from artifacts: whether benchmark items informed authoring.
+See EXPERIMENT.md for the provenance statement, which is the only
+evidence available on that question.
