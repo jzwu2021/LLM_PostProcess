@@ -108,6 +108,8 @@ def main():
         chk(not COUNTER_PAT.search(u), f"{r['id']} user contains a variant counter")
         chk(not COUNTER_PAT.search(a), f"{r['id']} assistant contains a variant counter")
         chk("{" not in a and "}" not in a, f"{r['id']} unrendered template braces")
+        nonascii = [c for c in u + a if ord(c) > 127]
+        chk(not nonascii, f"{r['id']} non-ASCII character {nonascii[:1]!r} in an English field")
         for defect, pat in GRAMMAR_DEFECTS:
             hit = pat.search(a) or pat.search(u)
             chk(not hit, f"{r['id']} {defect}: ...{hit.group(0) if hit else ''}...")
