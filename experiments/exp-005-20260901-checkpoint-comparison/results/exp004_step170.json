@@ -1,0 +1,22 @@
+{
+  "model": "exp004_step170",
+  "checkpoint": "/media/home/johnson/llm/checkpoints/exp-004-20260901/aie-v04/step-170",
+  "seq_len": 768,
+  "results": {
+    "exp002_heldout": {
+      "loss": 2.5864455699920654,
+      "examples": 100,
+      "path": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_heldout.jsonl"
+    },
+    "exp004_heldout": {
+      "loss": 1.706882119178772,
+      "examples": 100,
+      "path": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-004-20260901/data/aie_v04_heldout.jsonl"
+    },
+    "benchmark": {
+      "loss": 2.2403430938720703,
+      "examples": 100,
+      "path": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-005-20260901-checkpoint-comparison/data/benchmark_as_messages.jsonl"
+    }
+  }
+}

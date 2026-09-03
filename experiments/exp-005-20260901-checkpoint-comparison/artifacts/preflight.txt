@@ -1,0 +1,11 @@
+# exp-005 cross-evaluation preflight
+2026-09-01T14:30:47+00:00
+[git]
+987e0e212205d1b04e6b94645c9719febde73bcc
+[datasets]
+6c0d75eb9545e725cd44416076b2e9fa38f8cabf19cb30cff6959c74e701f813  /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_heldout.jsonl
+c0483e427a6122c1e2956e2036c8f4cf60021e03afbd534824bc2101decdf0f7  /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-004-20260901/data/aie_v04_heldout.jsonl
+22efe17459872cfd86b8e14a6a691db483e7db1ed941e3c468649d10c554aa8a  /media/home/johnson/workspace/LLM_PostProcess/experiments/exp-005-20260901-checkpoint-comparison/data/benchmark_as_messages.jsonl
+[checkpoints]
+/media/home/johnson/llm/checkpoints/exp-002-20260828/repair-mix-v0.1/step-75
+/media/home/johnson/llm/checkpoints/exp-004-20260901/aie-v04/step-170

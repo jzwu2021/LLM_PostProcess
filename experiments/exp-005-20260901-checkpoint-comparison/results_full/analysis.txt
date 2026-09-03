@@ -1,0 +1,85 @@
+==============================================================================
+1. FULL MATRIX  (masked loss, lower is a closer fit to that set's target text)
+==============================================================================
+model                   exp002_heldout        exp004_heldout             benchmark
+base                    2.738953 (n=100)        3.099224 (n=300)        3.094407 (n=499)
+exp002_step75           2.379644 (n=100)        2.795483 (n=300)        2.616479 (n=499)
+exp004_step170          2.586446 (n=100)        1.721704 (n=300)        2.668712 (n=499)
+
+Set sizes: exp002_heldout=100, exp004_heldout=300, benchmark=499 (all 10 categories).
+
+==============================================================================
+2. CHANGE FROM BASE  (negative = fits that set better than the base model)
+==============================================================================
+
+  exp002_heldout
+    exp002_step75    2.379644  delta -0.359308  [HOME - style-native to this arm]
+    exp004_step170   2.586446  delta -0.152506  [off-diagonal, no home advantage]
+
+  exp004_heldout
+    exp002_step75    2.795483  delta -0.303741  [off-diagonal, no home advantage]
+    exp004_step170   1.721704  delta -1.377520  [HOME - style-native to this arm]
+
+  benchmark
+    exp002_step75    2.616479  delta -0.477927  [CONTAMINATED - repair data authored from benchmark inspection]
+    exp004_step170   2.668712  delta -0.425695  [topic-covered 38/41, item-clean per exp-003]
+
+==============================================================================
+3. BENCHMARK BY CATEGORY  (the seven categories the first run never reached)
+==============================================================================
+category                         n     base   exp002   exp004  diff(e4-e2)            95% interval          call
+Architecture Comparison         50   3.8014   3.3076   3.4143      +0.1067      [+0.0845, +0.1288]        exp002
+Calculation                     50   1.2570   0.9657   0.9613      -0.0044      [-0.0248, +0.0160]           tie
+Code                            50   2.6986   2.3250   2.3249      -0.0001      [-0.0130, +0.0128]           tie
+Concept Understanding           50   2.6486   2.0550   2.1104      +0.0553      [+0.0258, +0.0849]        exp002
+Knowledge                       49   2.8466   2.3735   2.3945      +0.0210      [-0.0101, +0.0520]           tie
+Long-form Technical Analysis    50   3.4850   2.9766   3.0349      +0.0583      [+0.0375, +0.0792]        exp002
+Performance Analysis            50   3.4653   2.9111   3.0250      +0.1138      [+0.1002, +0.1275]        exp002
+Reasoning                       50   3.5773   3.2241   3.2769      +0.0528      [+0.0414, +0.0642]        exp002
+System Design                   50   3.6021   2.9726   3.0396      +0.0670      [+0.0436, +0.0904]        exp002
+Troubleshooting                 50   3.5572   3.0486   3.0998      +0.0513      [+0.0381, +0.0644]        exp002
+
+'tie' means the 95% interval spans zero: the two are not distinguishable
+on that category at this sample size.
+
+==============================================================================
+4. PAIRED COMPARISON exp002_step75 vs exp004_step170
+==============================================================================
+Per-item differences on identical inputs. A difference whose 95% interval
+spans zero is not distinguishable from no difference.
+
+  exp002_heldout  (n=100)
+    mean difference (exp004 - exp002) : +0.206802
+    95% interval                      : [+0.185018, +0.228586]
+    items where exp004 is lower       : 1 of 100
+    verdict                           : exp002 lower
+
+  exp004_heldout  (n=300)
+    mean difference (exp004 - exp002) : -1.073778
+    95% interval                      : [-1.106353, -1.041204]
+    items where exp004 is lower       : 300 of 300
+    verdict                           : exp004 lower
+
+  benchmark  (n=499)
+    mean difference (exp004 - exp002) : +0.052233
+    95% interval                      : [+0.044910, +0.059555]
+    items where exp004 is lower       : 126 of 499
+    verdict                           : exp002 lower
+
+==============================================================================
+5. WHAT THIS MATRIX CANNOT SETTLE
+==============================================================================
+
+Masked loss measures agreement with a specific target text, so it partly measures
+writing style rather than knowledge. Each fine-tune was trained toward a different
+answer style, so the home-set advantages are expected and carry no information
+about capability.
+
+The benchmark column is not a neutral referee either: exp-002's repair records
+were authored after inspecting benchmark regression topics, and exp-003 found 38
+of 41 benchmark topics correspond to exp-004 training mechanisms. Both arms have
+an advantage there, of different kinds.
+
+Deciding which model is better at AI-infrastructure work requires generation
+against style-independent verifiers on a set neither arm's authoring process saw.
+No such set exists in this repository yet.

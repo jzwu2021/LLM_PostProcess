@@ -1,0 +1,22 @@
+{
+  "model": "exp002_step75",
+  "checkpoint": "/media/home/johnson/llm/checkpoints/exp-002-20260828/repair-mix-v0.1/step-75",
+  "seq_len": 768,
+  "results": {
+    "exp002_heldout": {
+      "loss": 2.3796443939208984,
+      "examples": 100,
+      "path": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-001-20260827/data/teacher_b_native_heldout.jsonl"
+    },
+    "exp004_heldout": {
+      "loss": 2.8007266521453857,
+      "examples": 100,
+      "path": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-004-20260901/data/aie_v04_heldout.jsonl"
+    },
+    "benchmark": {
+      "loss": 2.2016794681549072,
+      "examples": 100,
+      "path": "/media/home/johnson/workspace/LLM_PostProcess/experiments/exp-005-20260901-checkpoint-comparison/data/benchmark_as_messages.jsonl"
+    }
+  }
+}
