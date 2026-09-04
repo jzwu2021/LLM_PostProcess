@@ -17,7 +17,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 ITEMS = HERE / "data/private_holdout_v1.jsonl"
 HARNESS = (HERE / "data/code_harness.py").read_text()
 
-MAX_TOKENS = 1024
+MAX_TOKENS = 12288  # capped runs measured verbosity, not capability
 
 
 def parse_number(text: str):
@@ -84,7 +84,7 @@ def main():
 
     items = [json.loads(l) for l in ITEMS.open() if l.strip()]
     llm = LLM(model=args.model, tensor_parallel_size=args.tp,
-              max_model_len=4096, gpu_memory_utilization=0.90,
+              max_model_len=16384, gpu_memory_utilization=0.90,
               trust_remote_code=True)
     tok = llm.get_tokenizer()
 

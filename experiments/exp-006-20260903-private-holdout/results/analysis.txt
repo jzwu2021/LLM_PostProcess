@@ -1,0 +1,71 @@
+============================================================================
+1. OVERALL  (63 items, greedy decoding, identical settings)
+============================================================================
+arm                 correct  accuracy       95% Wilson interval  trunc
+base                     59     0.937            [0.848, 0.975]     13
+exp002_step75            61     0.968            [0.891, 0.991]      9
+exp004_step170           60     0.952            [0.869, 0.984]      9
+
+============================================================================
+2. BY ITEM KIND AND BY v0.4 SCOPE
+============================================================================
+arm                    numeric      code    in-scope  OUT-of-scope
+base                     0.927     1.000       0.939         0.929
+exp002_step75            0.982     0.875       0.959         1.000
+exp004_step170           0.945     1.000       0.939         1.000
+
+in-scope n=49, out-of-scope n=14. The out-of-scope items cover quantities
+no v0.4 mechanism teaches, so they are the closest thing here to a clean test
+for exp-004.
+
+============================================================================
+3. PAIRED COMPARISONS  (McNemar on identical items)
+============================================================================
+
+  base  vs  exp002_step75
+    items only base             correct : 2
+    items only exp002_step75    correct : 4
+    disagreements                    : 6
+    exact two-sided p                : 0.6875
+    verdict                          : not distinguishable
+
+  base  vs  exp004_step170
+    items only base             correct : 3
+    items only exp004_step170   correct : 4
+    disagreements                    : 7
+    exact two-sided p                : 1.0000
+    verdict                          : not distinguishable
+
+  exp002_step75  vs  exp004_step170
+    items only exp002_step75    correct : 3
+    items only exp004_step170   correct : 2
+    disagreements                    : 5
+    exact two-sided p                : 1.0000
+    verdict                          : not distinguishable
+
+============================================================================
+4. PER-QUANTITY ACCURACY
+============================================================================
+quantity                         scope    base   exp002   exp004
+amdahl_max_speedup                 OUT    1.00     1.00     1.00
+code:first_duplicate               OUT    1.00     1.00     1.00
+littles_law_concurrency            OUT    1.00     1.00     1.00
+mig_slices                         OUT    1.00     1.00     1.00
+spec_decode_breakeven              OUT    0.75     1.00     1.00
+allreduce_bytes_per_token           in    0.75     0.75     1.00
+availability_product                in    1.00     1.00     1.00
+bubble_fraction                     in    1.00     1.00     1.00
+code:bounded_retry                  in    1.00     1.00     1.00
+code:classify_phase                 in    1.00     1.00     1.00
+code:kv_cache_bytes                 in    1.00     0.00     1.00
+code:paged_blocks                   in    1.00     1.00     1.00
+code:parse_tool_call                in    1.00     1.00     1.00
+code:percentile_nearest_rank        in    1.00     1.00     1.00
+code:valid_tensor_parallel          in    1.00     1.00     1.00
+effective_batch                     in    1.00     1.00     1.00
+kv_bytes_per_token                  in    1.00     1.00     1.00
+kv_request_gib                      in    0.80     1.00     1.00
+nearest_rank_index                  in    1.00     1.00     0.75
+paged_blocks                        in    1.00     1.00     1.00
+read_amplification                  in    1.00     1.00     1.00
+weight_gib_per_device               in    0.80     1.00     0.60
